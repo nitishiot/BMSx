@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoomStatus {
+  AVAILABLE
+  FULL
+  MAINTENANCE
+}
+
+enum BoarderStatus {
+  ACTIVE
+  CHECKED_OUT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+model Room {
+  id          String     @id @default(cuid())
+  number      String     @unique
+  floor       Int
+  capacity    Int
+  monthlyRent Decimal    @db.Decimal(10, 2)
+  status      RoomStatus @default(AVAILABLE)
+  boarders    Boarder[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Boarder {
+  id            String        @id @default(cuid())
+  name          String
+  email         String?       @unique
+  phone         String
+  room          Room?         @relation(fields: [roomId], references: [id])
+  roomId        String?
+  checkInDate   DateTime      @default(now())
+  checkOutDate  DateTime?
+  status        BoarderStatus @default(ACTIVE)
+  payments      Payment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  boarder   Boarder       @relation(fields: [boarderId], references: [id])
+  boarderId String
+  amount    Decimal       @db.Decimal(10, 2)
+  dueDate   DateTime
+  paidDate  DateTime?
+  status    PaymentStatus @default(PENDING)
+  method    String?
+  note      String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
