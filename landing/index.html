@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BMSx — Boarding Management System</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --bg-alt: #f4f5f7;
+    --text: #1a1d23;
+    --text-muted: #5b6270;
+    --border: #e2e4e9;
+    --accent: #2f6feb;
+    --accent-text: #ffffff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --bg-alt: #1c1f25;
+      --text: #edeef0;
+      --text-muted: #9aa1ad;
+      --border: #2a2e36;
+      --accent: #5b8cf2;
+      --accent-text: #0e1116;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  a { color: inherit; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+  }
+
+  nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  nav a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  nav a:hover { color: var(--text); }
+
+  .hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 5rem;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    margin: 0 0 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .hero p {
+    max-width: 620px;
+    margin: 0 auto 2rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .features {
+    background: var(--bg-alt);
+    padding: 4rem 1.5rem;
+  }
+
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features h2 {
+    text-align: center;
+    font-size: 1.75rem;
+    margin: 0 0 2.5rem;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .feature-card .icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .feature-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  .feature-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="#top">BMSx</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="top">
+    <h1>Run your boarding house without the spreadsheets</h1>
+    <p>
+      BMSx keeps rooms, boarders, and rent payments in one place — so you always
+      know who's staying, what's occupied, and who owes what.
+    </p>
+    <div class="cta-group">
+      <a class="btn btn-primary" href="#features">See features</a>
+      <a class="btn btn-secondary" href="#about">Learn more</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="features-inner">
+      <h2>Everything in one dashboard</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">🏠</div>
+          <h3>Room management</h3>
+          <p>Track every room's capacity, rent, and occupancy status at a glance.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧑‍🤝‍🧑</div>
+          <h3>Boarder records</h3>
+          <p>Keep contact details, check-in dates, and room assignments up to date.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💳</div>
+          <h3>Payment tracking</h3>
+          <p>See pending, paid, and overdue rent so nothing slips through the cracks.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <h3>At-a-glance dashboard</h3>
+          <p>Occupancy rate and outstanding balances summarized on one screen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero" id="about">
+    <h1 style="font-size: 1.75rem;">About BMSx</h1>
+    <p>
+      BMSx is a lightweight boarding management system built for small
+      hostels and PGs that have outgrown spreadsheets but don't need
+      enterprise property-management software.
+    </p>
+  </section>
+
+  <footer>
+    &copy; 2026 BMSx. Built for boarding houses everywhere.
+  </footer>
+</body>
+</html>
