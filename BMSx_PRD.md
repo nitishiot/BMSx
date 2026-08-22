@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-## TAG — The Admissions Group
+## BMSx — The Admissions Group
 ### Festival Ticketing & 360° Experience Platform
 
 **Version:** 1.0  
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-TAG (The Admissions Group) is a full-stack festival ticketing and ancillary services platform. Unlike incumbent ticketing companies that operate as pure-play transaction processors, TAG is positioned as a **360-degree festival solutions company** — covering ticketing, travel, accommodation, dining, merchandise, social engagement, and vendor management under a single platform.
+BMSx (The Admissions Group) is a full-stack festival ticketing and ancillary services platform. Unlike incumbent ticketing companies that operate as pure-play transaction processors, BMSx is positioned as a **360-degree festival solutions company** — covering ticketing, travel, accommodation, dining, merchandise, social engagement, and vendor management under a single platform.
 
 The platform will launch in Europe (Ireland incorporation) and expand into high-growth emerging markets, with India as the primary target in Year 3.
 
@@ -81,7 +81,7 @@ Festival Ticket + Meal Advance Bookings + Local Tourist Attractions
 
 ### 5.2 Key Differentiators vs. Competitors
 
-| Dimension | Incumbents | TAG |
+| Dimension | Incumbents | BMSx |
 |-----------|-----------|-----|
 | CX Journey | Old-style webpages; fragmented | Simple, intuitive unified interface |
 | Mobile App | Present but limited | Feature-rich app on serverless cloud |
@@ -134,7 +134,7 @@ Companies that interact directly with event attendees in the resale market.
 | TicketIQ | Old-style | Poor | Good | None | Microservices/API | No |
 | SeatGeek | Seamless | Very good | Good | Limited | Microservices/API | No |
 | Townscript | Seamless | Basic | Good | Blogs only | Microservices/API | Basic |
-| **TAG** | **Simple, intuitive** | **Feature-rich (serverless)** | **Good** | **Blog + sharing + ratings + fans** | **Serverless microservices/API** | **Heavy AI** |
+| **BMSx** | **Simple, intuitive** | **Feature-rich (serverless)** | **Good** | **Blog + sharing + ratings + fans** | **Serverless microservices/API** | **Heavy AI** |
 
 ---
 
@@ -321,4 +321,4 @@ Companies that interact directly with event attendees in the resale market.
 
 ---
 
-*Document prepared from TAG Corporate Presentation v45 — January 2024*
+*Document prepared from BMSx Corporate Presentation v45 — January 2024*
