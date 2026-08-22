@@ -1,236 +1,894 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>BMSx — Boarding Management System</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BMSx</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap">
 <style>
-  :root {
-    color-scheme: light dark;
-    --bg: #ffffff;
-    --bg-alt: #f4f5f7;
-    --text: #1a1d23;
-    --text-muted: #5b6270;
-    --border: #e2e4e9;
-    --accent: #2f6feb;
-    --accent-text: #ffffff;
+:root {
+  --bg:        #F0EFF6;
+  --bg-card:   #FFFFFF;
+  --bg-raised: #E8E7F0;
+  --text:      #0D0C1A;
+  --muted:     #5A5878;
+  --faint:     #A0A0BE;
+  --accent:    #E8194B;
+  --warm:      #FF7A18;
+  --cool:      #4060FF;
+  --border:    rgba(13,12,26,0.09);
+  --border-md: rgba(13,12,26,0.15);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #08080D;
+    --bg-card:   #111119;
+    --bg-raised: #1A1A28;
+    --text:      #EDEEF8;
+    --muted:     #7878A8;
+    --faint:     #48486A;
+    --accent:    #FF2D60;
+    --warm:      #FF8020;
+    --cool:      #6080FF;
+    --border:    rgba(237,238,248,0.08);
+    --border-md: rgba(237,238,248,0.14);
   }
+}
+:root[data-theme="dark"] {
+  --bg:        #08080D;
+  --bg-card:   #111119;
+  --bg-raised: #1A1A28;
+  --text:      #EDEEF8;
+  --muted:     #7878A8;
+  --faint:     #48486A;
+  --accent:    #FF2D60;
+  --warm:      #FF8020;
+  --cool:      #6080FF;
+  --border:    rgba(237,238,248,0.08);
+  --border-md: rgba(237,238,248,0.14);
+}
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14161a;
-      --bg-alt: #1c1f25;
-      --text: #edeef0;
-      --text-muted: #9aa1ad;
-      --border: #2a2e36;
-      --accent: #5b8cf2;
-      --accent-text: #0e1116;
-    }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;}
+img,svg{display:block;max-width:100%;}
 
-  * { box-sizing: border-box; }
+h2{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-0.025em;line-height:1.1;text-wrap:balance;}
+.eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);}
 
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-  }
+/* NAV */
+nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:rgba(8,8,13,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(237,238,248,.06);}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:#EDEEF8;text-decoration:none;letter-spacing:-.02em;}
+.logo-dot{color:#FF2D60;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{color:rgba(237,238,248,.5);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:#EDEEF8;}
+.nav-btn{background:#FF2D60;color:#FFF;padding:.5rem 1.2rem;border-radius:100px;font-size:.875rem;font-weight:600;text-decoration:none;letter-spacing:-.01em;transition:opacity .18s;}
+.nav-btn:hover{opacity:.88;}
 
-  a { color: inherit; }
+/* HERO */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 1.5rem 4rem;background:#08080D;overflow:hidden;}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.hero-inner{position:relative;z-index:2;max-width:820px;}
+.hero .eyebrow{color:rgba(255,45,96,.85);margin-bottom:1.25rem;}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,7vw,5.5rem);letter-spacing:-.035em;line-height:.97;color:#EDEEF8;text-wrap:balance;margin-bottom:1.5rem;}
+.hero h1 em{font-style:normal;color:#FF2D60;}
+.hero-sub{font-size:clamp(1rem,2vw,1.15rem);color:rgba(237,238,248,.48);max-width:480px;margin:0 auto 2.5rem;font-weight:300;line-height:1.72;}
+.hero-actions{display:flex;gap:.875rem;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:#FF2D60;color:#FFF;padding:.85rem 1.875rem;border-radius:100px;font-weight:600;text-decoration:none;font-size:.9375rem;letter-spacing:-.01em;transition:transform .18s,opacity .18s;}
+.btn-primary:hover{transform:translateY(-2px);opacity:.9;}
+.btn-outline{background:rgba(237,238,248,.07);color:rgba(237,238,248,.85);padding:.85rem 1.875rem;border-radius:100px;font-weight:500;text-decoration:none;font-size:.9375rem;letter-spacing:-.01em;border:1px solid rgba(237,238,248,.12);transition:background .18s;}
+.btn-outline:hover{background:rgba(237,238,248,.12);}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;color:rgba(237,238,248,.22);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;}
+.scroll-track{width:1px;height:36px;background:linear-gradient(180deg,#FF2D60 0%,transparent 100%);animation:scrollAnim 2.4s ease-in-out infinite;transform-origin:top;}
+@keyframes scrollAnim{0%{transform:scaleY(0);opacity:0;}45%{transform:scaleY(1);opacity:1;}100%{transform:scaleY(1);opacity:0;transform-origin:bottom;}}
 
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.25rem 1.5rem;
-  }
+/* STRIP */
+.strip{overflow:hidden;background:var(--bg);border-bottom:1px solid var(--border);padding:1.1rem 0;}
+.strip-track{display:flex;width:max-content;animation:marquee 26s linear infinite;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.strip-item{display:flex;align-items:center;gap:.5rem;padding:0 2rem;font-size:.875rem;font-weight:500;color:var(--muted);white-space:nowrap;border-right:1px solid var(--border-md);}
+.s-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
 
-  .logo {
-    font-weight: 700;
-    font-size: 1.25rem;
-    text-decoration: none;
-  }
+/* BANNERS */
+.banners{max-width:1120px;margin:0 auto;padding:4rem 2rem;display:flex;flex-direction:column;gap:1.5rem;}
+.banner{display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;border:1px solid var(--border);min-height:460px;}
+.banner.flip .b-copy{order:2;}
+.banner.flip .b-visual{order:1;}
+.b-copy{display:flex;flex-direction:column;justify-content:center;padding:3.5rem;background:var(--bg-card);gap:.9rem;}
+.b-copy h2{font-size:clamp(1.7rem,2.8vw,2.4rem);}
+.b-copy p{color:var(--muted);font-size:.9375rem;line-height:1.72;max-width:360px;}
+.b-perks{list-style:none;display:flex;flex-direction:column;gap:.45rem;margin-top:.25rem;}
+.b-perks li{display:flex;align-items:center;gap:.6rem;font-size:.875rem;color:var(--muted);}
+.b-perks li .ck{color:var(--accent);font-weight:700;width:18px;flex-shrink:0;}
+.b-link{display:inline-flex;align-items:center;gap:.4rem;font-size:.9rem;font-weight:600;color:var(--accent);text-decoration:none;margin-top:.25rem;}
+.b-link::after{content:'→';}
+.b-visual{position:relative;overflow:hidden;min-height:340px;}
+.b-visual svg{width:100%;height:100%;position:absolute;inset:0;}
 
-  nav {
-    display: flex;
-    gap: 1.5rem;
-  }
+/* PLATFORM SECTION */
+.platform-section{padding:5rem 2rem;background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.platform-inner{max-width:1120px;margin:0 auto;}
+.platform-header{text-align:center;margin-bottom:3rem;}
+.platform-header h2{font-size:clamp(1.9rem,3.5vw,2.75rem);margin-bottom:.75rem;}
+.platform-header p{color:var(--muted);font-size:1rem;max-width:480px;margin:0 auto;}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.feat-item{background:var(--bg-card);padding:1.75rem 1.5rem;display:flex;flex-direction:column;gap:.65rem;}
+.feat-icon{font-size:1.25rem;width:42px;height:42px;background:var(--bg-raised);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.feat-item h3{font-size:.9375rem;font-weight:600;}
+.feat-item p{font-size:.85rem;color:var(--muted);line-height:1.6;}
 
-  nav a {
-    text-decoration: none;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-  }
+/* PLANS */
+.plans-section{padding:5rem 2rem;}
+.plans-inner{max-width:1000px;margin:0 auto;}
+.plans-header{text-align:center;margin-bottom:3rem;}
+.plans-header h2{font-size:clamp(1.9rem,3.5vw,2.75rem);margin-bottom:.75rem;}
+.plans-header p{color:var(--muted);font-size:1rem;}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.plan{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;display:flex;flex-direction:column;gap:.4rem;}
+.plan.hot{background:var(--accent);border-color:transparent;color:#FFF;}
+.plan-tag{font-family:'Syne',sans-serif;font-weight:800;font-size:.875rem;text-transform:uppercase;letter-spacing:.05em;}
+.plan.hot .plan-tag{color:rgba(255,255,255,.75);}
+.plan-price{font-family:'Syne',sans-serif;font-weight:800;font-size:2.75rem;letter-spacing:-.04em;line-height:1;margin:.5rem 0 0;}
+.plan.hot .plan-price{color:#FFF;}
+.plan-price sub{font-size:.85rem;font-weight:400;font-family:'Inter',sans-serif;opacity:.65;vertical-align:middle;letter-spacing:0;}
+.plan-desc{font-size:.8rem;color:var(--muted);margin-bottom:.5rem;}
+.plan.hot .plan-desc{color:rgba(255,255,255,.6);}
+.plan hr{border:none;border-top:1px solid var(--border);margin:.5rem 0;}
+.plan.hot hr{border-color:rgba(255,255,255,.2);}
+.plan-feat{font-size:.8375rem;color:var(--muted);display:flex;gap:.5rem;padding:.1rem 0;}
+.plan.hot .plan-feat{color:rgba(255,255,255,.72);}
+.plan-feat::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0;}
+.plan.hot .plan-feat::before{color:rgba(255,255,255,.95);}
+.plan-btn{margin-top:auto;padding-top:1.25rem;display:block;text-align:center;background:var(--bg-raised);color:var(--text);padding:.75rem 1rem;border-radius:100px;font-weight:600;font-size:.875rem;text-decoration:none;border:1px solid var(--border);transition:opacity .18s;}
+.plan.hot .plan-btn{background:rgba(255,255,255,.95);color:var(--accent);border:none;}
+.plan-btn:hover{opacity:.78;}
 
-  nav a:hover { color: var(--text); }
+/* DARK CTA */
+.dark-cta{background:#08080D;padding:6rem 2rem;text-align:center;border-top:1px solid rgba(237,238,248,.05);}
+.dark-cta h2{color:#EDEEF8;font-size:clamp(2rem,4vw,3.25rem);margin-bottom:1rem;}
+.dark-cta p{color:rgba(237,238,248,.42);font-size:1.05rem;max-width:420px;margin:0 auto 2.5rem;}
+.app-badges{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.app-badge{display:flex;align-items:center;gap:.65rem;background:rgba(237,238,248,.07);border:1px solid rgba(237,238,248,.1);color:rgba(237,238,248,.85);padding:.7rem 1.4rem;border-radius:12px;text-decoration:none;font-size:.875rem;font-weight:500;transition:background .18s;}
+.app-badge:hover{background:rgba(237,238,248,.12);}
+.app-badge .ab-icon{font-size:1.3rem;}
 
-  .hero {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem 5rem;
-    text-align: center;
-  }
+/* FOOTER */
+footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.75rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:rgba(237,238,248,.85);letter-spacing:-.02em;}
+.footer-logo span{color:#FF2D60;}
+.footer-links{display:flex;gap:1.5rem;}
+.footer-links a{font-size:.8rem;color:rgba(237,238,248,.3);text-decoration:none;}
+.footer-links a:hover{color:rgba(237,238,248,.6);}
+.footer-copy{font-size:.78rem;color:rgba(237,238,248,.22);}
 
-  .hero h1 {
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    margin: 0 0 1rem;
-    letter-spacing: -0.02em;
-  }
-
-  .hero p {
-    max-width: 620px;
-    margin: 0 auto 2rem;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-  }
-
-  .cta-group {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 0.95rem;
-    border: 1px solid transparent;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--accent-text);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--text);
-    border-color: var(--border);
-  }
-
-  .features {
-    background: var(--bg-alt);
-    padding: 4rem 1.5rem;
-  }
-
-  .features-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .features h2 {
-    text-align: center;
-    font-size: 1.75rem;
-    margin: 0 0 2.5rem;
-  }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .feature-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
-  .feature-card .icon {
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .feature-card h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.05rem;
-  }
-
-  .feature-card p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.92rem;
-  }
-
-  footer {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-  }
+@media(max-width:760px){
+  .nav-links{display:none;}
+  .banner{grid-template-columns:1fr;}
+  .banner.flip .b-copy{order:1;}
+  .banner.flip .b-visual{order:2;}
+  .b-visual{min-height:260px;}
+  .b-copy{padding:2rem;}
+  .plans-grid{grid-template-columns:1fr;}
+  .banners{padding:2rem 1rem;}
+  footer{justify-content:center;text-align:center;}
+}
+@media(prefers-reduced-motion:reduce){
+  .scroll-track,.strip-track{animation:none;}
+  .btn-primary:hover{transform:none;}
+}
 </style>
 </head>
 <body>
-  <header>
-    <a class="logo" href="#top">BMSx</a>
-    <nav>
-      <a href="#features">Features</a>
-      <a href="#about">About</a>
-    </nav>
-  </header>
 
-  <section class="hero" id="top">
-    <h1>Run your boarding house without the spreadsheets</h1>
-    <p>
-      BMSx keeps rooms, boarders, and rent payments in one place — so you always
-      know who's staying, what's occupied, and who owes what.
-    </p>
-    <div class="cta-group">
-      <a class="btn btn-primary" href="#features">See features</a>
-      <a class="btn btn-secondary" href="#about">Learn more</a>
+<nav>
+  <a class="logo" href="#top">BMS<span class="logo-dot">x</span></a>
+  <ul class="nav-links">
+    <li><a href="#banners">Features</a></li>
+    <li><a href="#platform">Platform</a></li>
+    <li><a href="#plans">Pricing</a></li>
+    <li><a href="#app">Get the App</a></li>
+  </ul>
+  <a class="nav-btn" href="#app">Download Free</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="eyebrow">360° Festival Platform</p>
+    <h1>Your Festival,<br><em>Fully Sorted.</em></h1>
+    <p class="hero-sub">Tickets, stays, rides, food — everything in one place so you can focus on what matters: the music.</p>
+    <div class="hero-actions">
+      <a href="#app" class="btn-primary">Get the App — Free</a>
+      <a href="#banners" class="btn-outline">See how it works</a>
     </div>
-  </section>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-track"></div>
+    <span>Scroll</span>
+  </div>
+</section>
 
-  <section class="features" id="features">
-    <div class="features-inner">
-      <h2>Everything in one dashboard</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="icon">🏠</div>
-          <h3>Room management</h3>
-          <p>Track every room's capacity, rent, and occupancy status at a glance.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon">🧑‍🤝‍🧑</div>
-          <h3>Boarder records</h3>
-          <p>Keep contact details, check-in dates, and room assignments up to date.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon">💳</div>
-          <h3>Payment tracking</h3>
-          <p>See pending, paid, and overdue rent so nothing slips through the cracks.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon">📊</div>
-          <h3>At-a-glance dashboard</h3>
-          <p>Occupancy rate and outstanding balances summarized on one screen.</p>
-        </div>
+<!-- SERVICES STRIP -->
+<div class="strip">
+  <div class="strip-track">
+    <span class="strip-item"><span class="s-dot"></span>Festival Tickets</span>
+    <span class="strip-item"><span class="s-dot"></span>Hotel & Glamping Stays</span>
+    <span class="strip-item"><span class="s-dot"></span>Ride Booking</span>
+    <span class="strip-item"><span class="s-dot"></span>Festival Dining</span>
+    <span class="strip-item"><span class="s-dot"></span>Fan Community</span>
+    <span class="strip-item"><span class="s-dot"></span>Rewards & Rebates</span>
+    <span class="strip-item"><span class="s-dot"></span>Vendor Marketplace</span>
+    <span class="strip-item"><span class="s-dot"></span>Live Event Guides</span>
+    <span class="strip-item"><span class="s-dot"></span>Festival Tickets</span>
+    <span class="strip-item"><span class="s-dot"></span>Hotel & Glamping Stays</span>
+    <span class="strip-item"><span class="s-dot"></span>Ride Booking</span>
+    <span class="strip-item"><span class="s-dot"></span>Festival Dining</span>
+    <span class="strip-item"><span class="s-dot"></span>Fan Community</span>
+    <span class="strip-item"><span class="s-dot"></span>Rewards & Rebates</span>
+    <span class="strip-item"><span class="s-dot"></span>Vendor Marketplace</span>
+    <span class="strip-item"><span class="s-dot"></span>Live Event Guides</span>
+  </div>
+</div>
+
+<!-- BANNERS -->
+<div class="banners" id="banners">
+
+  <!-- 1: Tickets -->
+  <div class="banner">
+    <div class="b-copy">
+      <p class="eyebrow">Festival Tickets</p>
+      <h2>Your tickets, ready in seconds.</h2>
+      <p>Browse thousands of festivals worldwide. Book instantly, skip the box office queue. Your ticket lives in the app — QR entry, always ready.</p>
+      <ul class="b-perks">
+        <li><span class="ck">✓</span> Reserve your spot with one tap</li>
+        <li><span class="ck">✓</span> QR entry — no printing needed</li>
+        <li><span class="ck">✓</span> Resell or transfer effortlessly</li>
+        <li><span class="ck">✓</span> Exclusive member-only drops</li>
+      </ul>
+      <a href="#app" class="b-link">Book now</a>
+    </div>
+    <div class="b-visual">
+      <!-- CONCERT STAGE SVG -->
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="beam1" x1="155" y1="74" x2="195" y2="400" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FF2D60" stop-opacity=".75"/>
+            <stop offset="100%" stop-color="#FF2D60" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="beam2" x1="233" y1="74" x2="220" y2="390" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FF8020" stop-opacity=".6"/>
+            <stop offset="100%" stop-color="#FF8020" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="beam3" x1="289" y1="74" x2="289" y2="375" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".65"/>
+            <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="beam4" x1="382" y1="74" x2="355" y2="390" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6080FF" stop-opacity=".65"/>
+            <stop offset="100%" stop-color="#6080FF" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="cs" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="rgba(0,0,0,.65)"/>
+          </filter>
+        </defs>
+        <!-- BG -->
+        <rect width="540" height="460" fill="#06060C"/>
+        <!-- Ground glow -->
+        <ellipse cx="270" cy="420" rx="220" ry="40" fill="rgba(255,45,96,.06)"/>
+        <!-- Beams -->
+        <polygon points="148,74 164,74 250,410 155,410" fill="url(#beam1)"/>
+        <polygon points="226,74 242,74 265,390 210,390" fill="url(#beam2)"/>
+        <polygon points="283,74 297,74 302,375 278,375" fill="url(#beam3)"/>
+        <polygon points="375,74 391,74 365,390 315,390" fill="url(#beam4)"/>
+        <!-- Truss bar -->
+        <rect x="36" y="62" width="468" height="12" rx="4" fill="#1C1C2E"/>
+        <!-- Truss X braces -->
+        <line x1="100" y1="62" x2="130" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="130" y1="62" x2="100" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="190" y1="62" x2="220" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="220" y1="62" x2="190" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="270" y1="62" x2="300" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="300" y1="62" x2="270" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="350" y1="62" x2="380" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="380" y1="62" x2="350" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="420" y1="62" x2="450" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <line x1="450" y1="62" x2="420" y2="74" stroke="#252538" stroke-width="2.5"/>
+        <!-- Truss side poles -->
+        <rect x="36" y="62" width="7" height="130" rx="2" fill="#1C1C2E"/>
+        <rect x="497" y="62" width="7" height="130" rx="2" fill="#1C1C2E"/>
+        <!-- Spotlight fixtures -->
+        <circle cx="155" cy="68" r="12" fill="#14141E"/>
+        <circle cx="155" cy="68" r="7" fill="#FF2D60" opacity=".95"/>
+        <circle cx="155" cy="68" r="3" fill="#FFAACC"/>
+        <circle cx="233" cy="68" r="12" fill="#14141E"/>
+        <circle cx="233" cy="68" r="7" fill="#FF8020" opacity=".9"/>
+        <circle cx="233" cy="68" r="3" fill="#FFDDAA"/>
+        <circle cx="289" cy="68" r="12" fill="#14141E"/>
+        <circle cx="289" cy="68" r="7" fill="#FFFFFF" opacity=".9"/>
+        <circle cx="289" cy="68" r="3" fill="#FFFFFF"/>
+        <circle cx="382" cy="68" r="12" fill="#14141E"/>
+        <circle cx="382" cy="68" r="7" fill="#6080FF" opacity=".9"/>
+        <circle cx="382" cy="68" r="3" fill="#AABBFF"/>
+        <!-- Stage platform -->
+        <rect x="28" y="352" width="484" height="14" rx="3" fill="#181828"/>
+        <rect x="28" y="366" width="484" height="94" fill="#0E0E1C"/>
+        <!-- Stage front light strip -->
+        <rect x="28" y="364" width="484" height="3" fill="rgba(255,45,96,.15)"/>
+        <!-- Performer silhouette -->
+        <ellipse cx="270" cy="346" rx="15" ry="19" fill="#0A0A16"/>
+        <rect x="262" y="364" width="16" height="30" fill="#0A0A16"/>
+        <!-- DJ decks -->
+        <rect x="232" y="330" width="76" height="24" rx="4" fill="#161626"/>
+        <rect x="240" y="322" width="20" height="12" rx="3" fill="#161626"/>
+        <rect x="272" y="322" width="20" height="12" rx="3" fill="#161626"/>
+        <!-- Laser beams from stage -->
+        <line x1="200" y1="352" x2="60" y2="220" stroke="#FF2D60" stroke-width="1" opacity=".25"/>
+        <line x1="340" y1="352" x2="480" y2="200" stroke="#6080FF" stroke-width="1" opacity=".25"/>
+        <line x1="270" y1="352" x2="30" y2="160" stroke="#FFFFFF" stroke-width=".8" opacity=".15"/>
+        <!-- Crowd silhouette -->
+        <path d="M0 460 L0 392 Q12 375,24 392 Q36 378,48 392 Q60 371,72 390 Q84 376,96 392 Q108 373,120 390 Q132 377,144 392 Q156 374,168 390 Q180 372,192 388 Q204 374,216 390 Q228 373,240 389 Q252 375,264 390 Q276 373,288 390 Q300 375,312 390 Q324 372,336 388 Q348 376,360 390 Q372 373,384 389 Q396 375,408 390 Q420 373,432 389 Q444 376,456 390 Q468 372,480 388 Q492 378,504 392 Q516 375,528 390 L540 392 L540 460 Z" fill="#0A0A16"/>
+        <!-- Floating ticket card -->
+        <g filter="url(#cs)">
+          <rect x="345" y="115" width="172" height="118" rx="14" fill="#FFFFFF"/>
+          <rect x="345" y="115" width="172" height="44" rx="14" fill="#FF2D60"/>
+          <rect x="345" y="145" width="172" height="14" fill="#FF2D60"/>
+          <rect x="363" y="124" width="96" height="7" rx="3.5" fill="rgba(255,255,255,.92)"/>
+          <rect x="363" y="137" width="64" height="5" rx="2.5" fill="rgba(255,255,255,.52)"/>
+          <rect x="491" y="122" width="20" height="20" rx="5" fill="rgba(255,255,255,.18)"/>
+          <rect x="363" y="170" width="104" height="6" rx="3" fill="#E4E4F0"/>
+          <rect x="363" y="182" width="80" height="6" rx="3" fill="#E4E4F0"/>
+          <rect x="363" y="198" width="148" height="24" rx="12" fill="#FF2D60"/>
+          <rect x="405" y="207" width="64" height="5" rx="2.5" fill="rgba(255,255,255,.85)"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 2: Hotel / Stay -->
+  <div class="banner flip">
+    <div class="b-copy">
+      <p class="eyebrow">Hotels & Stays</p>
+      <h2>Find your base camp near the stage.</h2>
+      <p>Hotels, glamping, hostels — curated for festival-goers. Stay close, save more. Pre-book before it sells out.</p>
+      <ul class="b-perks">
+        <li><span class="ck">✓</span> Festival proximity filter</li>
+        <li><span class="ck">✓</span> Group booking made simple</li>
+        <li><span class="ck">✓</span> Flexible cancellation options</li>
+        <li><span class="ck">✓</span> Earn reward points on stays</li>
+      </ul>
+      <a href="#app" class="b-link">Browse stays</a>
+    </div>
+    <div class="b-visual">
+      <!-- CITY HOTEL NIGHTSCAPE SVG -->
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFFBE0" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="#FFFBE0" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="hs" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="rgba(0,0,0,.7)"/>
+          </filter>
+        </defs>
+        <!-- Night sky -->
+        <rect width="540" height="460" fill="#071220"/>
+        <!-- Horizon glow -->
+        <rect x="0" y="300" width="540" height="160" fill="url(#horiz)"/>
+        <defs>
+          <linearGradient id="horiz" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0A1E35" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#0A1E35" stop-opacity="1"/>
+          </linearGradient>
+        </defs>
+        <!-- Stars -->
+        <circle cx="42" cy="28" r="1.2" fill="#FFF" opacity=".55"/>
+        <circle cx="88" cy="52" r="1" fill="#FFF" opacity=".45"/>
+        <circle cx="130" cy="18" r="1.5" fill="#FFF" opacity=".6"/>
+        <circle cx="180" cy="44" r="1" fill="#FFF" opacity=".4"/>
+        <circle cx="48" cy="88" r="1" fill="#FFF" opacity=".35"/>
+        <circle cx="310" cy="22" r="1.2" fill="#FFF" opacity=".5"/>
+        <circle cx="360" cy="50" r="1" fill="#FFF" opacity=".4"/>
+        <circle cx="420" cy="30" r="1.5" fill="#FFF" opacity=".6"/>
+        <circle cx="468" cy="70" r="1" fill="#FFF" opacity=".45"/>
+        <circle cx="500" cy="20" r="1" fill="#FFF" opacity=".3"/>
+        <circle cx="70" cy="140" r="1" fill="#FFF" opacity=".3"/>
+        <circle cx="490" cy="110" r="1.2" fill="#FFF" opacity=".4"/>
+        <!-- Moon -->
+        <circle cx="460" cy="60" r="28" fill="url(#moonGlow)"/>
+        <circle cx="460" cy="60" r="20" fill="#F5E8B0" opacity=".18"/>
+        <circle cx="460" cy="60" r="14" fill="#F5E8B0" opacity=".35"/>
+        <!-- Background skyline silhouette -->
+        <rect x="0" y="260" width="60" height="200" fill="#0A1828"/>
+        <rect x="10" y="230" width="40" height="230" fill="#0A1828"/>
+        <rect x="50" y="250" width="35" height="210" fill="#0C1E32"/>
+        <rect x="80" y="200" width="50" height="260" fill="#0A1828"/>
+        <rect x="380" y="240" width="60" height="220" fill="#0A1828"/>
+        <rect x="420" y="210" width="45" height="250" fill="#0C1E32"/>
+        <rect x="460" y="255" width="80" height="205" fill="#0A1828"/>
+        <!-- Mid skyline -->
+        <rect x="0" y="290" width="80" height="170" fill="#0D2240"/>
+        <rect x="430" y="270" width="110" height="190" fill="#0D2240"/>
+        <!-- Main hotel building (center hero) -->
+        <rect x="160" y="100" width="220" height="360" rx="4" fill="#0F2B4A"/>
+        <!-- Hotel facade detail lines -->
+        <line x1="210" y1="100" x2="210" y2="460" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <line x1="270" y1="100" x2="270" y2="460" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <line x1="330" y1="100" x2="330" y2="460" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <!-- Hotel sign / roof -->
+        <rect x="175" y="108" width="190" height="28" rx="3" fill="#0D2440"/>
+        <rect x="210" y="116" width="120" height="12" rx="2" fill="rgba(255,170,50,.5)"/>
+        <!-- Hotel windows (5 cols x 9 rows) -->
+        <!-- Row 1 -->
+        <rect x="175" y="148" width="22" height="16" rx="2" fill="#FFAA30" opacity=".7"/>
+        <rect x="206" y="148" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="237" y="148" width="22" height="16" rx="2" fill="#FFAA30" opacity=".8"/>
+        <rect x="268" y="148" width="22" height="16" rx="2" fill="#FFAA30" opacity=".6"/>
+        <rect x="299" y="148" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="330" y="148" width="22" height="16" rx="2" fill="#FFAA30" opacity=".75"/>
+        <!-- Row 2 -->
+        <rect x="175" y="174" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="206" y="174" width="22" height="16" rx="2" fill="#FFAA30" opacity=".7"/>
+        <rect x="237" y="174" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="268" y="174" width="22" height="16" rx="2" fill="#FFAA30" opacity=".85"/>
+        <rect x="299" y="174" width="22" height="16" rx="2" fill="#FFAA30" opacity=".6"/>
+        <rect x="330" y="174" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <!-- Row 3 -->
+        <rect x="175" y="200" width="22" height="16" rx="2" fill="#FFAA30" opacity=".8"/>
+        <rect x="206" y="200" width="22" height="16" rx="2" fill="#FFAA30" opacity=".55"/>
+        <rect x="237" y="200" width="22" height="16" rx="2" fill="#FFAA30" opacity=".75"/>
+        <rect x="268" y="200" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="299" y="200" width="22" height="16" rx="2" fill="#FFAA30" opacity=".7"/>
+        <rect x="330" y="200" width="22" height="16" rx="2" fill="#FFAA30" opacity=".65"/>
+        <!-- Row 4 -->
+        <rect x="175" y="226" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="206" y="226" width="22" height="16" rx="2" fill="#FFAA30" opacity=".8"/>
+        <rect x="237" y="226" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="268" y="226" width="22" height="16" rx="2" fill="#FFAA30" opacity=".7"/>
+        <rect x="299" y="226" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="330" y="226" width="22" height="16" rx="2" fill="#FFAA30" opacity=".75"/>
+        <!-- Row 5 -->
+        <rect x="175" y="252" width="22" height="16" rx="2" fill="#FFAA30" opacity=".65"/>
+        <rect x="206" y="252" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <rect x="237" y="252" width="22" height="16" rx="2" fill="#FFAA30" opacity=".8"/>
+        <rect x="268" y="252" width="22" height="16" rx="2" fill="#FFAA30" opacity=".6"/>
+        <rect x="299" y="252" width="22" height="16" rx="2" fill="#FFAA30" opacity=".75"/>
+        <rect x="330" y="252" width="22" height="16" rx="2" fill="#0A1E35"/>
+        <!-- Lobby (ground floor) -->
+        <rect x="210" y="390" width="120" height="70" rx="2" fill="#0A1828"/>
+        <rect x="225" y="392" width="40" height="68" fill="#FFAA30" opacity=".12"/>
+        <rect x="285" y="392" width="40" height="68" fill="#FFAA30" opacity=".12"/>
+        <!-- Floating booking card -->
+        <g filter="url(#hs)">
+          <rect x="20" y="120" width="160" height="135" rx="14" fill="#FFF"/>
+          <rect x="20" y="120" width="160" height="8" rx="7" fill="#E8194B"/>
+          <rect x="20" y="124" width="160" height="10" rx="0" fill="#E8194B"/>
+          <rect x="20" y="128" width="160" height="20" rx="0" fill="#E8194B"/>
+          <!-- Stars row -->
+          <rect x="34" y="136" width="48" height="6" rx="3" fill="rgba(255,255,255,.9)"/>
+          <!-- Hotel name -->
+          <rect x="34" y="160" width="100" height="8" rx="4" fill="#0D0C1A"/>
+          <rect x="34" y="174" width="72" height="6" rx="3" fill="#9898B8"/>
+          <!-- Divider -->
+          <line x1="34" y1="190" x2="166" y2="190" stroke="#E8E8F0" stroke-width="1"/>
+          <!-- Dates -->
+          <rect x="34" y="200" width="50" height="5" rx="2.5" fill="#9898B8"/>
+          <rect x="100" y="200" width="50" height="5" rx="2.5" fill="#9898B8"/>
+          <rect x="34" y="210" width="38" height="8" rx="4" fill="#0D0C1A"/>
+          <rect x="100" y="210" width="38" height="8" rx="4" fill="#0D0C1A"/>
+          <!-- Price + button -->
+          <rect x="34" y="228" width="52" height="10" rx="5" fill="#E8194B" opacity=".12"/>
+          <rect x="38" y="231" width="44" height="4" rx="2" fill="#E8194B"/>
+          <rect x="102" y="225" width="64" height="22" rx="11" fill="#E8194B"/>
+          <rect x="116" y="231" width="36" height="5" rx="2.5" fill="rgba(255,255,255,.88)"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 3: Transport -->
+  <div class="banner">
+    <div class="b-copy">
+      <p class="eyebrow">Rides & Transport</p>
+      <h2>Get there without the hassle.</h2>
+      <p>Book rides, festival shuttles, and transfers directly in the app. Real-time tracking, no surprise surge prices.</p>
+      <ul class="b-perks">
+        <li><span class="ck">✓</span> Pre-scheduled festival pickups</li>
+        <li><span class="ck">✓</span> Shared shuttle matching</li>
+        <li><span class="ck">✓</span> Live driver tracking</li>
+        <li><span class="ck">✓</span> Split fare with friends</li>
+      </ul>
+      <a href="#app" class="b-link">Book a ride</a>
+    </div>
+    <div class="b-visual">
+      <!-- TRANSPORT / MAP SVG -->
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="ts" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,.65)"/>
+          </filter>
+          <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1A1A2E"/>
+            <stop offset="100%" stop-color="#0E0E1C"/>
+          </linearGradient>
+        </defs>
+        <!-- Background: dark map -->
+        <rect width="540" height="460" fill="#0D0D1A"/>
+        <!-- Map grid lines (faint city grid) -->
+        <line x1="0" y1="80" x2="540" y2="80" stroke="#181830" stroke-width="1"/>
+        <line x1="0" y1="160" x2="540" y2="160" stroke="#181830" stroke-width="1"/>
+        <line x1="0" y1="240" x2="540" y2="240" stroke="#181830" stroke-width="1"/>
+        <line x1="0" y1="320" x2="540" y2="320" stroke="#181830" stroke-width="1"/>
+        <line x1="0" y1="400" x2="540" y2="400" stroke="#181830" stroke-width="1"/>
+        <line x1="80" y1="0" x2="80" y2="460" stroke="#181830" stroke-width="1"/>
+        <line x1="160" y1="0" x2="160" y2="460" stroke="#181830" stroke-width="1"/>
+        <line x1="240" y1="0" x2="240" y2="460" stroke="#181830" stroke-width="1"/>
+        <line x1="320" y1="0" x2="320" y2="460" stroke="#181830" stroke-width="1"/>
+        <line x1="400" y1="0" x2="400" y2="460" stroke="#181830" stroke-width="1"/>
+        <line x1="480" y1="0" x2="480" y2="460" stroke="#181830" stroke-width="1"/>
+        <!-- City blocks (subtle fills) -->
+        <rect x="82" y="82" width="76" height="76" rx="3" fill="#131322" opacity=".8"/>
+        <rect x="162" y="82" width="76" height="76" rx="3" fill="#131322" opacity=".6"/>
+        <rect x="322" y="82" width="76" height="76" rx="3" fill="#131322" opacity=".7"/>
+        <rect x="82" y="162" width="76" height="76" rx="3" fill="#131322" opacity=".7"/>
+        <rect x="402" y="162" width="76" height="76" rx="3" fill="#131322" opacity=".8"/>
+        <rect x="82" y="322" width="76" height="76" rx="3" fill="#131322" opacity=".6"/>
+        <rect x="322" y="322" width="76" height="76" rx="3" fill="#131322" opacity=".75"/>
+        <rect x="402" y="322" width="76" height="76" rx="3" fill="#131322" opacity=".7"/>
+        <!-- Main road (wider) -->
+        <rect x="236" y="0" width="68" height="460" fill="#1A1A2E"/>
+        <!-- Road center dashes -->
+        <rect x="268" y="20" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="70" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="120" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="170" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="220" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="270" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="320" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="370" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <rect x="268" y="420" width="4" height="30" rx="2" fill="#2A2A4A"/>
+        <!-- Route line (glowing) -->
+        <polyline points="270,420 270,290 320,240 400,240 400,160 320,120 270,120 270,60" fill="none" stroke="#FF2D60" stroke-width="3" stroke-dasharray="8,5" opacity=".75"/>
+        <!-- Glow on route -->
+        <polyline points="270,420 270,290 320,240 400,240 400,160 320,120 270,120 270,60" fill="none" stroke="#FF2D60" stroke-width="8" opacity=".15"/>
+        <!-- Destination pin (top) -->
+        <circle cx="270" cy="56" r="14" fill="#FF2D60"/>
+        <circle cx="270" cy="56" r="7" fill="#FFF"/>
+        <path d="M270 70 L264 56 L276 56 Z" fill="#FF2D60"/>
+        <!-- Music note on pin (festival destination) -->
+        <rect x="267" y="50" width="2" height="10" rx="1" fill="#FF2D60"/>
+        <circle cx="265" cy="61" r="3" fill="#FF2D60"/>
+        <!-- Current location dot -->
+        <circle cx="270" cy="390" r="18" fill="rgba(64,96,255,.2)"/>
+        <circle cx="270" cy="390" r="10" fill="#4060FF"/>
+        <circle cx="270" cy="390" r="5" fill="#FFF"/>
+        <!-- Car icon on road (simple side view) -->
+        <g transform="translate(230,270)">
+          <rect x="0" y="12" width="80" height="28" rx="8" fill="#2A2A50"/>
+          <rect x="8" y="4" width="56" height="22" rx="6" fill="#202040"/>
+          <rect x="12" y="7" width="22" height="14" rx="3" fill="rgba(64,140,255,.4)"/>
+          <rect x="38" y="7" width="22" height="14" rx="3" fill="rgba(64,140,255,.4)"/>
+          <circle cx="16" cy="40" r="8" fill="#111120"/>
+          <circle cx="16" cy="40" r="4" fill="#2A2A50"/>
+          <circle cx="64" cy="40" r="8" fill="#111120"/>
+          <circle cx="64" cy="40" r="4" fill="#2A2A50"/>
+          <!-- Headlights -->
+          <rect x="72" y="18" width="8" height="6" rx="2" fill="#FFEE88" opacity=".8"/>
+          <!-- Tail lights -->
+          <rect x="0" y="18" width="6" height="6" rx="2" fill="#FF4444" opacity=".7"/>
+        </g>
+        <!-- Floating ETA card -->
+        <g filter="url(#ts)">
+          <rect x="340" y="270" width="178" height="115" rx="14" fill="#FFF"/>
+          <!-- Header -->
+          <rect x="340" y="270" width="178" height="38" rx="14" fill="#4060FF"/>
+          <rect x="340" y="294" width="178" height="14" fill="#4060FF"/>
+          <rect x="358" y="278" width="88" height="7" rx="3.5" fill="rgba(255,255,255,.92)"/>
+          <rect x="358" y="291" width="56" height="5" rx="2.5" fill="rgba(255,255,255,.5)"/>
+          <!-- Big ETA number -->
+          <rect x="358" y="320" width="32" height="20" rx="4" fill="#4060FF" opacity=".1"/>
+          <rect x="362" y="325" width="24" height="10" rx="3" fill="#4060FF"/>
+          <rect x="398" y="322" width="80" height="6" rx="3" fill="#E0E0F0"/>
+          <rect x="398" y="334" width="60" height="6" rx="3" fill="#E0E0F0"/>
+          <!-- Driver info row -->
+          <circle cx="368" cy="358" r="14" fill="#E8E8F2"/>
+          <rect x="388" y="348" width="80" height="6" rx="3" fill="#0D0C1A"/>
+          <rect x="388" y="360" width="56" height="5" rx="2.5" fill="#9898B8"/>
+          <!-- Share button -->
+          <rect x="358" y="374" width="144" height="4" rx="2" fill="#E8E8F2"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 4: Dining -->
+  <div class="banner flip">
+    <div class="b-copy">
+      <p class="eyebrow">Food & Dining</p>
+      <h2>Eat well, explore more.</h2>
+      <p>Pre-order from festival food stalls, reserve restaurant tables, discover local gems near the venue — all before you arrive.</p>
+      <ul class="b-perks">
+        <li><span class="ck">✓</span> Skip the queue with pre-orders</li>
+        <li><span class="ck">✓</span> Local restaurant discovery</li>
+        <li><span class="ck">✓</span> Group table reservations</li>
+        <li><span class="ck">✓</span> Dietary filters and allergen info</li>
+      </ul>
+      <a href="#app" class="b-link">Find food nearby</a>
+    </div>
+    <div class="b-visual">
+      <!-- DINING / FESTIVAL FOOD SVG -->
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="rgba(0,0,0,.65)"/>
+          </filter>
+          <radialGradient id="warmGlow" cx="50%" cy="80%" r="60%">
+            <stop offset="0%" stop-color="#FF6010" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="#FF6010" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Warm dark background -->
+        <rect width="540" height="460" fill="#120800"/>
+        <!-- Warm ambient glow from below -->
+        <ellipse cx="270" cy="380" rx="280" ry="120" fill="url(#warmGlow)"/>
+        <!-- Festival tent/stall structure -->
+        <!-- Main tent canopy -->
+        <polygon points="80,180 270,80 460,180" fill="#1E0C02"/>
+        <polygon points="80,180 270,80 460,180 460,200 80,200" fill="#281005"/>
+        <!-- Tent stripe detail -->
+        <polygon points="150,180 190,115 230,180" fill="#321408" opacity=".7"/>
+        <polygon points="230,180 270,120 310,180" fill="#321408" opacity=".7"/>
+        <polygon points="310,180 350,115 390,180" fill="#321408" opacity=".7"/>
+        <!-- Tent front panel -->
+        <rect x="80" y="198" width="380" height="220" rx="0" fill="#1C0C02"/>
+        <rect x="80" y="198" width="380" height="4" fill="#FF7020" opacity=".35"/>
+        <!-- Tent opening / glow -->
+        <rect x="195" y="235" width="150" height="183" rx="4" fill="#280E03"/>
+        <rect x="197" y="237" width="146" height="181" rx="3" fill="rgba(255,140,30,.06)"/>
+        <!-- String lights structure -->
+        <!-- Left pole -->
+        <rect x="76" y="120" width="8" height="298" rx="3" fill="#1E1008"/>
+        <!-- Right pole -->
+        <rect x="456" y="120" width="8" height="298" rx="3" fill="#1E1008"/>
+        <!-- String line 1 (front) -->
+        <path d="M84 155 Q135 175,270 165 Q405 155,456 175" fill="none" stroke="#3A2010" stroke-width="1.5"/>
+        <!-- Bulbs on string 1 -->
+        <circle cx="115" cy="168" r="6" fill="#FFCC40" opacity=".9"/>
+        <circle cx="115" cy="168" r="10" fill="#FFCC40" opacity=".2"/>
+        <circle cx="155" cy="170" r="6" fill="#FF8840" opacity=".85"/>
+        <circle cx="155" cy="170" r="10" fill="#FF8840" opacity=".18"/>
+        <circle cx="195" cy="167" r="6" fill="#FFCC40" opacity=".9"/>
+        <circle cx="195" cy="167" r="10" fill="#FFCC40" opacity=".2"/>
+        <circle cx="235" cy="166" r="6" fill="#FF8840" opacity=".8"/>
+        <circle cx="270" cy="165" r="7" fill="#FFEE60" opacity=".95"/>
+        <circle cx="270" cy="165" r="12" fill="#FFEE60" opacity=".22"/>
+        <circle cx="305" cy="166" r="6" fill="#FF8840" opacity=".8"/>
+        <circle cx="345" cy="167" r="6" fill="#FFCC40" opacity=".9"/>
+        <circle cx="345" cy="167" r="10" fill="#FFCC40" opacity=".2"/>
+        <circle cx="385" cy="170" r="6" fill="#FF8840" opacity=".85"/>
+        <circle cx="425" cy="168" r="6" fill="#FFCC40" opacity=".9"/>
+        <circle cx="425" cy="168" r="10" fill="#FFCC40" opacity=".2"/>
+        <!-- String line 2 (higher) -->
+        <path d="M84 128 Q180 148,270 138 Q360 128,456 148" fill="none" stroke="#3A2010" stroke-width="1.5"/>
+        <circle cx="140" cy="138" r="5" fill="#FF8840" opacity=".75"/>
+        <circle cx="200" cy="141" r="5" fill="#FFCC40" opacity=".8"/>
+        <circle cx="270" cy="138" r="6" fill="#FFEE60" opacity=".85"/>
+        <circle cx="340" cy="141" r="5" fill="#FFCC40" opacity=".8"/>
+        <circle cx="400" cy="138" r="5" fill="#FF8840" opacity=".75"/>
+        <!-- Food icons floating left side -->
+        <!-- Pizza slice -->
+        <g transform="translate(100,270)">
+          <polygon points="30,0 0,52 60,52" fill="#E84020"/>
+          <polygon points="30,8 6,48 54,48" fill="#FF6030"/>
+          <circle cx="20" cy="38" r="5" fill="#CC2010"/>
+          <circle cx="35" cy="32" r="4" fill="#CC2010"/>
+          <circle cx="42" cy="42" r="5" fill="#CC2010"/>
+          <line x1="0" y1="52" x2="60" y2="52" stroke="#FFAA40" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <!-- Drink cup -->
+        <g transform="translate(390,265)">
+          <rect x="5" y="15" width="46" height="48" rx="4" fill="#1E90CC"/>
+          <rect x="0" y="10" width="56" height="12" rx="3" fill="#2AAAE0"/>
+          <rect x="20" y="-2" width="16" height="14" rx="3" fill="#1E1E2E"/>
+          <rect x="18" y="20" width="20" height="4" rx="2" fill="rgba(255,255,255,.3)"/>
+          <rect x="18" y="30" width="20" height="4" rx="2" fill="rgba(255,255,255,.2)"/>
+        </g>
+        <!-- Burger -->
+        <g transform="translate(420,320)">
+          <rect x="0" y="0" width="60" height="14" rx="7" fill="#CC8020"/>
+          <rect x="4" y="12" width="52" height="10" rx="0" fill="#80C040"/>
+          <rect x="2" y="20" width="56" height="12" rx="0" fill="#CC4020"/>
+          <rect x="4" y="30" width="52" height="8" rx="0" fill="#E0A030"/>
+          <rect x="0" y="36" width="60" height="14" rx="7" fill="#CC8020"/>
+        </g>
+        <!-- Floating order card -->
+        <g filter="url(#ds)">
+          <rect x="30" y="120" width="175" height="140" rx="14" fill="#FFF"/>
+          <!-- Warm header -->
+          <rect x="30" y="120" width="175" height="44" rx="14" fill="#FF7A18"/>
+          <rect x="30" y="150" width="175" height="14" fill="#FF7A18"/>
+          <rect x="48" y="130" width="88" height="7" rx="3.5" fill="rgba(255,255,255,.92)"/>
+          <rect x="48" y="143" width="58" height="5" rx="2.5" fill="rgba(255,255,255,.52)"/>
+          <!-- Order items -->
+          <rect x="48" y="176" width="100" height="7" rx="3.5" fill="#1A1A2A"/>
+          <rect x="48" y="189" width="72" height="6" rx="3" fill="#9898B8"/>
+          <line x1="48" y1="204" x2="190" y2="204" stroke="#E8E8F0" stroke-width="1"/>
+          <rect x="48" y="213" width="80" height="6" rx="3" fill="#1A1A2A"/>
+          <rect x="48" y="225" width="60" height="6" rx="3" fill="#9898B8"/>
+          <!-- Total + button -->
+          <rect x="48" y="240" width="145" height="10" rx="3" fill="#E8E8F0"/>
+          <rect x="48" y="244" width="60" height="4" rx="2" fill="#9898B8"/>
+          <rect x="132" y="243" width="48" height="6" rx="3" fill="#FF7A18"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+</div><!-- end banners -->
+
+<!-- PLATFORM -->
+<section class="platform-section" id="platform">
+  <div class="platform-inner">
+    <div class="platform-header">
+      <p class="eyebrow">Why BMSx</p>
+      <h2>Built for the whole experience,<br>not just the ticket.</h2>
+      <p>Every other platform stops at the gate. BMSx covers everything before, during, and after.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-item">
+        <div class="feat-icon">🎵</div>
+        <h3>AI-Powered Picks</h3>
+        <p>Smart recommendations based on your music taste, past festivals, and what your friends are attending.</p>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔒</div>
+        <h3>Secure Payments</h3>
+        <p>End-to-end encrypted transactions. Pay once, manage everything — refunds, transfers, splitting — in the app.</p>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📲</div>
+        <h3>All-in-One App</h3>
+        <p>No juggling between five apps. Tickets, hotel keys, ride status, food orders — one screen, one login.</p>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🌍</div>
+        <h3>Global Reach</h3>
+        <p>Thousands of festivals across Europe, North America, and India. More destinations added every season.</p>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">👥</div>
+        <h3>Fan Community</h3>
+        <p>Connect with fellow festival-goers, share setlists, rate your experience, and plan next year together.</p>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🎁</div>
+        <h3>Rewards & Rebates</h3>
+        <p>Earn points on every booking. Redeem them on tickets, upgrades, and exclusive member drops.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="hero" id="about">
-    <h1 style="font-size: 1.75rem;">About BMSx</h1>
-    <p>
-      BMSx is a lightweight boarding management system built for small
-      hostels and PGs that have outgrown spreadsheets but don't need
-      enterprise property-management software.
-    </p>
-  </section>
+<!-- PLANS -->
+<section class="plans-section" id="plans">
+  <div class="plans-inner">
+    <div class="plans-header">
+      <p class="eyebrow">Pricing</p>
+      <h2>Start free. Go deeper when you're ready.</h2>
+      <p>Every plan includes ticket booking. Premium unlocks the full festival life.</p>
+    </div>
+    <div class="plans-grid">
+      <div class="plan">
+        <p class="plan-tag">Free</p>
+        <p class="plan-price">€0<sub>/mo</sub></p>
+        <p class="plan-desc">Everything you need to book your first festival.</p>
+        <hr>
+        <p class="plan-feat">Ticket booking</p>
+        <p class="plan-feat">Social features</p>
+        <p class="plan-feat">Festival discovery</p>
+        <p class="plan-feat">QR entry passes</p>
+        <a href="#app" class="plan-btn">Get started free</a>
+      </div>
+      <div class="plan hot">
+        <p class="plan-tag">Premium</p>
+        <p class="plan-price">€9<sub>/mo</sub></p>
+        <p class="plan-desc">The full 360° experience, for the dedicated festival-goer.</p>
+        <hr>
+        <p class="plan-feat">Everything in Free</p>
+        <p class="plan-feat">Meal & hotel bookings</p>
+        <p class="plan-feat">Reserve seating</p>
+        <p class="plan-feat">Refundable tickets</p>
+        <p class="plan-feat">Triple rewards points</p>
+        <p class="plan-feat">Ad-free experience</p>
+        <p class="plan-feat">Member-exclusive drops</p>
+        <a href="#app" class="plan-btn">Go Premium</a>
+      </div>
+      <div class="plan">
+        <p class="plan-tag">Organiser</p>
+        <p class="plan-price">€49<sub>/mo</sub></p>
+        <p class="plan-desc">For festival producers, vendors, and event teams.</p>
+        <hr>
+        <p class="plan-feat">Customer booking dashboard</p>
+        <p class="plan-feat">Attendee analytics & data</p>
+        <p class="plan-feat">Marketing & promotion tools</p>
+        <p class="plan-feat">Vendor marketplace listing</p>
+        <p class="plan-feat">Personalised event page</p>
+        <a href="#app" class="plan-btn">Contact sales</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <footer>
-    &copy; 2026 BMSx. Built for boarding houses everywhere.
-  </footer>
+<!-- APP CTA -->
+<div class="dark-cta" id="app">
+  <h2>Your next festival<br>starts here.</h2>
+  <p>Download BMSx free — available on iOS and Android. Your first booking earns 500 bonus points.</p>
+  <div class="app-badges">
+    <a href="#" class="app-badge">
+      <span class="ab-icon">🍎</span>
+      <span>Download on the<br><strong>App Store</strong></span>
+    </a>
+    <a href="#" class="app-badge">
+      <span class="ab-icon">▶</span>
+      <span>Get it on<br><strong>Google Play</strong></span>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-logo">BMS<span>x</span></span>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+    <a href="#">Organiser Login</a>
+  </div>
+  <span class="footer-copy">&copy; 2024 BMSx. All rights reserved.</span>
+</footer>
+
+<script>
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, raf;
+
+  const ORBS = [
+    { nx: 0.2, ny: 0.35, r: 320, c: 'rgba(255,45,96,', a: 0.13, px: 0, py: 0, sp: 0.00028 },
+    { nx: 0.8, ny: 0.25, r: 260, c: 'rgba(255,122,26,', a: 0.09, px: 1, py: 2, sp: 0.00022 },
+    { nx: 0.5, ny: 0.75, r: 380, c: 'rgba(64,96,255,', a: 0.10, px: 2, py: 0.5, sp: 0.00018 },
+    { nx: 0.75, ny: 0.65, r: 220, c: 'rgba(255,45,96,', a: 0.07, px: 0.5, py: 1.5, sp: 0.00030 },
+    { nx: 0.15, ny: 0.7, r: 200, c: 'rgba(64,96,255,', a: 0.07, px: 1.5, py: 1, sp: 0.00024 },
+  ];
+
+  function resize(){
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  let t = 0;
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    t += 0.6;
+    ORBS.forEach(o => {
+      const x = (o.nx + Math.sin(t * o.sp * 1000 + o.px) * 0.18) * W;
+      const y = (o.ny + Math.cos(t * o.sp * 1000 + o.py) * 0.14) * H;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, o.r);
+      g.addColorStop(0, o.c + o.a + ')');
+      g.addColorStop(1, o.c + '0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, o.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    raf = requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
+})();
+</script>
 </body>
 </html>
