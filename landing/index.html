@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>BMSx</title>
+<title>BMSx — Festival Tickets &amp; 360° Experiences</title>
+<meta name="description" content="BMSx — the 360° festival platform. Tickets, stays, rides, and food in one app, with transparent fees and rewards on every booking."/>
+<meta property="og:title" content="BMSx — Festival Tickets &amp; 360° Experiences"/>
+<meta property="og:description" content="Tickets, stays, rides, food — your whole festival, fully sorted in one app."/>
+<meta property="og:type" content="website"/>
+<meta name="theme-color" content="#08080D"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap">
 <style>
 :root {
@@ -66,6 +72,11 @@ nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;
 .nav-links a:hover{color:#EDEEF8;}
 .nav-btn{background:#FF2D60;color:#FFF;padding:.5rem 1.2rem;border-radius:100px;font-size:.875rem;font-weight:600;text-decoration:none;letter-spacing:-.01em;transition:opacity .18s;}
 .nav-btn:hover{opacity:.88;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-toggle{display:none;background:none;border:1px solid rgba(237,238,248,.15);border-radius:8px;color:#EDEEF8;font-size:1.1rem;line-height:1;padding:.45rem .6rem;cursor:pointer;}
+.skip-link{position:absolute;left:-9999px;z-index:300;background:#FF2D60;color:#FFF;padding:.6rem 1rem;border-radius:0 0 8px 0;text-decoration:none;font-weight:600;}
+.skip-link:focus{left:0;top:0;}
+a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3px;border-radius:4px;}
 
 /* HERO */
 .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 1.5rem 4rem;background:#08080D;overflow:hidden;}
@@ -164,7 +175,10 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 .footer-copy{font-size:.78rem;color:rgba(237,238,248,.22);}
 
 @media(max-width:760px){
-  .nav-links{display:none;}
+  .nav-toggle{display:block;}
+  .nav-links{display:none;position:fixed;top:64px;left:0;right:0;flex-direction:column;gap:0;background:rgba(8,8,13,.97);border-bottom:1px solid rgba(237,238,248,.08);padding:.5rem 0;}
+  .nav-links.open{display:flex;}
+  .nav-links a{display:block;padding:.9rem 2rem;}
   .banner{grid-template-columns:1fr;}
   .banner.flip .b-copy{order:1;}
   .banner.flip .b-visual{order:2;}
@@ -182,27 +196,31 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 </head>
 <body>
 
-<nav>
+<a class="skip-link" href="#top">Skip to content</a>
+<nav aria-label="Main navigation">
   <a class="logo" href="#top">BMS<span class="logo-dot">x</span></a>
-  <ul class="nav-links">
-    <li><a href="#banners">Features</a></li>
-    <li><a href="#platform">Platform</a></li>
-    <li><a href="#plans">Pricing</a></li>
-    <li><a href="#app">Get the App</a></li>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#banners" data-analytics="nav_features">Features</a></li>
+    <li><a href="#platform" data-analytics="nav_platform">Platform</a></li>
+    <li><a href="#plans" data-analytics="nav_pricing">Pricing</a></li>
+    <li><a href="#app" data-analytics="nav_app">Get the App</a></li>
   </ul>
-  <a class="nav-btn" href="#app">Download Free</a>
+  <div class="nav-right">
+    <a class="nav-btn" href="#app" data-analytics="nav_download">Download Free</a>
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">☰</button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero" id="top">
-  <canvas id="hero-canvas"></canvas>
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <p class="eyebrow">360° Festival Platform</p>
     <h1>Your Festival,<br><em>Fully Sorted.</em></h1>
     <p class="hero-sub">Tickets, stays, rides, food — everything in one place so you can focus on what matters: the music.</p>
     <div class="hero-actions">
-      <a href="#app" class="btn-primary">Get the App — Free</a>
-      <a href="#banners" class="btn-outline">See how it works</a>
+      <a href="#app" class="btn-primary" data-analytics="hero_get_app">Get the App — Free</a>
+      <a href="#banners" class="btn-outline" data-analytics="hero_how_it_works">See how it works</a>
     </div>
   </div>
   <div class="scroll-hint">
@@ -212,8 +230,8 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 </section>
 
 <!-- SERVICES STRIP -->
-<div class="strip">
-  <div class="strip-track">
+<div class="strip" role="region" aria-label="BMSx services: festival tickets, hotel and glamping stays, ride booking, festival dining, fan community, rewards and rebates, vendor marketplace, live event guides">
+  <div class="strip-track" aria-hidden="true">
     <span class="strip-item"><span class="s-dot"></span>Festival Tickets</span>
     <span class="strip-item"><span class="s-dot"></span>Hotel & Glamping Stays</span>
     <span class="strip-item"><span class="s-dot"></span>Ride Booking</span>
@@ -241,7 +259,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     <div class="b-copy">
       <p class="eyebrow">Festival Tickets</p>
       <h2>Your tickets, ready in seconds.</h2>
-      <p>Browse thousands of festivals worldwide. Book instantly, skip the box office queue. Your ticket lives in the app — QR entry, always ready.</p>
+      <p>Browse Europe's biggest festivals in one place. Book instantly, skip the box office queue. Your ticket lives in the app — QR entry, always ready.</p>
       <ul class="b-perks">
         <li><span class="ck">✓</span> Reserve your spot with one tap</li>
         <li><span class="ck">✓</span> QR entry — no printing needed</li>
@@ -252,7 +270,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     </div>
     <div class="b-visual">
       <!-- CONCERT STAGE SVG -->
-      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <linearGradient id="beam1" x1="155" y1="74" x2="195" y2="400" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="#FF2D60" stop-opacity=".75"/>
@@ -363,7 +381,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     </div>
     <div class="b-visual">
       <!-- CITY HOTEL NIGHTSCAPE SVG -->
-      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stop-color="#FFFBE0" stop-opacity=".25"/>
@@ -504,7 +522,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     </div>
     <div class="b-visual">
       <!-- TRANSPORT / MAP SVG -->
-      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <filter id="ts" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,.65)"/>
@@ -619,7 +637,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     </div>
     <div class="b-visual">
       <!-- DINING / FESTIVAL FOOD SVG -->
-      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <svg viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="rgba(0,0,0,.65)"/>
@@ -755,7 +773,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
       <div class="feat-item">
         <div class="feat-icon">🌍</div>
         <h3>Global Reach</h3>
-        <p>Thousands of festivals across Europe, North America, and India. More destinations added every season.</p>
+        <p>Festivals across Europe first, with North America and India next. More destinations added every season.</p>
       </div>
       <div class="feat-item">
         <div class="feat-icon">👥</div>
@@ -826,12 +844,12 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   <h2>Your next festival<br>starts here.</h2>
   <p>Download BMSx free — available on iOS and Android. Your first booking earns 500 bonus points.</p>
   <div class="app-badges">
-    <a href="#" class="app-badge">
-      <span class="ab-icon">🍎</span>
+    <a href="#" class="app-badge" data-analytics="badge_appstore">
+      <span class="ab-icon" aria-hidden="true">🍎</span>
       <span>Download on the<br><strong>App Store</strong></span>
     </a>
-    <a href="#" class="app-badge">
-      <span class="ab-icon">▶</span>
+    <a href="#" class="app-badge" data-analytics="badge_googleplay">
+      <span class="ab-icon" aria-hidden="true">▶</span>
       <span>Get it on<br><strong>Google Play</strong></span>
     </a>
   </div>
@@ -845,7 +863,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     <a href="#">Contact</a>
     <a href="#">Organiser Login</a>
   </div>
-  <span class="footer-copy">&copy; 2024 BMSx. All rights reserved.</span>
+  <span class="footer-copy">&copy; 2026 BMSx. All rights reserved.</span>
 </footer>
 
 <script>
@@ -887,7 +905,45 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 
   window.addEventListener('resize', resize);
   resize();
-  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
+
+  const motionOK = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let running = false;
+  function start(){ if(motionOK && !running){ running = true; draw(); } }
+  function stop(){ if(running){ running = false; cancelAnimationFrame(raf); } }
+
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(entries => {
+      entries[0].isIntersecting ? start() : stop();
+    }).observe(canvas.closest('.hero'));
+  } else { start(); }
+  document.addEventListener('visibilitychange', () => {
+    document.hidden ? stop() : start();
+  });
+})();
+
+// Mobile nav toggle
+(function(){
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  toggle.addEventListener('click', () => {
+    const open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+  links.addEventListener('click', e => {
+    if(e.target.tagName === 'A'){
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
+
+// Analytics stub — swap for the real, consent-gated SDK before launch (PRD LP-7)
+(function(){
+  document.body.addEventListener('click', e => {
+    const el = e.target.closest('[data-analytics]');
+    if(el && window.bmsxAnalytics) window.bmsxAnalytics.track(el.dataset.analytics);
+  });
 })();
 </script>
 </body>
