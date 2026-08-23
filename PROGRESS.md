@@ -139,3 +139,13 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   the go-ahead came. Work proceeded on the explicit "go ahead" instruction.
   Model tier stated and used: Opus, for PRD-to-architecture synthesis;
   Phase-1 implementation work should drop to a mid-tier model.
+- **2026-08-23** — The 2026-08-23 decision above recorded that the local
+  fetch refspec had been widened so `git fetch origin` picks up `main`. It
+  had not persisted: `remote.origin.fetch` was still scoped to only the
+  session branch, so `origin/main` went stale and the sync gate reported a
+  false `1 0` divergence immediately after a successful push to `main`.
+  Actually widened it this time (`+refs/heads/*:refs/remotes/origin/*`) and
+  verified `0 0` after a fresh fetch. Lesson: the sync gate must verify the
+  refspec, not just run `git fetch` — a narrow refspec makes the gate report
+  confidently wrong answers.
+
