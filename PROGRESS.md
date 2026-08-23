@@ -93,3 +93,12 @@ current branch, and `origin/main` are identical. No divergence.
   selection as part of the budget gate in `harness.md` (state which tier
   fits a task and why, per task, not once) — Nitish asked for this to be a
   standing reminder.
+- **2026-08-23** — Considered adding a `SessionStart` hook to automate the
+  `git fetch origin main` sync-check step, after discussing that
+  `CLAUDE.md`'s `@import`s guarantee the sync/budget gate text is *present*
+  in context but not that it's *acted on*. Decided to hold off: no session
+  has run under this scaffold yet, so there's no evidence of a prose-rule
+  miss to justify it (unlike SENTINEX, which built hooks only after prose
+  demonstrably failed twice), and most of what the gate needs — Nitish's
+  actual usage %, confirmation the handoff was understood — isn't
+  hookable anyway. Revisit if a session is ever seen skipping the gate.
