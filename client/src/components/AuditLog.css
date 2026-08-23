@@ -1,0 +1,18 @@
+.audit-log {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+  font-size: .8125rem;
+}
+.audit-log h2 {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  margin-bottom: .6rem;
+  font-family: inherit;
+  font-weight: 700;
+}
+.audit-log ul { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.audit-log li { color: var(--muted); border-left: 2px solid var(--border-md); padding-left: .7rem; }
+.audit-log .actor { color: var(--text); font-weight: 600; }

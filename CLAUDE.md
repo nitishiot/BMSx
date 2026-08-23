@@ -44,10 +44,13 @@ that v2/v3 draw their market and revenue data from — read v3 for scope, not v1
 
 ## Current stage
 
-**Pre-build.** `TAG_PRD_v3.md` exists as a draft (not yet signed off). No
-product code exists yet for the platform it describes. Next planned step:
-a high-level comprehensive architecture diagram, building on §8's sketch —
-see `PROGRESS.md` → Next steps for status.
+**Phase 1 implementation underway.** `TAG_PRD_v3.md` and
+`TAG_Architecture_v1.md` are drafts (not yet signed off), but Phase 1
+itself (`build/MVP1_CoreTicketing/PHASE_1_SPEC.md`) is being built slice
+by slice per its own sign-off protocol. Landing page slice: signed off.
+Producer portal slice: built, awaiting sign-off. Core-ticketing backend:
+not started. See `PROGRESS.md` → Status/Next steps for the live picture —
+it's the authority on what's actually built, this paragraph is a summary.
 
 **Legacy scaffold — archived.** The unrelated boarding-house/PG management
 app (rooms, boarders, rent) from the repo's initial scaffold, before the
@@ -84,7 +87,8 @@ BMSx-synced/
 │   ├── README.md
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see above)
-└── landing/                  ← static landing page — current, matches the PRD
+├── landing/                  ← static landing page — current, matches the PRD
+└── client/                   ← Producer portal (Phase 1 slice, React+Vite+TS) — current, not legacy
 ```
 
 Update this tree (here and in `README.md`) in the same commit that adds,

@@ -5,6 +5,24 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Producer portal slice signed off (2026-08-23, Sonnet session).** Fresh
+`client/` app (React+Vite+TS, confirmed stack) at the repo root — same
+path the archived boarding-house app used to occupy, unrelated code.
+Built per spec §2/§4: application form (J7) → simulated Platform Admin
+approval (clearly labelled — no Identity & Access/RBAC backend exists yet,
+this is a client-side stand-in, not real access control) → free-tier event
+setup (J5) → an audit log rendering PR-1's actor/action/target/timestamp/
+reason shape → producer-audience LP-13 roadmap tiles (Premium analytics,
+AI demand prediction, marketing services, personalised event page — P1/P2
+per PRD §10, copy not invented). Verified live with Playwright against the
+Vite dev server before the demo: typecheck clean, full flow (submit →
+approve → save event) works end to end, audit log accumulates both
+entries, zero console errors. Nitish then reviewed live at `localhost:5173`
+himself (submitted his own application, approved it, saved an event) and
+signed off. **Slice sign-off, not Phase 1 sign-off** — same caveat as the
+landing page (§9 needs all of §6's exit checks, which need the real
+backend). No `phase-1` tag yet.
+
 **Landing-page slice signed off (2026-08-23, Sonnet session).** Demoed
 live (served at `localhost:4173` from the actual `landing/index.html`,
 then widened the structural section max-widths from 1000–1120px to 1800px
@@ -143,23 +161,20 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Active: build the minimal Producer portal** (spec §2/§4) — React+
-   Vite+TS, reusing the `TAG_FEATURE_MANIFEST` pattern from
-   `landing/index.html` for its own `audience: 'producer'` roadmap tiles
-   (Premium analytics, demand prediction, customer data access, marketing
-   services — already present in the manifest, just unfiltered by the
-   portal yet). Landing-page slice is signed off (see Status/decisions
-   log) — this is the next slice in the sequence.
-2. Then the core-ticketing backend (Identity & Access, Event & Catalogue,
-   Virtual Queue, Ticketing & Inventory, Orders & Cart, Payments) — the
-   landing page's search/near-you currently read `MOCK_FESTIVALS`; that's
-   the seam where real API calls replace the mock once the backend exists.
-3. The three open items (object storage, PSP/travel partner, launch
+1. **Active: the core-ticketing backend** (Identity & Access, Event &
+   Catalogue, Virtual Queue, Ticketing & Inventory, Orders & Cart,
+   Payments — Postgres 16, per spec §4). Both client slices (landing page,
+   Producer portal) are signed off; this is the next slice. The landing
+   page's search/near-you currently read `MOCK_FESTIVALS`, and the
+   Producer portal's approval step is a client-side simulation — both are
+   the seams where real API calls replace the stand-ins once this backend
+   exists.
+2. The three open items (object storage, PSP/travel partner, launch
    festival) still need resolving before the exit checks that depend on
    them (spec §6, checks 3–4) — not before backend build starts.
-4. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+3. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
    touches it — several sessions have now edited the `.md` only.
-5. Open, not blocking: repo-surface classification (founder names, financial
+4. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -382,3 +397,25 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   run shown live, then explicit approval) — this closes both remaining
   steps for the landing-page slice specifically, not for Phase 1 as a
   whole (see Status).
+- **2026-08-23 (Sonnet session)** — Built the Producer portal as a fresh
+  `client/` app (`npm create vite@latest client -- --template react-ts`),
+  reoccupying the path the archived boarding-house app used to hold —
+  unrelated code, that archive stays untouched. RBAC/J7 isn't backed by a
+  real Identity & Access service yet, so the Platform Admin approval step
+  is a labelled client-side simulation (`producerState.ts`) rather than
+  something silently pretending to be real access control — every place
+  it's shown says explicitly that it's a stand-in. Lifted the audit-log
+  render from the Apply page up to the app shell after finding it
+  vanished once a producer reached event setup (component unmount), which
+  would have undercut the point of demoing PR-1's audit trail at all.
+  Verified live with Playwright (typecheck, full submit→approve→save
+  flow, audit log accumulation, zero console errors) but not yet shown to
+  Nitish — same sign-off protocol as the landing page, one step behind it.
+- **2026-08-23 (Sonnet session)** — Nitish reviewed the Producer portal
+  live at `localhost:5173` (his own screenshots: submitted an application
+  as "John Dean / Carnival Ticketing / Tomorrow fun land", approved it via
+  the simulated admin action, saved event dates 11–16 Aug 2026 at "Central
+  park, Ireland") and signed off. Both Phase 1 client-surface slices
+  (landing page, Producer portal) are now signed off; next slice is the
+  core-ticketing backend. Asked to wait for his `/compact` before doing
+  anything further this session.

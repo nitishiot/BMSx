@@ -34,12 +34,20 @@ BMSx-synced/
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see below)
-└── landing/                  ← static landing page — current, matches the PRD
+├── landing/                  ← static landing page — current, matches the PRD
+└── client/                   ← Producer portal (Phase 1 slice, React+Vite+TS)
 ```
 
 This tree is updated in the same commit as any top-level structure change.
 
 ---
+
+## Producer portal (`client/`)
+
+Phase 1 slice — see `client/README.md` and
+`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4. No relation to the
+archived boarding-house `client/` below; this is a fresh app at the same
+path, current and in active development.
 
 ## Legacy scaffold (archived)
 
