@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SENTINEX — Ways of Working (Session & Phase Execution Flow)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f9f9f7;color:#0b0b0b;font-family:'Inter',sans-serif;font-size:13.5px;}
+.page{max-width:1200px;margin:0 auto;padding:20px 28px 60px;}
+
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 0 16px;border-bottom:1px solid #e1e0d9;margin-bottom:16px;flex-wrap:wrap;gap:12px;}
+.hdr-title{font-size:10.5px;font-weight:600;color:#898781;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+.hdr-name{font-size:22px;font-weight:700;color:#0b0b0b;letter-spacing:.2px;}
+.hdr-sub{font-size:12.5px;color:#52514e;margin-top:4px;font-family:'JetBrains Mono',monospace;}
+.hdr-meta{text-align:right;display:flex;flex-direction:column;gap:5px;}
+.mpill{display:inline-block;padding:3px 10px;border-radius:3px;font-size:10.5px;font-weight:700;letter-spacing:.3px;}
+.mp1{background:#fff3d6;color:#8a6100;border:1px solid #e6c369;}
+.mp2{background:#e3f5e3;color:#067d06;border:1px solid #8fd08f;}
+
+.livenote{background:#fdf4ec;border:1.5px solid #e8c9a0;border-radius:5px;padding:11px 16px;margin-bottom:18px;font-size:11.5px;color:#5a4a30;line-height:1.75;}
+.livenote b{color:#8a6100;}
+
+/* section label */
+.seclbl{font-size:11px;font-weight:700;color:#52514e;letter-spacing:1.8px;text-transform:uppercase;margin:6px 0 12px;display:flex;align-items:center;gap:10px;}
+.seclbl::after{content:'';flex:1;height:1px;background:#e1e0d9;}
+
+/* constitution panel */
+/* align-items:start so each pillar sizes to its own content. Grid items
+   stretch to the tallest row-mate by default, which left Pillar I two-thirds
+   empty once Pillar III grew (2026-08-03). Top-aligned cards of honest
+   heights read better than three equal boxes with dead space in two. */
+.constitution{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px;align-items:start;}
+@media(max-width:820px){.constitution{grid-template-columns:1fr;}}
+.pillar{border:1px solid #d5d3ca;border-radius:7px;background:#fbfbf9;overflow:hidden;display:flex;flex-direction:column;}
+.pillar-hd{padding:11px 14px;border-bottom:1px solid #e1e0d9;background:#2b2a27;color:#f4f4f2;}
+.pillar-hd .pk{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:#b3b0a6;font-family:'JetBrains Mono',monospace;}
+.pillar-hd .pt{font-size:14px;font-weight:700;margin-top:2px;}
+.pillar-bd{padding:11px 14px 13px;}
+.crow{display:flex;gap:8px;padding:6px 0;border-bottom:1px dotted #e6e4db;font-size:11px;color:#3a3a38;line-height:1.5;}
+.crow:last-child{border-bottom:none;}
+.crow .ci{flex:none;width:15px;text-align:center;font-size:12px;line-height:1.35;}
+.crow b{color:#0b0b0b;font-weight:700;}
+.crow code{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#4a3aa7;font-weight:600;background:#f0eefb;padding:1px 4px;border-radius:3px;overflow-wrap:anywhere;}
+.pillar.p1 .pillar-hd{background:#2b2a27;}
+.pillar.p2 .pillar-hd{background:#25324a;}
+.pillar.p3 .pillar-hd{background:#3a2a1a;}
+.foundnote{text-align:center;font-size:11px;color:#8a6100;font-family:'JetBrains Mono',monospace;margin:2px 0 26px;}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:22px;padding:12px 16px;border:1px solid #e1e0d9;border-radius:5px;background:#fcfcfb;align-items:center;}
+.lg{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#3a3a38;}
+.lgbox{width:15px;height:15px;border-radius:3px;flex:none;}
+
+/* phase band */
+.band{border:1px solid #e1e0d9;border-radius:7px;background:#fcfcfb;margin-bottom:6px;overflow:hidden;}
+.band-hd{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #ece9e0;background:#f4f4f2;}
+.band-no{width:26px;height:26px;border-radius:50%;background:#0b0b0b;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;}
+.band-nm{font-size:13.5px;font-weight:700;letter-spacing:.3px;color:#0b0b0b;}
+.band-tag{font-size:10.5px;color:#898781;font-family:'JetBrains Mono',monospace;margin-left:auto;text-align:right;}
+.band-bd{padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;}
+
+/* step card */
+.step{flex:1;min-width:210px;border:1px solid #ded;border-radius:5px;padding:11px 13px;position:relative;background:#fff;display:flex;flex-direction:column;}
+.step.proc{border:1px solid #d3cef0;background:#f8f7fd;}
+.step.gate{border:1.5px solid #e6c369;background:#fffdf5;}
+.step.store{border:1px solid #b7ddc9;background:#f5fbf7;}
+.step .sn{font-size:10px;font-weight:700;color:#4a3aa7;letter-spacing:.6px;font-family:'JetBrains Mono',monospace;margin-bottom:5px;}
+.step.gate .sn{color:#8a6100;}
+.step .st{font-size:12.5px;font-weight:700;color:#0b0b0b;line-height:1.3;margin-bottom:5px;}
+.step .sd{font-size:11px;color:#52514e;line-height:1.6;}
+.step .sd code{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a3aa7;font-weight:600;background:#f0eefb;padding:1px 4px;border-radius:3px;overflow-wrap:anywhere;}
+.step .sd b{color:#3a3a38;}
+
+/* arrow between cards inside a band */
+.arw{align-self:center;color:#b8460f;font-size:17px;font-weight:700;flex:none;line-height:1;}
+/* down arrow between bands */
+.downwrap{display:flex;justify-content:center;padding:2px 0;}
+.down{color:#b8460f;font-size:16px;line-height:1;}
+.down .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8a6100;}
+
+/* decision / branch note */
+.branch{margin:10px 0 4px;padding:9px 13px;border-left:3px solid #e6c369;background:#fffdf5;border-radius:0 4px 4px 0;font-size:11px;color:#5a4a30;line-height:1.65;}
+.branch b{color:#8a6100;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.guard{margin-top:9px;padding:9px 13px;border-left:3px solid #c9463b;background:#fdf3f2;border-radius:0 4px 4px 0;font-size:11px;color:#6b2f28;line-height:1.65;}
+.guard b{color:#a3352a;}
+
+.loopnote{text-align:center;margin:20px 0 4px;font-size:11.5px;color:#4a3aa7;font-family:'JetBrains Mono',monospace;}
+.loopnote span{background:#f0eefb;border:1px solid #d3cef0;border-radius:20px;padding:6px 16px;}
+
+/* mobile delta table (Part C) */
+.mobilewrap{border:1px solid #e1e0d9;border-radius:7px;overflow:hidden;margin-bottom:16px;}
+.mobilerow{display:flex;border-bottom:1px solid #ece9e0;}
+.mobilerow:last-child{border-bottom:none;}
+.mobile-ph{width:168px;flex:none;padding:12px 14px;background:#f4f4f2;font-size:12px;font-weight:700;color:#0b0b0b;display:flex;align-items:flex-start;gap:8px;}
+.mobile-ph .mn{width:22px;height:22px;border-radius:50%;background:#0b0b0b;color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;}
+.mobile-same{flex:1;padding:12px 14px;font-size:11px;color:#3a3a38;line-height:1.65;border-right:1px solid #ece9e0;background:#f5fbf7;}
+.mobile-diff{flex:1;padding:12px 14px;font-size:11px;color:#3a3a38;line-height:1.65;background:#fdf6ec;}
+.mobile-same .tag,.mobile-diff .tag{display:block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.mobile-same .tag{color:#0f7a52;}
+.mobile-diff .tag{color:#8a6100;}
+.mobile-same code,.mobile-diff code{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#4a3aa7;font-weight:600;background:#f0eefb;padding:1px 4px;border-radius:3px;overflow-wrap:anywhere;}
+@media(max-width:760px){.mobilerow{flex-direction:column;}.mobile-ph{width:auto;}.mobile-same{border-right:none;border-bottom:1px solid #ece9e0;}}
+.spotlight{margin:4px 0 20px;padding:12px 16px;border:1.5px solid #a9c9ef;background:#f5f9fe;border-radius:6px;font-size:11.5px;color:#184f95;line-height:1.75;}
+.spotlight b{color:#0b3d7a;}
+.spotlight code{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a3aa7;font-weight:600;background:#f0eefb;padding:1px 4px;border-radius:3px;overflow-wrap:anywhere;}
+
+.pgfooter{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid #e1e0d9;margin-top:24px;gap:12px;flex-wrap:wrap;}
+.pftext{font-size:10px;color:#898781;font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">SENTINEX Build Documentation · Process Reference</div>
+    <div class="hdr-name">Ways of Working — Constitution &amp; Execution Flow</div>
+    <div class="hdr-sub">The invariants we hold (constitution), the rhythm we run each session on top of them, and the delta when that session runs from mobile: sync → orient → spec → build → demo → sign-off → hand off</div>
+  </div>
+  <div class="hdr-meta">
+    <span class="mpill mp2">Distilled from .claude/rules (harness · build · product)</span>
+    <span class="mpill mp1">Living — update when the working agreement changes</span>
+  </div>
+</div>
+
+<div class="livenote">
+  <b>What this is.</b> A single map of the working agreement encoded across
+  <b>.claude/rules/harness.md</b>, <b>build.md</b> and <b>product.md</b> plus
+  <b>build/PROGRESS.md</b>. Three parts: the <b>Constitution</b> (the
+  invariants every session inherits — design doctrine, engineering
+  practices, and the harness automation that enforces them), the
+  <b>Execution Flow</b> (the six-phase rhythm run on top of them), and the
+  <b>Mobile Execution Delta</b> (what additionally changes when that rhythm
+  runs from a mobile/cloud session with no physical machine). In the flow,
+  amber = a gate that must be cleared before continuing; red = a hard
+  guardrail that has bitten us before. One phase of the MVP is executed per
+  session; the loop closes by arming the next session.
+</div>
+
+<div class="seclbl">Part A · Constitution — the invariants every session inherits</div>
+
+<div class="constitution">
+
+  <!-- Pillar 1 -->
+  <div class="pillar p1">
+    <div class="pillar-hd">
+      <div class="pk">Pillar I</div>
+      <div class="pt">Design Principles</div>
+    </div>
+    <div class="pillar-bd">
+      <div class="crow"><span class="ci">🔒</span><span><b>Sovereign by construction.</b> On-premise, air-gapped in production. Data sovereignty is the core selling point, not a feature.</span></div>
+      <div class="crow"><span class="ci">🧩</span><span><b>Open-source only.</b> Open-source components &amp; LLMs; no cloud APIs, no closed models, no telemetry callouts in pipeline code.</span></div>
+      <div class="crow"><span class="ci">✂️</span><span><b>Deliberate simplicity.</b> Single-broker Kafka, Postgres FTS (no Elasticsearch), server-rendered dashboard first — earn each moving part.</span></div>
+      <div class="crow"><span class="ci">📜</span><span><b>Schemas are the contract.</b> <code>schemas.py</code> is the pipeline contract; bump <code>schema_version</code> on breaking changes, never mutate silently.</span></div>
+      <div class="crow"><span class="ci">🏷️</span><span><b>Fixed vocabulary.</b> The five module names are canonical and used verbatim everywhere.</span></div>
+      <div class="crow"><span class="ci">🛡️</span><span><b>Sensitivity firewall.</b> Programme/customer names never touch repo-surface (README, commits, tags, CI, code); neutral phrasing there.</span></div>
+    </div>
+  </div>
+
+  <!-- Pillar 2 -->
+  <div class="pillar p2">
+    <div class="pillar-hd">
+      <div class="pk">Pillar II</div>
+      <div class="pt">Engineering Practices</div>
+    </div>
+    <div class="pillar-bd">
+      <div class="crow"><span class="ci">📝</span><span><b>Spec-first.</b> Every phase spec — objective, scope, components, exit checks, NFR targets — is written before a line of implementation.</span></div>
+      <div class="crow"><span class="ci">🌳</span><span><b>Trunk-based on CI-gated main.</b> GitHub Actions (<code>ci.yml</code>) runs the network-free unit suite on every push; annotated tag per phase at sign-off.</span></div>
+      <div class="crow"><span class="ci">📐</span><span><b>NFR-driven.</b> Explicit targets measured, not asserted; standing bar <b>&lt;200 ms/item P95</b>; index per query predicate; bounded drop-oldest backpressure.</span></div>
+      <div class="crow"><span class="ci">🔁</span><span><b>Verify against the live stack.</b> Idempotent, re-runnable test scripts; restart/replay = 0 loss / 0 duplication.</span></div>
+      <div class="crow"><span class="ci">📊</span><span><b>MEASURED vs PROJECTED, never blurred.</b> Dev-scale and production-scale ladders kept separate in every claim.</span></div>
+      <div class="crow"><span class="ci">📚</span><span><b>Living documentation.</b> AsBuilt diagrams, <code>PROGRESS.md</code> decisions log, and <code>REQUIREMENTS_TRACE.md</code> kept current as the code moves.</span></div>
+      <div class="crow"><span class="ci">📦</span><span><b>Reproducible environment.</b> Pinned venv (Python 3.14) + docker-compose stack; native-service fallback when the machine is away.</span></div>
+      <div class="crow"><span class="ci">🚫</span><span><b>What efficiency never cuts.</b> Spec-before-implementation, the unit suite, live verification against real data, logged reviews with resolutions, and the <code>PROGRESS.md</code> / user-guide rituals stay whatever the token budget says. <code>Edit</code>/<code>Write</code> results average 544 chars — verification discipline is <i>not</i> what costs money. <b>Cut the cost of looking, not the looking itself.</b></span></div>
+      <div class="crow"><span class="ci">🧪</span><span><b>Optional deps never break collection.</b> CI installs <code>[dev]</code> only — a test needing <code>[nlp]</code>/<code>[cv]</code> uses <code>pytest.importorskip</code>, and optional model imports live inside functions. A bare top-level import fails at collection and takes the whole suite with it. Check <code>gh run list</code> after any push that adds a test module or a dependency.</span></div>
+    </div>
+  </div>
+
+  <!-- Pillar 3 -->
+  <div class="pillar p3">
+    <div class="pillar-hd">
+      <div class="pk">Pillar III</div>
+      <div class="pt">Harness Rules &amp; Automation</div>
+    </div>
+    <div class="pillar-bd">
+      <div class="crow"><span class="ci">🪝</span><span><b>Harness hooks — three, all report-only.</b> Wired in <code>settings.json</code>. <b>At session start:</b> <code>git_sync_check.sh</code> prints origin divergence; <code>serving_check.sh</code> prints whether the server on :8000 is serving HEAD. <b>Before every <code>Read</code>:</b> <code>token_check.sh</code> warns when the read is an image (T2), a path already read this session (T7/T8/T9), or a &gt;400-line file being read whole with no <code>offset</code>/<code>limit</code> (T7). None of the three mutates, kills or blocks anything — <b>acting on the output is the rule, not the hook</b>. Each is exercised by its own test suite, because a hook's failure mode is silence and nobody notices silence.</span></div>
+      <div class="crow"><span class="ci">⚖️</span><span><b>Why every hook warns and none of them blocks.</b> A rules file cannot interrupt — it loads as passive context and is followed, or is not. That is why prose alone failed twice: the git-sync rule "already existed as prose above and was skipped anyway", and <code>tokens.md</code> had the same shape. So a rule that must not be skippable becomes a hook. But the hook <b>warns</b>: it never auto-merges a dirty tree, never kills a server, never denies a read. Each of those has a legitimate case (T3 covers images that genuinely belong in the main context), and a hook that blocked one would be a worse trap than the problem it guards.</span></div>
+      <div class="crow"><span class="ci">📖</span><span><b>Loaded rulebook.</b> <code>CLAUDE.md</code> + <code>.claude/rules/{harness,build,product,tokens}.md</code> load every session as binding instructions.</span></div>
+      <div class="crow"><span class="ci">💰</span><span><b>Token efficiency is a way of working, not a footnote.</b> <code>tokens.md</code> (2026-08-03) is derived from a full measurement of this project's own 41 transcripts — 26 days, USD 682.10. The mechanism it turns on: a tool result is re-read on <b>every subsequent turn</b>, so cost ≈ size × turns remaining — MEASURED amplification <b>mean 133×, peak 364×</b>. Screenshots read into the main context were <b>22% of all spend</b> from 63 calls; subagent usage was <b>zero</b>, the largest unused lever. Practice: structural check before screenshot, screenshot read <i>in a subagent</i>, grep-then-offset reads, session-start files read once, end sessions at phase boundaries. Re-measured at each MVP boundary, same cadence as the AsBuilt refresh.</span></div>
+      <div class="crow"><span class="ci">⚙️</span><span><b>Permission policy.</b> <code>settings.json</code> allow/deny/ask lists scope what runs without a prompt; settings-edit caveat respected.</span></div>
+      <div class="crow"><span class="ci">🧰</span><span><b>Project skills.</b> <code>write-prd</code>, <code>define-metrics</code>, <code>sentinel-stack</code>, <code>update-config</code> — used instead of ad-hoc structure.</span></div>
+      <div class="crow"><span class="ci">🤖</span><span><b>Project subagents.</b> <code>sentinel-code-reviewer</code> (runs before any push touching <code>src</code>/<code>tests</code>/<code>infra</code>, and writes its review to a file before returning), <code>sentinel-spec-drafter</code>, and <code>sentinel-sme</code>. Also the standing delegation pattern: <b>large payload, small answer</b> — visual verification, repo-wide search, reading a long log to answer one question. The subagent's context dies at return, so the payload never amortises against the session. Delegate breadth, never judgement that needs the main thread's accumulated context.</span></div>
+      <div class="crow"><span class="ci">🧠</span><span><b>Persistent memory.</b> File-based memory with a <code>MEMORY.md</code> index carries decisions across sessions.</span></div>
+      <div class="crow"><span class="ci">🚧</span><span><b>Standing gates.</b> Token-budget gate, multi-device sync gate, and session-branch discipline are enforced before / around the flow. The budget gate decides <i>whether</i> a step fits; <code>tokens.md</code> governs <i>how</i> the approved budget is spent — the two are answered together.</span></div>
+    </div>
+  </div>
+
+</div>
+<div class="foundnote">▼ the six-phase execution flow below runs on top of this constitution ▼</div>
+
+<div class="seclbl">Part B · Execution Flow — the rhythm we run each session</div>
+
+<div class="legend">
+  <div class="lg"><span class="lgbox" style="background:#f8f7fd;border:1px solid #d3cef0;"></span>Process step</div>
+  <div class="lg"><span class="lgbox" style="background:#fffdf5;border:1.5px solid #e6c369;"></span>Gate / decision (must clear)</div>
+  <div class="lg"><span class="lgbox" style="background:#fdf3f2;border:1px solid #c9463b;"></span>Hard guardrail (learned the hard way)</div>
+  <div class="lg"><span style="color:#b8460f;font-size:15px;font-weight:700;">→ ↓</span> Sequence</div>
+</div>
+
+<!-- ============ PHASE 1 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">1</span>
+    <span class="band-nm">Sync &amp; Orient</span>
+    <span class="band-tag">first tool call of every session · harness.md</span>
+  </div>
+  <div class="band-bd">
+    <div class="step proc">
+      <div class="sn">1.1 · SESSIONSTART</div>
+      <div class="st">Fetch before reading anything</div>
+      <div class="sd"><code>git fetch origin main</code> + <code>rev-list --left-right --count HEAD...origin/main</code>. The <b>multi-device sync gate</b> — a local clone goes stale silently.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">1.2 · DECISION</div>
+      <div class="st">Behind origin/main?</div>
+      <div class="sd"><b>Yes →</b> <code>status --porcelain</code>, diff for collisions, <code>pull --ff-only</code>, then <b>re-read</b> PROGRESS.md. If <code>pyproject.toml</code> moved, reinstall the venv. <b>No →</b> continue.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">1.3 · READ</div>
+      <div class="st">PROGRESS.md, then the master spec</div>
+      <div class="sd">Read <code>build/PROGRESS.md</code> (post-fetch), then the pinned <code>MVP&lt;N&gt;_..._MASTER_SPEC.md</code>. Never re-read proposal PDFs for scope.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 14px;">
+    <div class="guard"><b>Guardrail — never answer status from an unfetched tree.</b> "Where are we / what's the latest" feels read-only and is exactly the prompt that once reported the MVP two phases behind reality. State which commit a status was read at.</div>
+  </div>
+</div>
+
+<div class="downwrap"><span class="down">↓</span></div>
+
+<!-- ============ PHASE 2 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">2</span>
+    <span class="band-nm">Scope &amp; Gate</span>
+    <span class="band-tag">agree the increment before spending tokens</span>
+  </div>
+  <div class="band-bd">
+    <div class="step proc">
+      <div class="sn">2.1 · ALIGN</div>
+      <div class="st">Ask clarifying questions</div>
+      <div class="sd">Confirm the one phase for this session, its boundaries, and any open decisions — before writing anything.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">2.2 · TOKEN-BUDGET GATE</div>
+      <div class="st">Fits the quota?</div>
+      <div class="sd">For any costly step (&gt;~100k tokens): ask Nitish's 5-hour % and weekly %, estimate cost against both, state whether it fits, and <b>proceed only on his go</b>. Then name which <code>tokens.md</code> rules bring the estimate down — "it fits" is a weaker answer than "it fits, and T2 keeps the screenshots out of the main context".</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">2.3 · SESSION-SPLIT GATE</div>
+      <div class="st">Scope only, or scope + build?</div>
+      <div class="sd">Budget fitting is necessary but not sufficient — a second, independent call driven by the phase's <b>risk shape</b>, not its token cost.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step store">
+      <div class="sn">2.4 · CONSTRAINTS</div>
+      <div class="st">Load the invariants</div>
+      <div class="sd">Air-gapped / open-source-only / no cloud APIs. <code>schemas.py</code> is the pipeline contract. Repo-surface = neutral phrasing, no programme/customer names.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 14px;">
+    <div class="branch"><b>POC-shaped / self-contained</b> (extends existing data/plumbing, no new model, no unresolved external dependency — W1's map, W2's AIS+geofence, W3's CII) → default to <b>scope + build in one pass</b> when budget allows; splitting mostly re-derives context for no real risk-reduction. <b>Eval/risk-heavy</b> (a new ML model to validate, an unresolved licensing/reachability question, an eval floor that must be measured before anything downstream can be designed against it — W5's deepfake detection, gated on OQ-W3) → <b>scope only, resolve the open risk, stop for Nitish's review</b> before committing to a build plan, even with ample budget. Decided 2026-07-25 (W3); name which path a session is taking and why, same as the budget-gate line above.</div>
+  </div>
+</div>
+
+<div class="downwrap"><span class="down">↓</span></div>
+
+<!-- ============ PHASE 3 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">3</span>
+    <span class="band-nm">Spec First</span>
+    <span class="band-tag">written BEFORE implementation · build.md</span>
+  </div>
+  <div class="band-bd">
+    <div class="step proc">
+      <div class="sn">3.1 · WRITE</div>
+      <div class="st">Phase spec under the MVP folder</div>
+      <div class="sd"><code>PHASE_&lt;L&gt;&lt;n&gt;_SPEC.md</code> (S/G/W/O prefix). Objective, in/out of scope, components to build, exit checks.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">3.2 · DECLARE</div>
+      <div class="st">Explicit NFR targets</div>
+      <div class="sd">Throughput, latency P50/P95/max (<b>&lt;200 ms/item P95</b>), scale ceiling, resilience, storage, index coverage, backpressure — each a number to be measured, not asserted.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step store">
+      <div class="sn">3.3 · TRACE</div>
+      <div class="st">Keep scope consistent</div>
+      <div class="sd">Nothing contradicts the annexures or master spec. If scope tightens/extends, say so and update <code>REQUIREMENTS_TRACE.md</code>.</div>
+    </div>
+  </div>
+</div>
+
+<div class="downwrap"><span class="down">↓</span></div>
+
+<!-- ============ PHASE 4 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">4</span>
+    <span class="band-nm">Build &amp; Verify</span>
+    <span class="band-tag">a working, measured increment</span>
+  </div>
+  <div class="band-bd">
+    <div class="step proc">
+      <div class="sn">4.1 · IMPLEMENT</div>
+      <div class="st">Build the increment</div>
+      <div class="sd">Open-source components only; bump <code>schema_version</code> on breaking changes, never mutate silently. Engineering register in code/docs.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">4.2 · TEST E2E</div>
+      <div class="st">Exercise it against the live stack</div>
+      <div class="sd">Extend <code>smoke_test.py</code> or add a phase script — idempotent, re-runnable. Restart/replay = 0 loss / 0 duplication.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">4.3 · MEASURE NFRs</div>
+      <div class="st">Live, not asserted</div>
+      <div class="sd">Each target MEASURED against the stack at a stated scale. Tag every number <b>MEASURED</b> or <b>PROJECTED</b> — never blur dev and production.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step store">
+      <div class="sn">4.4 · REVIEW TO FILE</div>
+      <div class="st">Log the code review and its resolutions</div>
+      <div class="sd"><code>sentinel-code-reviewer</code> writes its own file under <code>build/docs/reviews/</code> — <code>CODE_REVIEW_&lt;date&gt;_&lt;time&gt;_&lt;slug&gt;.md</code> — before returning; the session then fills in a <b>Resolution</b> per finding: fixed / deliberately not taken <b>with the reasoning</b> / deferred. A review living only in a subagent's return value is gone at the next compaction, and what is lost is <i>which findings were deliberately not taken, and why</i>.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 14px;">
+    <div class="branch"><b>if Nitish is away →</b> don't default to "blocked, need Docker". Check the check's real footprint; Postgres/Redis + pure-Python API run natively in-container (Playwright screenshot as evidence). Hand-seeded fixtures are labelled as such. Kafka/MinIO or a policy-denied host is a genuine wall — record it as pending on a networked machine.</div>
+  </div>
+</div>
+
+<div class="downwrap"><span class="down">↓</span></div>
+
+<!-- ============ PHASE 5 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">5</span>
+    <span class="band-nm">Demo &amp; Sign-off</span>
+    <span class="band-tag">real data Nitish can see · then explicit approval</span>
+  </div>
+  <div class="band-bd">
+    <div class="step proc">
+      <div class="sn">5.1 · RUNBOOK</div>
+      <div class="st">Add the phase's journeys</div>
+      <div class="sd">Extend <code>build/docs/DEMO_RUNBOOK.md</code> with this phase's demo steps before the demo runs.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">5.2 · SERVING GATE</div>
+      <div class="st">Is the running server actually HEAD?</div>
+      <div class="sd">Before any demo, screenshot or sign-off: <code>scripts/serving_check.py</code> — <b>0</b> current / <b>1</b> stale / <b>2</b> listening but unreadable. It compares the served SHA to HEAD <i>and</i> catches what a SHA cannot: a same-commit process started before an uncommitted edit.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">5.3 · DEMO + EVIDENCE</div>
+      <div class="st">Run it live, capture proof</div>
+      <div class="sd">Demonstrate with real data he can see — query output, topic messages, browser UI. Capture screenshots / outputs and record them in the demo file. Every screenshot offered as evidence must carry the footer stamp <code>build &lt;sha&gt; · started &lt;time&gt; · pid &lt;n&gt;</code> <b>legibly</b> — that is what makes the evidence self-dating.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step gate">
+      <div class="sn">5.4 · SIGN-OFF GATE</div>
+      <div class="st">Nitish explicitly approves?</div>
+      <div class="sd"><b>Until approval →</b> record as <b>"built, awaiting sign-off"</b>. <b>Approved →</b> mark the phase COMPLETE. No self-sign-off.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 14px;">
+    <div class="guard"><b>Guardrail — the stale server that looks entirely current.</b> A <code style="background:#f7e9e7;color:#a3352a;">run api</code> left listening on :8000 overnight served pre-T2-4 code all the next morning. Windows gives the first listener exclusive port ownership, so a <i>second</i> <code style="background:#f7e9e7;color:#a3352a;">run api</code> would have failed loudly — but nobody ever runs one: the dashboard is simply already open and healthy. Every verification surface the project had (healthz, the browser, a Playwright screenshot) was blind to <i>which code</i> it was verifying. A server that reports no <code style="background:#f7e9e7;color:#a3352a;">build</code> block at all predates 2026-07-28 and is stale by definition — restart it, do not reason about it.</div>
+  </div>
+</div>
+
+<div class="downwrap"><span class="down">↓</span></div>
+
+<!-- ============ PHASE 6 ============ -->
+<div class="band">
+  <div class="band-hd">
+    <span class="band-no">6</span>
+    <span class="band-nm">Close Out &amp; Hand Off</span>
+    <span class="band-tag">land on main · arm the next session</span>
+  </div>
+  <div class="band-bd">
+    <div class="step gate">
+      <div class="sn">6.1 · MVP-BOUNDARY ONLY</div>
+      <div class="st">Refresh the AsBuilt diagrams?</div>
+      <div class="sd"><b>At MVP sign-off →</b> update the <b>seven</b> living <code>SENTINEX_*_AsBuilt.html</code> (Architecture, CDM, Taxonomy, LDM, DFD, UseCase + the Business Walkthrough) in place — six refreshed structurally, the Walkthrough given a full narrative rewrite. <b>Phase-level →</b> skip. Edit in place; git history is the record, there is no versioned file per MVP for these seven.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">6.2 · USER GUIDE</div>
+      <div class="st">Sync that phase's own MVP guide</div>
+      <div class="sd">Any phase changing user-facing behaviour updates <code>docs/user_guide/MVP&lt;N&gt;_&lt;Name&gt;.md</code> — <b>that phase's own MVP</b> — in the same session as <code>PROGRESS.md</code>. Genuinely no room → record it as debt explicitly, never let it drift silently.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">6.3 · COMMIT + PUSH</div>
+      <div class="st">Descriptive commit, onto main</div>
+      <div class="sd">Say what changed and why (never "update"); no repo-surface identifiers. Tag the phase (<code>phase-&lt;N&gt;</code>, annotated). Push to <b>origin/main</b>.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">6.4 · SET STATE</div>
+      <div class="st">Update PROGRESS.md for next time</div>
+      <div class="sd">Status, next steps, decisions log — so the next session starts oriented. Update MEMORY.md pointers if the working agreement moved.</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="step proc">
+      <div class="sn">6.5 · END IT</div>
+      <div class="st">Close the session — don't leave it open</div>
+      <div class="sd">A finished phase's context is pure cost from here. End at the phase boundary (T12) and open a fresh session for the next pick — <b>including for the question "should I start a fresh session?"</b>. Stop the two app servers (<code>sentinel.run api</code> :8000, <code>llama-server</code> :8080), leave the Docker stack up, and never kill work in flight — inventory command lines, not process names, before stopping anything.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 14px;">
+    <div class="guard"><b>Guardrail — the cold-resume trap (MEASURED 2026-08-06).</b> The prompt cache lives <b>one hour</b>. Re-entering a long session after a longer gap re-writes its entire accumulated context from scratch, at 2× the base input rate — and the price is set by <b>the context carried, not the question asked</b>. Measured on this project: a session that hit the usage limit at ~203k resident context was re-entered 3h14m later for one short question; the four messages that followed wrote <b>374,296 cache tokens</b> — <b>28% of that whole session's cache-write volume</b>, and ~12% of a 5-hour window. It was paid <b>twice</b>, because the answer was followed by tool calls instead of stopping. The same question in a fresh session costs the ~36k static prefix: <b>~10× less</b>. So: <b>a session that hits the limit is over — never resume it</b> (largest context you will ever carry, met by a guaranteed-expired cache); ask status questions in a new session; and if a re-entry is truly unavoidable, ask and stop — <b>take zero tool actions</b>. The corollary for step 6.4: the handover must be written <b>before</b> the limit, not repaired after it, because after it you cannot run this routine at all.</div>
+    <div class="guard"><b>Guardrail — the session-branch trap.</b> Work committed only to a throwaway <code style="background:#f7e9e7;color:#a3352a;">claude/&lt;slug&gt;</code> branch is invisible to every future session. Before the session ends, get committed work onto <b>main itself</b> and pushed — a push of the session branch alone does not satisfy this.</div>
+    <div class="guard"><b>Guardrail — the stale local <code style="background:#f7e9e7;color:#a3352a;">main</code>.</b> A container can carry a local <code style="background:#f7e9e7;color:#a3352a;">main</code> sharing <b>zero</b> history with <code style="background:#f7e9e7;color:#a3352a;">origin/main</code> — an old snapshot baked into its starting state. <code style="background:#f7e9e7;color:#a3352a;">git checkout main</code> then silently rewrites the whole tree, and the "local edits" that appear are checkout artifacts of the wrong branch, not real changes. Run <code style="background:#f7e9e7;color:#a3352a;">git merge-base main origin/main</code> before merging — an <b>empty result means local main is not the real branch</b>. Never answer it with <code style="background:#f7e9e7;color:#a3352a;">--allow-unrelated-histories</code> or a force-push: rename the stale branch aside, rebuild from <code style="background:#f7e9e7;color:#a3352a;">origin/main</code>, then verify a file that should carry this session's real changes.</div>
+    <div class="guard"><b>Guardrail — the ephemeral-container silent-loss trap (hit 2026-08-21, J3 build session).</b> Remote ephemeral containers are reclaimed on inactivity or session end. A session that commits locally and pushes <i>only</i> to the session branch (<code style="background:#f7e9e7;color:#a3352a;">claude/&lt;slug&gt;</code>) loses all work permanently when the container is reclaimed — there is no error, no warning, just gone. The next session's sync check sees "0 0" because the commits never reached the remote. <b>Two pushes are required before any session ends:</b> (1) <code style="background:#f7e9e7;color:#a3352a;">git push origin HEAD:main</code> — gets work onto the trunk that survives container reclaim; (2) <code style="background:#f7e9e7;color:#a3352a;">git push -u origin HEAD</code> — keeps the session branch upstream in sync. Then verify: <code style="background:#f7e9e7;color:#a3352a;">git rev-list --left-right --count HEAD...origin/main</code> <b>must read 0&lt;TAB&gt;0</b>. Never declare a phase "built and pushed" until this count reads 0 0. The Stop hook (<code style="background:#f7e9e7;color:#a3352a;">.claude/hooks/session_stop_check.sh</code>) enforces this after every model response — if it warns, act on it before closing the session.</div>
+  </div>
+</div>
+
+<div class="loopnote"><span>↺ &nbsp;next session re-enters at Phase 1 — fetch, read the state you just set, execute the next phase</span></div>
+
+<div class="seclbl" style="margin-top:34px;">Part C · Mobile Execution Delta — what changes when Nitish isn't at a machine</div>
+
+<div class="livenote">
+  <b>What this is.</b> Nitish builds from several places — this desktop, and
+  mobile/cloud sessions with no physical machine, no Docker, and no one
+  watching the browser in real time. The six-phase flow in Part B runs
+  identically either way; this part is <b>the diff</b> — what stays exactly
+  the same, and what a mobile session must additionally do to reach the same
+  standard of proof. Added 2026-07-24, after a session that closed the MVP2
+  boundary entirely from mobile.
+</div>
+
+<div class="mobilewrap">
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">1</span>Sync &amp; Orient</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span><code>git fetch origin main</code> first tool call, no exceptions.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>This is the phase most likely to bite: several mobile/cloud sessions can push to <code>origin/main</code> between desktop sessions, so a stale local view is the norm to guard against, not the edge case. The fetch gate is not a formality here — it is the only thing standing between "where are we" and a confidently wrong answer.</div>
+  </div>
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">2</span>Scope &amp; Gate</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span>Token-budget gate mechanics are identical — Nitish reports his 5-hour/weekly % from wherever he is.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>None specific to device — the gate depends on Nitish answering, not on where he's sitting.</div>
+  </div>
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">3</span>Spec First</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span>Spec-before-implementation discipline is identical regardless of device.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>None.</div>
+  </div>
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">4</span>Build &amp; Verify</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span>NFR measurement discipline, idempotent live checks, MEASURED-vs-PROJECTED labelling — all identical.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>The "if Nitish is away" branch (Part B, Phase 4) is the <b>default assumption</b> on mobile, not the exception. Postgres/Redis-only checks run natively in-container with no Docker; a check that genuinely needs Kafka/MinIO gets recorded as <b>"built, awaiting live verify"</b> until a networked/desktop session runs it — never routed around.</div>
+  </div>
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">5</span>Demo &amp; Sign-off</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span>The sign-off gate is still Nitish's alone — no self-sign-off, mobile or not.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>Demo evidence is <b>captured</b>, not watched live. A Playwright/Chromium render + full-page screenshot substitutes for Nitish's own eyes in the moment; sign-off, when it lands, is Nitish reviewing that captured evidence (or the artifact itself) after the fact rather than a live walkthrough at his shoulder.</div>
+  </div>
+
+  <div class="mobilerow">
+    <div class="mobile-ph"><span class="mn">6</span>Close Out &amp; Hand Off</div>
+    <div class="mobile-same"><span class="tag">Unchanged</span>Land on <code>main</code> itself, tag at MVP/phase boundaries, update <code>PROGRESS.md</code> for the next session.</div>
+    <div class="mobile-diff"><span class="tag">Mobile delta</span>The session-branch trap bites harder here — concurrent mobile/cloud sessions are exactly the scenario that produced it (a G5 scoping session once stranded on its own throwaway branch while a parallel session saw none of it). And: <b>any visual/HTML artifact touched this session must clear the render-and-screenshot check before commit</b> — see the spotlight below. A mobile session has no "I'll just glance at it running" fallback.</div>
+  </div>
+
+</div>
+
+<div class="spotlight">
+  <b>Added 2026-07-24, amended 2026-08-03 — visual-artifact &amp; demo validation, folded into Phase 5/6 above.</b>
+  Any AsBuilt diagram, proposal visual, or dashboard template edited this
+  session gets rendered with the pre-installed Playwright/Chromium and
+  screenshotted <i>before</i> being called done — not just diff-reviewed.
+  Established closing the MVP2 boundary: a live render caught a text-overlap
+  in a new DFD diagram that the diff alone didn't show.
+  <b>What changed on 2026-08-03 is where the image lands, not whether anyone
+  looks.</b> Order the checks cheapest-first — tag balance and an overflow
+  assertion (~200 tokens) before any render — then have a <b>subagent</b>
+  render, read the PNG and return a short verdict. The looking requirement is
+  unchanged and non-negotiable; it was costing <b>22% of the project's total
+  spend</b> because a PNG in the main context is re-read on every later turn.
+  If the main thread must read one: 900px viewport, JPEG q80, cropped, and
+  late in the session. Full mechanics in
+  <code>.claude/rules/harness.md</code> ("Visual-artifact and demo validation
+  from mobile") and <code>.claude/rules/tokens.md</code> §3; this is the
+  one-line version for the process map.
+</div>
+
+<div class="pgfooter">
+  <span class="pftext">SENTINEX / WaysOfWorking / living / last updated 2026-08-03 (token efficiency as a constitution pillar, the PreToolUse token tripwire, subagent delegation pattern, visual-check routing; previous 2026-07-29)</span>
+  <span class="pftext">Source of truth: .claude/rules/{harness,build,product,tokens}.md · build/PROGRESS.md</span>
+</div>
+
+</div>
+</body>
+</html>
