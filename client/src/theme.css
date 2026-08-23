@@ -9,6 +9,7 @@
   --warm:      #FF7A18;
   --cool:      #4060FF;
   --good:      #1FA25A;
+  --bad:       #E8194B;
   --border:    rgba(13,12,26,0.09);
   --border-md: rgba(13,12,26,0.15);
 }
@@ -24,6 +25,7 @@
     --warm:      #FF8020;
     --cool:      #6080FF;
     --good:      #3ACC7E;
+    --bad:       #FF4070;
     --border:    rgba(237,238,248,0.08);
     --border-md: rgba(237,238,248,0.14);
   }
@@ -39,6 +41,7 @@
   --warm:      #FF8020;
   --cool:      #6080FF;
   --good:      #3ACC7E;
+  --bad:       #FF4070;
   --border:    rgba(237,238,248,0.08);
   --border-md: rgba(237,238,248,0.14);
 }

@@ -17,3 +17,8 @@
   font-weight: 600;
   margin-bottom: 1.5rem;
 }
+.saved-banner.error {
+  background: rgba(232, 25, 75, .12);
+  border-color: var(--bad);
+  color: var(--bad);
+}

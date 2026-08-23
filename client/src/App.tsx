@@ -1,23 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Apply } from './pages/Apply';
 import { EventSetup } from './pages/EventSetup';
+import { AdminConsole } from './pages/AdminConsole';
 import { AuditLog } from './components/AuditLog';
 import { RoadmapTeaser } from './components/RoadmapTeaser';
 import { PRODUCER_FEATURE_MANIFEST } from './featureManifest';
-import { getStatus, resetAll } from './producerState';
+import { getMyApplication, getProducerToken, resetProducerSession } from './api';
 import './theme.css';
 import './App.css';
 
-export default function App() {
-  const [approved, setApproved] = useState(getStatus() === 'approved');
+function ProducerApp() {
+  const [approved, setApproved] = useState(false);
+  const [checked, setChecked] = useState(!getProducerToken());
   const [auditVersion, setAuditVersion] = useState(0);
-  const bumpAudit = () => setAuditVersion((v) => v + 1);
+
+  useEffect(() => {
+    if (!getProducerToken()) return;
+    getMyApplication()
+      .then((res) => setApproved(res?.application?.status === 'approved'))
+      .finally(() => setChecked(true));
+  }, []);
+
+  function handleApproved() {
+    setApproved(true);
+    setAuditVersion((v) => v + 1);
+  }
 
   function handleReset() {
-    resetAll();
-    setApproved(false);
+    resetProducerSession();
     window.location.reload();
   }
+
+  if (!checked) return null;
 
   return (
     <div>
@@ -29,21 +43,16 @@ export default function App() {
         </div>
       </nav>
 
-      {approved ? (
-        <EventSetup />
-      ) : (
-        <Apply
-          onApproved={() => {
-            setApproved(true);
-            bumpAudit();
-          }}
-          onAuditChange={bumpAudit}
-        />
-      )}
+      {approved ? <EventSetup /> : <Apply onApproved={handleApproved} />}
 
       <AuditLog key={auditVersion} />
 
       <RoadmapTeaser features={PRODUCER_FEATURE_MANIFEST} />
     </div>
   );
+}
+
+export default function App() {
+  const isAdmin = window.location.pathname.startsWith('/admin');
+  return isAdmin ? <AdminConsole /> : <ProducerApp />;
 }

@@ -49,32 +49,17 @@
 .status-pill.approved { background: rgba(31, 162, 90, .15); color: var(--good); }
 .status-pill.rejected { background: rgba(232, 25, 75, .15); color: var(--accent); }
 
-.admin-sim {
-  border: 1px dashed var(--border-md);
-  border-radius: 14px;
-  padding: 1.25rem;
-  margin-top: 1.5rem;
-  background: var(--bg-raised);
-}
-.admin-sim p.sim-label {
-  font-size: .75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: var(--muted);
-  margin-bottom: .5rem;
-}
-.admin-sim p.sim-note { font-size: .8rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
-.admin-sim .actions { display: flex; gap: .6rem; flex-wrap: wrap; }
-.admin-sim button {
-  border-radius: 100px;
-  padding: .55rem 1.1rem;
-  font-size: .825rem;
+p.sim-note { font-size: .825rem; color: var(--muted); margin-top: 1rem; line-height: 1.6; }
+
+.saved-banner {
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: .875rem;
   font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--border-md);
-  background: var(--bg-card);
-  color: var(--text);
+  margin-bottom: 1.5rem;
 }
-.admin-sim button.approve { background: var(--good); color: #fff; border-color: transparent; }
-.admin-sim button.reject { background: transparent; color: var(--accent); border-color: var(--accent); }
+.saved-banner.error {
+  background: rgba(232, 25, 75, .12);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+}

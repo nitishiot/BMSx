@@ -35,19 +35,27 @@ BMSx-synced/
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see below)
 ├── landing/                  ← static landing page — current, matches the PRD
-└── client/                   ← Producer portal (Phase 1 slice, React+Vite+TS)
+├── client/                   ← Producer portal + Platform Admin console (Phase 1 slice, React+Vite+TS)
+└── server/                   ← core-ticketing backend (Phase 1 slice, Node+Express+TS+Prisma/Postgres)
 ```
 
 This tree is updated in the same commit as any top-level structure change.
 
 ---
 
-## Producer portal (`client/`)
+## Producer portal + Platform Admin console (`client/`) and core-ticketing backend (`server/`)
 
-Phase 1 slice — see `client/README.md` and
-`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4. No relation to the
-archived boarding-house `client/` below; this is a fresh app at the same
-path, current and in active development.
+Phase 1 slice — see `client/README.md`, `server/README.md`, and
+`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4. `client/` now calls a real
+backend (`server/`, Node+Express+TS+Prisma/Postgres) instead of the
+localStorage simulation the first client-only slice used — Identity &
+Access (Account/Role/RoleAssignment/AuditLogEntry), producer application →
+Platform Admin approval → free-tier event setup, all against a real
+database. Most of Phase 1's other backend modules (Event & Catalogue
+beyond Festival, Virtual Queue, Ticketing & Inventory, Orders & Cart,
+Payments) aren't built yet. No relation to the archived boarding-house
+`client/`/`server/` below; these are fresh apps at the same paths, current
+and in active development.
 
 ## Legacy scaffold (archived)
 

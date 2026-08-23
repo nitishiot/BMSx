@@ -5,6 +5,77 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Core-ticketing backend, first sub-slice: signed off (2026-08-23, Sonnet
+session).** Nitish reviewed live at `localhost:5173`/`localhost:5173/admin`
+(his own screenshot shows the admin queue and a growing audit log — his
+approvals plus this session's Playwright test runs) and said "Consider
+this a sign off as well." **Slice sign-off, not Phase 1 sign-off** — same
+caveat as the other two client-surface slices; Phase 1 sign-off per spec §9
+still needs all of §6's exit checks, which need the rest of the backend
+(Event & Catalogue, Virtual Queue, Ticketing & Inventory, Orders & Cart,
+Payments) built. No `phase-1` tag yet. Build/verification detail below.
+
+While reviewing, Nitish also asked to widen the landing page's "Find your
+next festival" search + Events Near You section — it was still capped at
+`max-width:720px` from before the earlier landing-page width pass (which
+widened the sibling Platform/Plans/Roadmap sections to 1800px but missed
+this one), so it read as a narrow island between wide sections despite
+being "the highlight of the page." Widened `.search-inner` and
+`.nearby-inner` to `max-width:1800px` to match; kept the search input row
+itself capped at 720px via a new `.search-form{max-width:720px;margin:0
+auto}` rule so the search box doesn't stretch to full width, only the
+section canvas and result cards do. Verified visually at a 1920px
+viewport — the section's left/right edges now line up with the Platform
+section below it.
+
+**Core-ticketing backend, first sub-slice: built, awaiting sign-off
+(2026-08-23, Sonnet session).** New `server/` app (Node+Express+TS+Prisma,
+confirmed stack) plus its own `docker-compose.yml` running PostgreSQL 16 +
+Redis on non-default ports (`5433`/`6380`) — deliberately not the
+`sentinel-postgres`/`sentinel-redis` containers already running on this
+machine for an unrelated project. Scope: Identity & Access (Account, Role,
+RoleAssignment, Session, AuditLogEntry) and the producer application →
+Platform Admin approval → free-tier event-setup path (PR-1, P6, J5, J7),
+against two real Postgres schemas (`identity`, `catalogue`, per ADR-005 —
+no FK crosses the schema boundary). This is a deliberately scoped **first
+sub-slice** of the much larger "core-ticketing backend" item in
+`PHASE_1_SPEC.md` §2/§4 — Event & Catalogue beyond Festival, Virtual Queue,
+Ticketing & Inventory, Orders & Cart, Payments, Ancillary Bookings, Consent
+& Privacy, and Notifications are still unbuilt; picked this slice because
+it's the seam the Producer portal's existing localStorage simulation
+(`producerState.ts`, now deleted) was already built against.
+
+Rewired `client/` off that simulation entirely: `src/api.ts` replaces it,
+calling the real backend with bearer-token sessions. Apply.tsx no longer
+has a self-approval button — a real, separate **Platform Admin console**
+now exists at `client/src/pages/AdminConsole.tsx`, served at the `/admin`
+route of the same Vite app (login by email against a seeded
+`platform_admin` role, approval queue with a required decision-reason
+field, full audit log view). The Producer portal's own page polls its
+application status every 4s while pending, since approval now happens in
+a different browser tab/session, not inline.
+
+Verified live end-to-end with Playwright, driving two separate browser
+contexts (producer + admin) against the real running `server/` +
+Postgres — not mocks: producer submits → appears in the admin queue →
+admin approves with a reason → producer's tab picks up the approval via
+polling and switches to event setup → event POSTed and saved for real →
+producer's own audit log shows the real `AuditLogEntry` → a second,
+unapproved producer stays stuck at "pending" with no way to self-approve
+(RBAC negative test, exit check 7 — enforced structurally: `/festivals`
+and `/festivals/mine` require the `producer` role and are always scoped to
+the calling account, never a request parameter). Typecheck clean on both
+`client/` and `server/`. Zero console errors. Screenshots taken
+(scratchpad, not committed). **Not yet shown to Nitish** — per
+`.claude/rules/build.md`, status stays "built, awaiting sign-off" until
+that happens and he approves.
+
+Notable build-time decision: `npm install` in `server/` pulled Prisma 7 by
+default, which replaces the classic `datasource { url = env(...) }` schema
+with a new adapter-based `prisma.config.ts` model unrelated to anything
+this session was doing — pinned to Prisma 5 (stable, matches the schema
+this slice was written against) rather than adopt that migration mid-slice.
+
 **Producer portal slice signed off (2026-08-23, Sonnet session).** Fresh
 `client/` app (React+Vite+TS, confirmed stack) at the repo root — same
 path the archived boarding-house app used to occupy, unrelated code.
@@ -145,6 +216,12 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   doc (briefly named `BMSx_PRD_v2.md`, until the rename of the same day
   reinstated TAG); the original moved to
   `archive/BMSx_PRD_v1_business_source.md` via `git mv` (history preserved).
+- **Core-ticketing backend, first sub-slice** — `server/` (Identity &
+  Access + producer application/approval/event-create, Node+Express+TS+
+  Prisma/Postgres 16 in Docker) and `client/` rewired off its former
+  localStorage simulation onto that real backend, plus a genuine Platform
+  Admin console at `/admin`. Built, Playwright-verified, awaiting sign-off
+  — see Status.
 
 ## What's blocked / open
 
@@ -161,17 +238,16 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Active: the core-ticketing backend** (Identity & Access, Event &
-   Catalogue, Virtual Queue, Ticketing & Inventory, Orders & Cart,
-   Payments — Postgres 16, per spec §4). Both client slices (landing page,
-   Producer portal) are signed off; this is the next slice. The landing
-   page's search/near-you currently read `MOCK_FESTIVALS`, and the
-   Producer portal's approval step is a client-side simulation — both are
-   the seams where real API calls replace the stand-ins once this backend
-   exists.
+1. **Active: the rest of the core-ticketing backend** — Event & Catalogue
+   beyond Festival, Virtual Queue, Ticketing & Inventory, Orders & Cart,
+   Payments, Ancillary Bookings, Consent & Privacy, Notifications (spec
+   §2/§4). All three Phase 1 slices built so far (landing page, Producer
+   portal, Identity & Access/producer-approval backend) are now signed off.
+   The landing page's search/near-you still read `MOCK_FESTIVALS` — that
+   seam stays stubbed until Event & Catalogue is built out.
 2. The three open items (object storage, PSP/travel partner, launch
    festival) still need resolving before the exit checks that depend on
-   them (spec §6, checks 3–4) — not before backend build starts.
+   them (spec §6, checks 3–4) — not before further backend build starts.
 3. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
    touches it — several sessions have now edited the `.md` only.
 4. Open, not blocking: repo-surface classification (founder names, financial
@@ -419,3 +495,35 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   (landing page, Producer portal) are now signed off; next slice is the
   core-ticketing backend. Asked to wait for his `/compact` before doing
   anything further this session.
+- **2026-08-23 (Sonnet session, post-compact)** — Nitish said "go ahead
+  now" to resume the core-ticketing backend. Given the size of the full
+  item (Identity & Access, Event & Catalogue, Virtual Queue, Ticketing &
+  Inventory, Orders & Cart, Payments, Ancillary Bookings, Consent &
+  Privacy, Notifications — spec §2/§4), made the call to scope a **first
+  sub-slice** rather than attempt all of it in one pass: Identity & Access
+  + the producer application/approval/event-create path, since that's the
+  exact seam the already-built Producer portal's localStorage simulation
+  was standing in for. This keeps the demo-after-every-build cadence
+  Nitish asked for intact rather than producing one enormous, harder-to-
+  review slice.
+- **2026-08-23 (Sonnet session)** — Found `sentinel-postgres`/
+  `sentinel-redis`/`sentinel-kafka`/`sentinel-minio` Docker containers
+  already running on this machine, from an unrelated project. Gave `server/`
+  its own `docker-compose.yml` on non-default ports (Postgres `5433`, Redis
+  `6380`) rather than reusing or port-clashing with those — this repo's
+  data must stay isolated from whatever that other project is doing.
+- **2026-08-23 (Sonnet session)** — `npm install` in a fresh `server/`
+  pulled Prisma 7 by default, which turned out to require a new
+  adapter-based `prisma.config.ts` (the classic `datasource { url =
+  env(...) }` schema syntax is rejected outright). That migration is
+  unrelated to this slice's actual work, so pinned to Prisma 5 (last
+  stable major before the change) instead of adopting it mid-slice —
+  revisit the Prisma version deliberately in a later session, not as a
+  side effect of an unpinned `npm install`.
+- **2026-08-23 (Sonnet session)** — Removed the Producer portal's
+  self-approval "Admin simulation" buttons entirely now that a real
+  Platform Admin exists — a producer's own session must never be able to
+  approve itself, even for a demo. Built a genuinely separate console
+  (`/admin` route, its own login, its own bearer token) instead, so the
+  approval step in the demo is a different account approving a different
+  account's application, matching what PR-1 actually requires.

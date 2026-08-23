@@ -1,0 +1,120 @@
+// Per ADR-005 (one owning service per entity) and PHASE_1_SPEC.md §4's
+// "one schema per module": Identity & Access and Event & Catalogue get
+// separate Postgres schemas in this shared Phase-1 instance. No FK crosses
+// a schema boundary (ProducerApplication.accountId, Festival.producerAccountId
+// are plain UUID columns, validated in application code, not the DB).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["identity", "catalogue"]
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  roleAssignments RoleAssignment[]
+  sessions        Session[]
+
+  @@schema("identity")
+}
+
+model Role {
+  id  String @id @default(uuid())
+  key String @unique // fan | producer | platform_admin
+
+  assignments RoleAssignment[]
+
+  @@schema("identity")
+}
+
+model RoleAssignment {
+  id        String   @id @default(uuid())
+  accountId String
+  roleId    String
+  grantedAt DateTime @default(now())
+  grantedBy String?
+
+  account Account @relation(fields: [accountId], references: [id])
+  role    Role    @relation(fields: [roleId], references: [id])
+
+  @@unique([accountId, roleId])
+  @@schema("identity")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  accountId String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@schema("identity")
+}
+
+// PR-1 acceptance criterion: every approve/reject/suspend action is
+// recorded here (actor/target/timestamp/reason). Append-only by convention
+// — no update/delete route exists in the API for this model.
+model AuditLogEntry {
+  id         String   @id @default(uuid())
+  actorLabel String
+  action     String
+  targetType String
+  targetId   String
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([actorLabel])
+  @@schema("identity")
+}
+
+enum ProducerApplicationStatus {
+  pending
+  approved
+  rejected
+
+  @@schema("catalogue")
+}
+
+model ProducerApplication {
+  id             String                    @id @default(uuid())
+  accountId      String
+  producerName   String
+  organisation   String
+  email          String
+  festivalName   String
+  status         ProducerApplicationStatus @default(pending)
+  submittedAt    DateTime                  @default(now())
+  decidedAt      DateTime?
+  decidedBy      String?
+  decisionReason String?
+
+  @@index([accountId])
+  @@index([status])
+  @@schema("catalogue")
+}
+
+model Festival {
+  id                String    @id @default(uuid())
+  producerAccountId String
+  name              String
+  startDate         DateTime
+  endDate           DateTime
+  venue             String
+  description       String?
+  createdAt         DateTime  @default(now())
+
+  @@index([producerAccountId])
+  @@schema("catalogue")
+}

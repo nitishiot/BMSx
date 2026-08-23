@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tag-postgres
+    environment:
+      POSTGRES_USER: tag
+      POSTGRES_PASSWORD: tag_dev_only
+      POSTGRES_DB: tag
+    ports:
+      - "5433:5432"
+    volumes:
+      - tag_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: tag-redis
+    ports:
+      - "6380:6379"
+
+volumes:
+  tag_postgres_data:

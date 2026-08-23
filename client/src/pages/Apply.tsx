@@ -1,15 +1,8 @@
-import { useState, type FormEvent } from 'react';
-import {
-  getApplication,
-  getStatus,
-  simulateAdminDecision,
-  submitApplication,
-  type ApplicationStatus,
-} from '../producerState';
+import { useEffect, useState, type FormEvent } from 'react';
+import { getMyApplication, submitApplication, type ApplicationStatus, type ProducerApplication } from '../api';
 import './Apply.css';
 
 const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  none: '',
   pending: 'Pending review',
   approved: 'Approved',
   rejected: 'Rejected',
@@ -17,76 +10,82 @@ const STATUS_LABEL: Record<ApplicationStatus, string> = {
 
 interface ApplyProps {
   onApproved: () => void;
-  onAuditChange: () => void;
 }
 
-export function Apply({ onApproved, onAuditChange }: ApplyProps) {
-  const [status, setStatus] = useState<ApplicationStatus>(getStatus());
+export function Apply({ onApproved }: ApplyProps) {
+  const [application, setApplication] = useState<ProducerApplication | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [producerName, setProducerName] = useState('');
   const [organisation, setOrganisation] = useState('');
   const [email, setEmail] = useState('');
   const [festivalName, setFestivalName] = useState('');
-  const application = getApplication();
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
+  useEffect(() => {
+    getMyApplication()
+      .then((res) => {
+        if (res?.application) setApplication(res.application);
+      })
+      .finally(() => setLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (application?.status === 'approved') onApproved();
+  }, [application, onApproved]);
+
+  // While pending, poll the real backend for the Platform Admin's decision
+  // — approval now happens in the separate /admin console, not in this app.
+  useEffect(() => {
+    if (application?.status !== 'pending') return;
+    const interval = setInterval(() => {
+      getMyApplication().then((res) => {
+        if (res?.application) setApplication(res.application);
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [application]);
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    submitApplication({ producerName, organisation, email, festivalName });
-    setStatus('pending');
-    onAuditChange();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const app = await submitApplication({ producerName, organisation, email, festivalName });
+      setApplication(app);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not submit application');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function handleDecision(decision: 'approved' | 'rejected', reason: string) {
-    simulateAdminDecision(decision, reason);
-    setStatus(decision);
-    onAuditChange();
-    if (decision === 'approved') onApproved();
-  }
+  if (!loaded) return null;
 
-  if (status !== 'none' && application) {
+  if (application) {
     return (
       <div className="apply">
         <p className="eyebrow">Producer Application</p>
         <h1>{application.festivalName}</h1>
         <div className="status-card">
-          <span className={`status-pill ${status}`}>{STATUS_LABEL[status]}</span>
+          <span className={`status-pill ${application.status}`}>{STATUS_LABEL[application.status]}</span>
           <p style={{ color: 'var(--muted)', fontSize: '.875rem' }}>
             Submitted by {application.producerName} ({application.organisation}) on{' '}
             {new Date(application.submittedAt).toLocaleDateString()}.
           </p>
 
-          {status === 'pending' && (
-            <div className="admin-sim">
-              <p className="sim-label">Admin simulation</p>
-              <p className="sim-note">
-                The real Platform Admin console (PRD §5 P6, §7 J7) isn't built
-                yet — this is a stand-in so the application → approval → event
-                -setup flow can be demonstrated end to end. Nothing here is
-                real access control; the next backend slice replaces it.
-              </p>
-              <div className="actions">
-                <button className="approve" onClick={() => handleDecision('approved', 'Meets vendor evidence bar (simulated)')}>
-                  Approve (simulated)
-                </button>
-                <button className="reject" onClick={() => handleDecision('rejected', 'Incomplete evidence (simulated)')}>
-                  Reject (simulated)
-                </button>
-              </div>
-            </div>
-          )}
-
-          {status === 'approved' && (
-            <div className="admin-sim">
-              <p className="sim-label">Approved</p>
-              <p className="sim-note">You can now set up your free-tier event.</p>
-              <div className="actions">
-                <button className="approve" onClick={onApproved}>Continue to event setup</button>
-              </div>
-            </div>
-          )}
-
-          {status === 'rejected' && (
+          {application.status === 'pending' && (
             <p className="sim-note">
-              Your application was rejected. Contact TAG support to reapply.
+              Waiting on Platform Admin review (PRD §5 P6, §7 J7). This page
+              polls automatically — no action needed here.
+            </p>
+          )}
+
+          {application.status === 'rejected' && (
+            <p className="sim-note">
+              Your application was rejected
+              {application.decisionReason ? `: "${application.decisionReason}"` : '.'} Contact TAG support to
+              reapply.
             </p>
           )}
         </div>
@@ -103,6 +102,7 @@ export function Apply({ onApproved, onAuditChange }: ApplyProps) {
         dashboard. A Platform Admin reviews every application before you can
         create events (PR-1).
       </p>
+      {error && <div className="saved-banner error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="producerName">Your name</label>
@@ -120,7 +120,9 @@ export function Apply({ onApproved, onAuditChange }: ApplyProps) {
           <label htmlFor="festivalName">Festival name</label>
           <input id="festivalName" required value={festivalName} onChange={(e) => setFestivalName(e.target.value)} />
         </div>
-        <button className="submit-btn" type="submit">Submit application</button>
+        <button className="submit-btn" type="submit" disabled={submitting}>
+          {submitting ? 'Submitting…' : 'Submit application'}
+        </button>
       </form>
     </div>
   );
