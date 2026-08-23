@@ -133,13 +133,13 @@ Portal are P1/later per the architecture's container view.
   proven in this repo's tooling. One schema per module in the monolith's
   single instance; Virtual Queue, Ticketing & Inventory, and Payments each
   get their own instance since they're separately deployed.
-- **Redis** (proposed, not yet run anywhere in this repo — flag as
-  `[TBD: confirm before implementation]`) for Virtual Queue position/token
-  state and Ticketing & Inventory's hot allocation counters — the
-  architecture's abstract "cache / hot inventory counters" store (View 2),
-  named concretely here because Phase 1 needs a real technology choice.
+- **Redis** (confirmed 2026-08-23) for Virtual Queue position/token state
+  and Ticketing & Inventory's hot allocation counters — the architecture's
+  abstract "cache / hot inventory counters" store (View 2), named
+  concretely here because Phase 1 needs a real technology choice.
   Low-latency counter operations at on-sale burst are the reason a cache
-  is separate from Postgres at all.
+  is separate from Postgres at all. Not yet run anywhere else in this
+  repo — first use of it is in this phase.
 - **Object storage** for QR codes and seat-map assets — product
   `[TBD: S3-compatible vs. cloud-specific — gated by the unresolved cloud/
   vendor decision, PRD §12 Q2 territory]`.
@@ -147,19 +147,17 @@ Portal are P1/later per the architecture's container view.
   Event & Catalogue schema, not a dedicated search index or ML embedding
   service — see §7 for why.
 
-## 5. Search implementation — a P0 interpretation, needs confirmation
+## 5. Search implementation — P0 interpretation (confirmed 2026-08-23)
 
 LP-1 asks for "natural-language semantic search" as P0. Read literally that
 implies an embedding/NLP search stack, which PRD §10 places the platform's
 NLP capability (`Semantic Search / NLG / Chatbot`, PRD §8 architecture) as
 part of the **AI/Data platform**, a layer with no P0 commitment elsewhere
-in §10. **Interpretation for Phase 1:** LP-1's acceptance criterion
-("indie rock in Dublin this weekend" → correct genre/location/date filter)
-is met with structured query parsing over Postgres full-text search, not a
-trained semantic model — the AI/Data platform's NLP container stays P1/P2.
-`[TBD: Nitish to confirm this interpretation before build starts — if
-semantic search is meant literally as P0, that changes both scope and the
-data-store list above.]`
+in §10. **Confirmed interpretation for Phase 1:** LP-1's acceptance
+criterion ("indie rock in Dublin this weekend" → correct genre/location/date
+filter) is met with structured query parsing over Postgres full-text
+search, not a trained semantic model — the AI/Data platform's NLP
+container stays P1/P2.
 
 ## 6. Exit checks
 
@@ -222,22 +220,25 @@ until then these are targets, not measurements, and are labelled as such.
   audit log by actor/target) has a matching Postgres index — checked
   against `EXPLAIN` output before sign-off, not assumed from the schema.
 
-## 8. Open items to resolve before or during build
+## 8. Open items
 
-1. Redis as the cache/hot-counter technology — proposed here, not yet
-   confirmed (§4).
-2. Object storage product — blocked on the cloud/vendor decision (PRD §12
-   Q2 territory).
-3. LP-1's "semantic search" interpretation (§5) — needs Nitish's
-   confirmation.
-4. PSP and travel/accommodation partner selection (PRD §12 Q2) — gates
+Resolved 2026-08-23 (see `PROGRESS.md` decisions log for reasoning):
+- Redis confirmed as the cache/hot-counter technology (§4).
+- LP-1's "semantic search" interpretation confirmed (§5).
+- Legacy `client`/`server` scaffold archived to
+  `archive/legacy_boardinghouse_scaffold/` — no longer blocks anything.
+
+Still open, deliberately left as TBD, proceed anyway:
+1. **Object storage product** — blocked on the cloud/vendor decision
+   (PRD §12 Q2 territory); no cloud provider has been named for anything
+   else in the platform either, so this isn't picked in isolation.
+2. **PSP and travel/accommodation partner selection** (PRD §12 Q2) — gates
    the one accommodation/one transport integration in §2 and the payment
-   sandbox in exit check 3.
-5. Launch festival/partner commitment (PRD §12 Q1) — gates the throughput
-   target in §7 and exit checks 3–4, which need one real festival's data.
-6. Legacy `client/`/`server/` scaffold disposition (`PROGRESS.md`, open) —
-   does not block Phase 1 since this spec builds fresh, but should resolve
-   before Phase 1 touches the repo's top-level structure.
+   sandbox in exit check 3. ADR-004's port/adapter pattern means build can
+   proceed against a stub adapter meanwhile.
+3. **Launch festival/partner commitment** (PRD §12 Q1) — gates the
+   throughput target in §7 and exit checks 3–4, which need one real
+   festival's data. Placeholder scale to be picked once a partner lands.
 
 ## 9. Sign-off
 

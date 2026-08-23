@@ -5,18 +5,28 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
-**Phase 1 spec drafted (2026-08-23, Sonnet session).**
-`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` exists — objective, in/out of
-scope, components (modular monolith + Virtual Queue/Ticketing &
-Inventory/Payments extracted per ADR-010), exit checks, NFR targets, open
-items. Not implemented, not signed off. Ahead of this, `TAG_PRD_v3.md` was
-created (RBAC/Platform Admin addition, see decisions log) and is now the
-pinned scope doc; `TAG_PRD_v2.md` is superseded but left in place.
-`TAG_Architecture_v1.md`/`.html` got a small addendum (Role/RoleAssignment/
-AuditLogEntry on Identity & Access; ProducerApplication/VendorApplication/
-AffiliateApplication on their owning services) — the `.html` render has not
-been regenerated from the `.md` since this edit, so treat it as one edit
-behind until re-rendered.
+**Phase 1 spec drafted, three of six open items resolved (2026-08-23,
+Sonnet session).** `build/MVP1_CoreTicketing/PHASE_1_SPEC.md` exists —
+objective, in/out of scope, components (modular monolith + Virtual
+Queue/Ticketing & Inventory/Payments extracted per ADR-010), exit checks,
+NFR targets. Not implemented, not signed off. Redis (cache tech) and the
+LP-1 "semantic search" P0 interpretation are confirmed; the legacy
+`client`/`server` scaffold is archived (see below). Object storage, PSP/
+travel partner selection, and launch festival commitment remain open by
+Nitish's choice — noted in "What's blocked / open". Ahead of the spec,
+`TAG_PRD_v3.md` was created (RBAC/Platform Admin addition, see decisions
+log) and is now the pinned scope doc; `TAG_PRD_v2.md` is superseded but
+left in place. `TAG_Architecture_v1.md` got a small addendum
+(Role/RoleAssignment/AuditLogEntry on Identity & Access;
+ProducerApplication/VendorApplication/AffiliateApplication on their
+owning services) — the `.html` render has not been regenerated since,
+so treat it as behind the `.md` until re-rendered.
+
+**Legacy boarding-house scaffold archived (2026-08-23).** `client/`,
+`server/`, and `docker-compose.yml` moved via `git mv` to
+`archive/legacy_boardinghouse_scaffold/`, closing the disposition
+decision that had been open since the repo's PRD pivot. History
+preserved; nothing repurposed or deleted.
 
 
 **Ways-of-working scaffold in place.** The SENTINEX playbook/ways-of-working
@@ -70,32 +80,27 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## What's blocked / open
 
-- **Legacy scaffold decision (open, deferred by Nitish 2026-08-23).**
-  `server/`/`client/` are an unrelated boarding-house/PG app from the
-  original repo scaffold — not the platform the PRD describes. Three
-  options were raised (archive & start fresh / repurpose in place / leave
-  and build alongside); Nitish said to wait for a nudge. **Do not build on,
-  repurpose, or delete this code until that decision lands.**
 - **Sensitivity classification (open).** `archive/BMSx_PRD_v1_business_source.md`
   carries founder names; both PRDs carry financial figures. Both live in a
   public repo; repo-surface vs. internal-only hasn't been decided for this
   project. See `CLAUDE.md`.
+- **Three of `PHASE_1_SPEC.md` §8's items stay open by Nitish's choice**
+  (2026-08-23): object storage product (blocked on an unmade cloud/vendor
+  decision, PRD §12 Q2 territory), PSP/travel-accommodation partner
+  selection, launch festival/partner commitment. Build proceeds against
+  the spec's stated TBDs/adapters meanwhile — these gate specific exit
+  checks (§6 of the spec), not the start of implementation.
 
 ## Next steps
 
-1. **Nitish to resolve the six open items in `PHASE_1_SPEC.md` §8** before
-   implementation starts: cache technology confirmation (Redis proposed,
-   unconfirmed), object storage product (blocked on cloud/vendor choice),
-   LP-1 "semantic search" P0 interpretation, PSP/travel partner selection,
-   launch festival commitment, legacy-scaffold disposition.
-2. Once those land (or Nitish says to proceed with the spec's stated
-   assumptions/TBDs), implementation begins against the frozen spec — no
-   spec edits after sign-off starts (`.claude/rules/build.md`).
-3. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
-   touches it — the RBAC addendum edited the `.md` only.
-4. Resolve the legacy-scaffold decision before Phase 1 touches `client/`
-   or `server/` (spec's §2 builds fresh, so this doesn't block starting).
-5. Open, not blocking: repo-surface classification (founder names, financial
+1. Implementation can begin against the frozen `PHASE_1_SPEC.md` — no spec
+   edits once implementation starts (`.claude/rules/build.md`), only the
+   three open items above still need resolving, and they gate specific
+   exit checks, not the start of build.
+2. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+   touches it — the RBAC addendum and the legacy-scaffold archive edited
+   the `.md` only.
+3. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -248,6 +253,29 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   disposition) — none block writing the spec, several block starting
   implementation. Not signed off; per `.claude/rules/build.md` status is
   "spec drafted," not "built."
+- **2026-08-23 (Sonnet session)** — Worked through the Phase 1 spec's six
+  open items with Nitish. **Resolved:** Redis confirmed as the Virtual
+  Queue/Inventory cache technology (was a proposal, now decided);
+  LP-1's "semantic search" P0 interpretation (Postgres full-text search,
+  not a trained NLP model) confirmed; legacy `client`/`server`/
+  `docker-compose.yml` scaffold archived to
+  `archive/legacy_boardinghouse_scaffold/` via `git mv` — closes the
+  disposition decision open since the PRD pivot. **Left open, by choice:**
+  object storage product (genuinely blocked — no cloud provider named for
+  anything in the platform yet, naming one just for object storage would
+  be a decision made in isolation), PSP/travel-accommodation partner
+  selection, and launch festival/partner commitment — all three are
+  commercial/partnership calls with no evidence in this repo to draw on,
+  and the spec's ADR-004 port/adapter pattern means build isn't blocked by
+  leaving them TBD.
+- **2026-08-23 (Sonnet session)** — Archiving the legacy scaffold: updated
+  `CLAUDE.md`, `README.md`, and `archive/README.md`'s do-not-touch/open-
+  decision language to reflect the archive; updated `.gitignore`'s
+  `server/prisma/dev.db` entry to the new
+  `archive/legacy_boardinghouse_scaffold/server/prisma/dev.db` path.
+  README's setup instructions for the boarding-house app were dropped
+  (its own commands referenced the old top-level paths) rather than
+  rewritten for a path nobody should be running from.
 - **2026-08-23 (Sonnet session)** — Discovered `.gitignore` had a blanket
   `build/` rule from the legacy scaffold's boilerplate. It was dead weight
   for its stated purpose (neither `client/`'s Vite build nor `server/`'s

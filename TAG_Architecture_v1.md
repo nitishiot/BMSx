@@ -567,9 +567,9 @@ These shape or block architecture but are not architectural questions:
 
 ## What this document deliberately does not decide
 
-- **Phase 1 scope.** That belongs in `build/MVP1_<name>/PHASE_1_SPEC.md`, written next.
-- **The legacy `server/` / `client/` scaffold.** Still an open decision (`PROGRESS.md`); nothing here builds on it.
-- **Technology selections.** No language, framework, cloud or database product is named. Those belong in the phase spec, where they can be justified against Phase 1's actual requirements rather than against the whole platform's eventual ones.
+- **Phase 1 scope.** That belongs in `build/MVP1_CoreTicketing/PHASE_1_SPEC.md`, written and drafted since this document.
+- **The legacy `server/` / `client/` scaffold.** No longer applicable here — archived to `archive/legacy_boardinghouse_scaffold/` (`PROGRESS.md`); nothing here builds on it.
+- **Technology selections.** No language, framework, cloud or database product is named here. PostgreSQL and Redis are named in the phase spec instead, justified against Phase 1's actual requirements rather than against the whole platform's eventual ones.
 
 ---
 

@@ -49,13 +49,13 @@ product code exists yet for the platform it describes. Next planned step:
 a high-level comprehensive architecture diagram, building on §8's sketch —
 see `PROGRESS.md` → Next steps for status.
 
-**Legacy scaffold — do not build on top of, do not delete.** `server/` and
-`client/` contain an unrelated boarding-house/PG management app (rooms,
-boarders, rent) from the repo's initial scaffold, before the PRD pivot.
-What happens to this code is **Nitish's open decision, deferred as of
-2026-08-23** (see `PROGRESS.md` decisions log) — a session must not repurpose,
-extend, or delete it without that decision being made first. `landing/`
-(the static landing page) is current and does match the PRD's product.
+**Legacy scaffold — archived.** The unrelated boarding-house/PG management
+app (rooms, boarders, rent) from the repo's initial scaffold, before the
+PRD pivot, was moved to `archive/legacy_boardinghouse_scaffold/` on
+2026-08-23 (Nitish's decision, closing the open item from the same day —
+see `PROGRESS.md` decisions log). Nothing is built on top of it or worked
+from it — same as everything else in `archive/`. `landing/` (the static
+landing page) is current and does match the PRD's product.
 
 ## Folder layout
 
@@ -82,11 +82,9 @@ BMSx-synced/
 │       └── PHASE_1_SPEC.md  ← Phase 1 spec, awaiting sign-off (not yet implemented)
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── README.md
-│   └── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
-├── landing/                  ← static landing page — current, matches the PRD
-├── client/                   ← LEGACY — boarding-house scaffold, pre-PRD-pivot (see above)
-├── server/                   ← LEGACY — boarding-house scaffold, pre-PRD-pivot (see above)
-└── docker-compose.yml        ← LEGACY — Postgres for the boarding-house scaffold
+│   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
+│   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see above)
+└── landing/                  ← static landing page — current, matches the PRD
 ```
 
 Update this tree (here and in `README.md`) in the same commit that adds,

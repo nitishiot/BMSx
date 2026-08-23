@@ -3,5 +3,5 @@ dist/
 .env
 *.log
 .DS_Store
-server/prisma/dev.db
+archive/legacy_boardinghouse_scaffold/server/prisma/dev.db
 *.tsbuildinfo
