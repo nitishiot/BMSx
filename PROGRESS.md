@@ -1,4 +1,4 @@
-# PROGRESS.md — BMSx session continuity
+# PROGRESS.md — TAG session continuity
 
 Single source of session continuity. Read this first every session (after
 the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
@@ -15,10 +15,17 @@ under `build/`.
 **Architecture drafted (2026-08-23).** `TAG_Architecture_v1.md` and its
 local rendered companion `TAG_Architecture_v1.html` now exist — six views
 (system context, containers, domain/data model, critical-path sequences for
-J1 and J2, cross-cutting concerns, decisions) derived from `BMSx_PRD_v2.md`.
-Draft, not signed off. Phase 1 scoping is the next step.
+J1 and J2, cross-cutting concerns, decisions) derived from `TAG_PRD_v2.md`.
+Draft, not signed off. Both decisions it was waiting on closed on 2026-08-23
+(ADR-010 and the rename); Phase 1 scoping is the next step.
 
-**Repo sync status (as of 2026-08-23, commit `b8f3ef7`):** local `main`,
+**Renamed to TAG (2026-08-23).** The repo-wide BMSx→TAG pass has run —
+PRD (now `TAG_PRD_v2.md`), `CLAUDE.md`, `.claude/rules/*`, `README.md`,
+`landing/` and the architecture doc. BMSx survives only as historical
+record: this decisions log, `archive/` filenames, the `BMSx-synced` working
+directory and the `nitishiot/BMSx` remote.
+
+**Repo sync status (as of 2026-08-23, commit `6e964ec`):** local `main`,
 current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## What's built so far
@@ -33,7 +40,7 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 - **Platform architecture v1** — `TAG_Architecture_v1.md` (source of truth)
   plus `TAG_Architecture_v1.html` (local read-only render; Mermaid loads
   from a CDN, so it needs a connection to draw diagrams). Six views, ten
-  ADRs (nine accepted, ADR-010 open), fourteen consolidated TBDs. No
+  ADRs (all ten accepted), twelve consolidated TBDs. No
   technology, cloud, or vendor is named — deliberately deferred to the
   phase spec.
 - **PRD reconciliation.** `References/TAG_PRD_v1.md` (a fuller product PRD
@@ -42,8 +49,9 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   `BMSx_PRD.md` — same market/revenue data, plus goals, personas, non-goals,
   landing-page requirements, user journeys, architecture, prioritised user
   stories, P0/P1/P2 requirements, success metrics, open questions, and a
-  consolidated TBD list. Promoted to `BMSx_PRD_v2.md` (TAG→BMSx renamed
-  throughout) as the new pinned scope doc; the original moved to
+  consolidated TBD list. Promoted to `TAG_PRD_v2.md` as the new pinned scope
+  doc (briefly named `BMSx_PRD_v2.md`, until the rename of the same day
+  reinstated TAG); the original moved to
   `archive/BMSx_PRD_v1_business_source.md` via `git mv` (history preserved).
 
 ## What's blocked / open
@@ -61,25 +69,19 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Next session (Sonnet tier, per Nitish): write the first phase spec.**
-   Nitish reviewed `TAG_Architecture_v1.md`/`.html` and confirmed the
-   diagrams render correctly. He will confirm **both open decisions in that
-   session, not before**, so the spec session must resolve them first:
-   - **ADR-010 — deployment granularity.** Modular monolith with Virtual
-     Queue, Ticketing & Inventory and Payments extracted (the architecture's
-     recommendation), versus the PRD §8 target of full serverless
-     microservices. This decides the phase spec's component structure, so it
-     cannot be deferred past the spec.
-   - **BMSx→TAG rename pass.** The architecture doc says TAG; the PRD,
-     `CLAUDE.md`, `.claude/rules/product.md`, `README.md` and `landing/`
-     still say BMSx and still mark TAG as retired. Confirm scope and timing
-     of the rename before writing a spec that has to pick one name.
-2. On those decisions: scope Phase 1 against `BMSx_PRD_v2.md` (§13 already
-   proposes a phasing: Phase 1 = landing-page optimisation + core ticketing
-   P0, Europe), write `build/MVP1_<name>/PHASE_1_SPEC.md` before any
-   implementation.
-3. Resolve the legacy-scaffold decision before Phase 1 touches `client/`
+1. **Next session (Sonnet tier): write the first phase spec.** Both blocking
+   decisions are now closed (see the log below), so this is unblocked
+   well-specified work — scope Phase 1 against `TAG_PRD_v2.md` §13 (Phase 1 =
+   landing-page optimisation + core ticketing P0, Europe) and write
+   `build/MVP1_<name>/PHASE_1_SPEC.md` before any implementation. Component
+   structure is fixed by ADR-010: modular monolith, with Virtual Queue,
+   Ticketing & Inventory and Payments extracted.
+2. Resolve the legacy-scaffold decision before Phase 1 touches `client/`
    or `server/`.
+3. Open, not blocking: repo-surface classification (founder names, financial
+   figures in a public repo), and whether the `BMSx-synced` folder and
+   `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
+   the rename pass.
 
 ## Decisions log
 
@@ -164,4 +166,29 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   next session rather than this one, and to run that session on Sonnet, since
   writing a phase spec against an already-written architecture is
   well-specified work rather than judgement-heavy synthesis.
-
+- **2026-08-23** — **ADR-010 decided: modular monolith with Virtual Queue,
+  Ticketing & Inventory and Payments extracted**, in preference to the PRD
+  §8 target of thirteen independently deployed serverless services. Reason:
+  thirteen deploy pipelines before the first ticket sells is cost without
+  benefit at current team size; ADR-005's one-owner-per-entity rule keeps
+  later extraction cheap. ADR-010 moved from Open to Accepted in
+  `TAG_Architecture_v1.md`/`.html`; the phase spec's component structure
+  follows from it.
+- **2026-08-23** — **BMSx→TAG rename pass run repo-wide**, closing the
+  contradiction logged earlier the same day. Renamed: `BMSx_PRD_v2.md` →
+  `TAG_PRD_v2.md` (via `git mv`), plus product-name occurrences in
+  `CLAUDE.md`, `.claude/rules/{product,harness,build}.md`, `README.md`,
+  `landing/index.html` and both architecture files. The vocabulary rule in
+  `product.md` was inverted by hand, not substituted (`**BMSx** (never
+  "TAG")` → the reverse). **Deliberately not renamed:** `client/`, `server/`
+  (under the do-not-touch rule until their own decision lands),
+  `archive/BMSx_PRD_v1_business_source.md` (superseded; renaming it would
+  also collide with `References/TAG_PRD_v1.md`), the `BMSx-synced` folder and
+  the `nitishiot/BMSx` remote (renaming either breaks working directories and
+  every existing clone URL — Nitish's separate call), and the entries in this
+  log, which are a record of what was decided when.
+- **2026-08-23** — Budget gate answered: session and weekly usage both under
+  45%. Model tier: Opus for the rename pass, because the inversions
+  (`**BMSx** (never "TAG")`) and the judgement about which occurrences are
+  historical record would go wrong under a blind substitution. Phase-1 spec
+  work drops to Sonnet, per the original plan.

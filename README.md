@@ -1,8 +1,8 @@
-# BMSx
+# TAG
 
 A full-stack **festival ticketing & 360° experience platform** — ticketing,
 travel, accommodation, dining, merchandise, and fan/social engagement under
-one platform. Product scope is defined in [`BMSx_PRD_v2.md`](BMSx_PRD_v2.md)
+one platform. Product scope is defined in [`TAG_PRD_v2.md`](TAG_PRD_v2.md)
 (pinned, v2, draft — not yet signed off). The original business/investor-facing
 PRD is archived at [`archive/BMSx_PRD_v1_business_source.md`](archive/BMSx_PRD_v1_business_source.md).
 
@@ -16,7 +16,7 @@ BMSx-synced/
 ├── README.md              ← this file — opens with this same annotated tree
 ├── CLAUDE.md               ← agent working rules + bootstrap
 ├── PROGRESS.md             ← session continuity: status, next steps, decisions log
-├── BMSx_PRD_v2.md          ← pinned scope doc (v2, draft)
+├── TAG_PRD_v2.md           ← pinned scope doc (v2, draft)
 ├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — 6 views + ADRs
 ├── TAG_Architecture_v1.html ← same content, rendered for reading (Mermaid via CDN)
 ├── .claude/
@@ -29,7 +29,7 @@ BMSx-synced/
 │   └── SENTINEX_WaysOfWorking_v1.html ← the process CLAUDE.md is adapted from
 ├── build/                   ← phase specs, one subfolder per MVP, written before implementation
 ├── archive/                  ← superseded versions; never worked from again
-│   └── BMSx_PRD_v1_business_source.md  ← superseded by BMSx_PRD_v2.md
+│   └── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md
 ├── landing/                  ← static landing page — current, matches the PRD
 ├── client/                   ← LEGACY — pre-PRD-pivot boarding-house scaffold, disposition TBD
 ├── server/                   ← LEGACY — pre-PRD-pivot boarding-house scaffold, disposition TBD
@@ -43,8 +43,8 @@ This tree is updated in the same commit as any top-level structure change.
 ## Legacy scaffold (`server/`, `client/`, `docker-compose.yml`)
 
 The sections below describe a **boarding-house/PG management app** — an
-unrelated scaffold from before the repo pivoted to the BMSx festival
-platform described in `BMSx_PRD_v2.md`. Kept as-is pending a decision on its
+unrelated scaffold from before the repo pivoted to the TAG festival
+platform described in `TAG_PRD_v2.md`. Kept as-is pending a decision on its
 disposition (see `PROGRESS.md`). Do not treat this as the current product.
 
 ### Stack

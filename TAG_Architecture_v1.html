@@ -98,12 +98,12 @@
 <b>Status:</b> Draft for review — not signed off &nbsp;·&nbsp;
 <b>Date:</b> 23 August 2026<br>
 <b>Author:</b> Nitish (drafted with Claude) &nbsp;·&nbsp;
-<b>Derived from:</b> <code>BMSx_PRD_v2.md</code> §2, §7, §8, §10, §12, §13 &nbsp;·&nbsp;
+<b>Derived from:</b> <code>TAG_PRD_v2.md</code> §2, §7, §8, §10, §12, §13 &nbsp;·&nbsp;
 <b>Source of truth:</b> <code>TAG_Architecture_v1.md</code>
 </p>
 
 <div class="callout">
-<p><b>Naming note.</b> This document uses <b>TAG</b> as the product name, per Nitish's instruction on 2026-08-23. The repo's rules files (<code>CLAUDE.md</code>, <code>.claude/rules/product.md</code>) and the pinned PRD still say <b>BMSx</b> and mark TAG as retired. That contradiction is known and deliberate: the BMSx→TAG rename across the PRD, rules, README and landing page is a separate pass to run after this first build. Until it runs, treat TAG and BMSx as the same product.</p>
+<p><b>Naming note.</b> <b>TAG</b> is the product name throughout the repo. The interim name "BMSx" was retired by the rename pass of 2026-08-23, which carried it across the PRD, rules files, README and landing page. It survives only where it is a historical record — <code>PROGRESS.md</code> decisions-log entries, <code>archive/</code> filenames, the <code>BMSx-synced</code> working directory and the <code>nitishiot/BMSx</code> remote.</p>
 </div>
 
 <div class="note">
@@ -285,8 +285,8 @@ flowchart TB
 <h3>On deployment granularity — a flagged concern</h3>
 <div class="callout">
 <p>PRD §8 specifies "serverless microservices". That is the right <i>target</i>, and this view is drawn as it. It is <b>not</b> the right thing to build first at current team size. Thirteen independently deployed services impose distributed tracing, contract versioning, saga debugging and thirteen deployment pipelines before a single ticket has been sold.</p>
-<p><b>Recommendation (ADR-010, open):</b> build v1 as a <b>modular monolith</b> with the boundaries above enforced in code — separate modules, separate schemas, no cross-module database access — and extract only the containers that genuinely need it: <b>Virtual Queue</b> and <b>Ticketing &amp; Inventory</b> for independent scaling (A1), plus <b>Payments</b> for PCI scope isolation (A3). Every other boundary then stays a module boundary that can be pulled out later without a rewrite, precisely because the data-ownership rule in View 3 was never violated.</p>
-<p>This does not change the diagram. It changes what "one box" means at deploy time — and it is Nitish's decision to take.</p>
+<p><b>Decision (ADR-010, accepted 2026-08-23):</b> build v1 as a <b>modular monolith</b> with the boundaries above enforced in code — separate modules, separate schemas, no cross-module database access — and extract only the containers that genuinely need it: <b>Virtual Queue</b> and <b>Ticketing &amp; Inventory</b> for independent scaling (A1), plus <b>Payments</b> for PCI scope isolation (A3). Every other boundary then stays a module boundary that can be pulled out later without a rewrite, precisely because the data-ownership rule in View 3 was never violated.</p>
+<p>This does not change the diagram. It changes what "one box" means at deploy time. Nitish took this decision on 2026-08-23, in preference to the PRD §8 target of thirteen independently deployed serverless services; the phase spec's component structure follows from it.</p>
 </div>
 
 <h2 id="v3">View 3 — Domain &amp; data model</h2>
@@ -550,7 +550,7 @@ flowchart LR
 <tr><td>ADR-007</td><td>Inventory decrements at hold; holds expire and sweep back</td><td>Prevents overselling and delivers J2's 10-minute inventory return</td><td>Accepted</td></tr>
 <tr><td>ADR-008</td><td>Rewards Points as an append-only ledger</td><td>Points are money-like and must reconcile after disputes</td><td>Accepted</td></tr>
 <tr><td>ADR-009</td><td>Consent as a service other services must call</td><td>Consent checks and erasure must be auditable platform-wide, not by per-service convention</td><td>Accepted</td></tr>
-<tr><td>ADR-010</td><td><b>Deployment granularity for v1: modular monolith, with Queue, Inventory and Payments extracted</b></td><td>Thirteen deployment pipelines before the first ticket sells is cost without benefit at current team size; ADR-005 preserves the option to extract later</td><td><b>Open — Nitish's decision</b></td></tr>
+<tr><td>ADR-010</td><td><b>Deployment granularity for v1: modular monolith, with Queue, Inventory and Payments extracted</b></td><td>Thirteen deployment pipelines before the first ticket sells is cost without benefit at current team size; ADR-005 preserves the option to extract later</td><td>Accepted 2026-08-23</td></tr>
 </table></div>
 
 <h3>Open items inherited from the PRD</h3>
@@ -582,13 +582,12 @@ flowchart LR
 <tr><td>6</td><td>DPIA for profiling / recommendations</td><td>Legal / Privacy</td><td>Recommendation launch</td></tr>
 <tr><td>7</td><td>Cloud provider and event-broker product</td><td>Engineering</td><td>Phase 1 spec</td></tr>
 <tr><td>8</td><td>Queue-fairness operational definition</td><td>Product</td><td>Fairness success metric</td></tr>
-<tr><td>9</td><td>Deployment granularity (ADR-010)</td><td>Nitish</td><td>Phase 1 structure</td></tr>
-<tr><td>10</td><td>Vendor app: native or responsive web</td><td>Engineering / Design</td><td>Vendor app phase</td></tr>
-<tr><td>11</td><td>Community moderation model</td><td>Ops / Trust &amp; Safety</td><td>Community launch</td></tr>
-<tr><td>12</td><td>Repo-surface classification for this document</td><td>Nitish</td><td>External sharing</td></tr>
-<tr><td>13</td><td>BMSx→TAG rename pass across PRD, rules, README, landing</td><td>Nitish</td><td>Vocabulary consistency</td></tr>
-<tr><td>14</td><td>Every NFR target in §5.5</td><td>Engineering</td><td>Phase sign-off criteria</td></tr>
-</table></div>
+<tr><td>9</td><td>Vendor app: native or responsive web</td><td>Engineering / Design</td><td>Vendor app phase</td></tr>
+<tr><td>10</td><td>Community moderation model</td><td>Ops / Trust &amp; Safety</td><td>Community launch</td></tr>
+<tr><td>11</td><td>Repo-surface classification for this document</td><td>Nitish</td><td>External sharing</td></tr>
+<tr><td>12</td><td>Every NFR target in §5.5</td><td>Engineering</td><td>Phase sign-off criteria</td></tr>
+</table>
+<p>Two entries were closed on 2026-08-23: deployment granularity (ADR-010, decided — modular monolith with Queue, Inventory and Payments extracted) and the BMSx→TAG rename pass (done).</p></div>
 
 <footer>
 TAG — Platform Architecture v1 · Draft, not signed off · 23 August 2026.<br>

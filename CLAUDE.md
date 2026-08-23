@@ -1,4 +1,4 @@
-# CLAUDE.md — BMSx
+# CLAUDE.md — TAG
 
 Agent working rules for this repo. Adapted from `References/PLAYBOOK.md` and
 `References/SENTINEX_WaysOfWorking_v1.html` (the SENTINEX project's ways of
@@ -20,17 +20,19 @@ If a session ever skips them, that's worth a decisions-log entry in
 
 ## What this project is
 
-**BMSx** — a full-stack **festival ticketing & 360° experience platform**
+**TAG** — a full-stack **festival ticketing & 360° experience platform**
 (ticketing, travel, accommodation, dining, merchandise, social/fan
 engagement, vendor management). Scope is defined in the pinned PRD,
-`BMSx_PRD_v2.md` (v2, product/build spec — goals, personas, journeys,
+`TAG_PRD_v2.md` (v2, product/build spec — goals, personas, journeys,
 architecture, P0/P1/P2 requirements). `archive/BMSx_PRD_v1_business_source.md`
 is the earlier business/investor-facing doc (market, revenue model, funding)
 that v2 draws its market and revenue data from — read v2 for scope, not v1.
 
 **Fixed vocabulary — use exactly, never invent synonyms:**
-- **BMSx** — the product/company name. (Formerly referred to as "TAG" in
-  early drafts; that name is retired — never reintroduce it.)
+- **TAG** — the product/company name. (The repo carried the interim name
+  "BMSx" between 2026-08-23 and the rename pass of the same date; that name
+  is retired — never reintroduce it. Historical decisions-log entries and
+  `archive/` filenames keep it deliberately, as a record of what was.)
 - **Festival Goers** — B2C end users / attendees.
 - **Festival Clients & Suppliers** — B2B side: festival producers/promoters,
   local vendors, artists/management, local government & tourism boards.
@@ -40,7 +42,7 @@ that v2 draws its market and revenue data from — read v2 for scope, not v1.
 
 ## Current stage
 
-**Pre-build.** `BMSx_PRD_v2.md` exists as a draft (not yet signed off). No
+**Pre-build.** `TAG_PRD_v2.md` exists as a draft (not yet signed off). No
 product code exists yet for the platform it describes. Next planned step:
 a high-level comprehensive architecture diagram, building on §8's sketch —
 see `PROGRESS.md` → Next steps for status.
@@ -60,7 +62,7 @@ BMSx-synced/
 ├── README.md              ← project overview; opens with this same annotated tree
 ├── CLAUDE.md               ← this file — agent working rules + bootstrap
 ├── PROGRESS.md             ← session continuity: status, next steps, decisions log
-├── BMSx_PRD_v2.md          ← pinned scope doc (v2, draft) — see "Spec handling" below
+├── TAG_PRD_v2.md           ← pinned scope doc (v2, draft) — see "Spec handling" below
 ├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — derived from the PRD
 ├── TAG_Architecture_v1.html ← local rendered view of the same document
 ├── .claude/
@@ -75,7 +77,7 @@ BMSx-synced/
 │   └── README.md            ← the phase-spec convention (empty of MVP folders until Phase 1 is scoped)
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── README.md
-│   └── BMSx_PRD_v1_business_source.md  ← superseded by BMSx_PRD_v2.md; kept as the source of market/revenue data
+│   └── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
 ├── landing/                  ← static landing page — current, matches the PRD
 ├── client/                   ← LEGACY — boarding-house scaffold, pre-PRD-pivot (see above)
 ├── server/                   ← LEGACY — boarding-house scaffold, pre-PRD-pivot (see above)
@@ -87,7 +89,7 @@ removes, or repurposes a top-level folder.
 
 ## Spec handling
 
-`BMSx_PRD_v2.md` is the **pinned scope document**. Once a build phase
+`TAG_PRD_v2.md` is the **pinned scope document**. Once a build phase
 begins, work from it directly — don't re-derive scope from the original
 Corporate Presentation or from the superseded `archive/BMSx_PRD_v1_business_source.md`
 (useful only as historical business context: market sizing, revenue-split
@@ -97,7 +99,7 @@ a silent re-interpretation during a build session.
 
 ## Naming convention
 
-`BMSx_<Topic>_vN.<ext>` for documents (e.g. `BMSx_PRD_v3.md` for the next
+`TAG_<Topic>_vN.<ext>` for documents (e.g. `TAG_PRD_v3.md` for the next
 PRD revision). Never overwrite an existing versioned doc in place — save as a new
 `_vN` and leave the prior version untouched (superseded versions eventually
 move to `archive/`, promoted there deliberately, not auto-synced).
@@ -121,7 +123,7 @@ move to `archive/`, promoted there deliberately, not auto-synced).
 
 `archive/BMSx_PRD_v1_business_source.md` names two proprietors (Ila
 Nicholson & Shane Mitchell) and carries funding targets and exit-strategy
-detail; `BMSx_PRD_v2.md` still carries the revenue-split model (45%/21%/17%/17%).
+detail; `TAG_PRD_v2.md` still carries the revenue-split model (45%/21%/17%/17%).
 Both live in a **public** GitHub repo (`nitishiot/BMSx`). The playbook's
 repo-surface / internal-only split (§8) hasn't been explicitly decided for
 this project. Flagged here as `[TBD: repo-surface classification for
@@ -132,6 +134,6 @@ document becomes submission-bound or externally shared.
 
 If using persistent cross-session memory: **user** (Nitish's role/prefs —
 see global `~/CLAUDE.md`), **feedback** (corrections/confirmed approaches,
-with why), **project** (BMSx-specific goals/constraints not derivable from
+with why), **project** (TAG-specific goals/constraints not derivable from
 code/git), **reference** (pointers to external resources). Don't persist
 what git/the repo already records.

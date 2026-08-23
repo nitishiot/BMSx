@@ -17,7 +17,7 @@ build tooling exists and repeated misses justify a hook.
    - Behind → `git status --porcelain`, check for collisions, `pull --ff-only`,
      then re-read `PROGRESS.md` (post-fetch).
    - Even → continue.
-3. Read `PROGRESS.md`, then `BMSx_PRD_v2.md` (or the active phase spec
+3. Read `PROGRESS.md`, then `TAG_PRD_v2.md` (or the active phase spec
    under `build/`, if one exists). Never re-read the original Corporate
    Presentation or `archive/BMSx_PRD_v1_business_source.md` for scope — v2
    is pinned.
@@ -66,7 +66,7 @@ different sessions need different tiers.
   rather than resuming, and if a resume is unavoidable, answer and stop
   (no further tool calls) rather than continuing to work in it.
 - **Never assume a running dev server is current.** If/when a dev server
-  exists for BMSx, check what it's actually serving (build SHA, start time)
+  exists for TAG, check what it's actually serving (build SHA, start time)
   before treating its output as evidence of current code — a stale server
   that "looks" fine is a documented SENTINEX failure mode.
 
@@ -75,7 +75,7 @@ different sessions need different tiers.
 Before pushing anything new to a repo-surface location (README, commit
 messages, tags, CI config, PR/issue text, code/code comments), check it
 against the sensitivity note in `CLAUDE.md` — currently an open item for
-BMSx (founder names in the archived business PRD, financial figures in
+TAG (founder names in the archived business PRD, financial figures in
 both PRDs).
 
 ## Delegation pattern

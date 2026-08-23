@@ -3,7 +3,7 @@
 Applies once implementation work starts (any session touching `build/`,
 `client/`, `server/`, or writing a phase spec). Adapted from
 `References/PLAYBOOK.md` §4 and the SENTINEX Part B execution flow, scaled
-for BMSx's current size (no CI yet, no live production system yet — targets
+for TAG's current size (no CI yet, no live production system yet — targets
 below are placeholders until a first phase defines real ones).
 
 ## Spec before code

@@ -4,15 +4,14 @@
 **Author:** Nitish (drafted with Claude)
 **Date:** 23 August 2026
 **Status:** Draft for review — not signed off
-**Derived from:** `BMSx_PRD_v2.md` (pinned scope document) §2, §7, §8, §10, §12, §13
+**Derived from:** `TAG_PRD_v2.md` (pinned scope document) §2, §7, §8, §10, §12, §13
 **Document type:** Living until Phase 1 sign-off, then frozen as the v1 baseline.
 
-> **Naming note.** This document uses **TAG** as the product name, per Nitish's
-> instruction on 2026-08-23. The repo's current rules files (`CLAUDE.md`,
-> `.claude/rules/product.md`) and the pinned PRD still say **BMSx** and mark TAG
-> as retired. That contradiction is known and deliberate: the BMSx→TAG rename
-> across the PRD, rules, README and landing page is a separate pass to run after
-> this first build. Until it runs, treat TAG and BMSx as the same product.
+> **Naming note.** **TAG** is the product name throughout the repo. The interim
+> name "BMSx" was retired by the rename pass of 2026-08-23, which carried it
+> across the PRD, rules files, README and landing page. It survives only where it
+> is a historical record — `PROGRESS.md` decisions-log entries, `archive/`
+> filenames, the `BMSx-synced` working directory and the `nitishiot/BMSx` remote.
 
 > **Evidence discipline.** Every number in this document is either traceable to
 > the PRD or marked `[TBD]`. No latency, throughput, or cost figure is asserted —
@@ -225,7 +224,7 @@ size. Thirteen independently deployed services impose distributed tracing,
 contract versioning, saga debugging and thirteen deployment pipelines before a
 single ticket has been sold.
 
-**Recommendation (ADR-010, open):** build v1 as a **modular monolith** with the
+**Decision (ADR-010, accepted 2026-08-23):** build v1 as a **modular monolith** with the
 boundaries above enforced in code — separate modules, separate schemas, no
 cross-module database access — and extract only the containers that genuinely
 need it: **Virtual Queue** and **Ticketing & Inventory** for independent scaling
@@ -233,8 +232,10 @@ need it: **Virtual Queue** and **Ticketing & Inventory** for independent scaling
 this diagram then stays a module boundary that can be pulled out later without a
 rewrite, precisely because the data-ownership rule in View 3 was never violated.
 
-This does not change the diagram. It changes what "one box" means at deploy time,
-and it is Nitish's decision to take, not mine to assume.
+This does not change the diagram. It changes what "one box" means at deploy time.
+Nitish took this decision on 2026-08-23, in preference to the PRD §8 target of
+thirteen independently deployed serverless services; the phase spec's component
+structure follows from it.
 
 ---
 
@@ -529,7 +530,7 @@ rather than assert values.
 | ADR-007 | Inventory decrements at hold; holds expire and sweep back | Prevents overselling and delivers J2's 10-minute inventory return | Accepted |
 | ADR-008 | Rewards Points as an append-only ledger | Points are money-like and must reconcile after disputes | Accepted |
 | ADR-009 | Consent as a service other services must call | Consent checks and erasure must be auditable platform-wide, not by per-service convention | Accepted |
-| ADR-010 | **Deployment granularity for v1: modular monolith, with Queue, Inventory and Payments extracted** | Thirteen deployment pipelines before the first ticket sells is cost without benefit at current team size; ADR-005 preserves the option to extract later | **Open — Nitish's decision** |
+| ADR-010 | **Deployment granularity for v1: modular monolith, with Queue, Inventory and Payments extracted** | Thirteen deployment pipelines before the first ticket sells is cost without benefit at current team size; ADR-005 preserves the option to extract later | Accepted 2026-08-23 |
 
 ### Open items inherited from the PRD
 
@@ -549,7 +550,6 @@ These shape or block architecture but are not architectural questions:
 9. `[TBD: PCI-DSS SAQ level]` — follows from item 2.
 10. `[TBD: DPIA for profiling and recommendations]` — PRD §14 item 7, not started.
 11. `[TBD: repo-surface classification]` — carried from `CLAUDE.md`. This document deliberately contains no founder names and no revenue-split figures, so it is safer to share than either PRD, but the classification is still undecided.
-12. `[TBD: BMSx→TAG rename pass]` — the PRD, rules files, README and landing page still say BMSx.
 
 ---
 
@@ -573,9 +573,11 @@ These shape or block architecture but are not architectural questions:
 | 6 | DPIA for profiling / recommendations | Legal / Privacy | Recommendation launch |
 | 7 | Cloud provider and event-broker product | Engineering | Phase 1 spec |
 | 8 | Queue-fairness operational definition | Product | Fairness success metric |
-| 9 | Deployment granularity (ADR-010) | Nitish | Phase 1 structure |
-| 10 | Vendor app: native or responsive web | Engineering / Design | Vendor app phase |
-| 11 | Community moderation model | Ops / Trust & Safety | Community launch |
-| 12 | Repo-surface classification for this document | Nitish | External sharing |
-| 13 | BMSx→TAG rename pass across PRD, rules, README, landing | Nitish | Vocabulary consistency |
-| 14 | Every NFR target in §5.5 | Engineering | Phase sign-off criteria |
+| 9 | Vendor app: native or responsive web | Engineering / Design | Vendor app phase |
+| 10 | Community moderation model | Ops / Trust & Safety | Community launch |
+| 11 | Repo-surface classification for this document | Nitish | External sharing |
+| 12 | Every NFR target in §5.5 | Engineering | Phase sign-off criteria |
+
+Two entries were closed on 2026-08-23: deployment granularity (ADR-010, decided —
+modular monolith with Queue, Inventory and Payments extracted) and the BMSx→TAG
+rename pass (done).

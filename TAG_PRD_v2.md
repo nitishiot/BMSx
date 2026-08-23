@@ -1,11 +1,11 @@
-# BMSx — Product Requirements Document (v2)
+# TAG — Product Requirements Document (v2)
 
-**Product:** BMSx 360° Festival Ticketing Platform
+**Product:** TAG 360° Festival Ticketing Platform
 **Author:** Nitish (drafted with Claude)
 **Date:** 23 August 2026
 **Status:** Draft for review
-**Sources:** BMSx Corporate Presentation v45, Wireframe notes, AI-powered homepage analysis
-**Provenance:** promoted from `References/TAG_PRD_v1.md` on 2026-08-23 — renamed TAG→BMSx throughout (the earlier draft predates the product's TAG→BMSx rename). Supersedes the original `BMSx_PRD.md` (v1.0) as the pinned build-scope document; that file is retained at `archive/BMSx_PRD_v1_business_source.md` as the original business/investor-facing source this PRD draws its market and revenue data from.
+**Sources:** TAG Corporate Presentation v45, Wireframe notes, AI-powered homepage analysis
+**Provenance:** promoted from `References/TAG_PRD_v1.md` on 2026-08-23, briefly carrying the interim name BMSx as `BMSx_PRD_v2.md`; renamed back to TAG the same day when that name was reinstated as the product name. Supersedes the original `BMSx_PRD.md` (v1.0) as the pinned build-scope document; that file is retained at `archive/BMSx_PRD_v1_business_source.md` as the original business/investor-facing source this PRD draws its market and revenue data from.
 
 ---
 
@@ -15,16 +15,16 @@ Event ticketing today is dominated by monopolies/oligopolies with little incenti
 
 The festivals segment specifically is unsaturated — research identifies only one homegrown competitor (US-based, minimal traction in 10 years) — while major European festivals draw audiences of 210K–600K each (Tomorrowland 600K, Primavera Sound 500K, ADE 450K, Sziget 450K, Pol'and'Rock 400K, Glastonbury 210K). No incumbent (Ticketmaster, Eventbrite, SeatGeek, et al.) offers a full 360° experience — ticketing plus travel, stay, dining, merchandise, and community — and none makes heavy use of AI for prediction and personalisation (per the Platform Analysis snapshot).
 
-**Cost of not solving:** fans continue to assemble festival trips across 5+ separate apps (tickets, flights, hotels, rides, meals); BMSx forfeits the 45% of modelled revenue that comes from partnership fees and the retention advantage of owning the whole journey.
+**Cost of not solving:** fans continue to assemble festival trips across 5+ separate apps (tickets, flights, hotels, rides, meals); TAG forfeits the 45% of modelled revenue that comes from partnership fees and the retention advantage of owning the whole journey.
 
 ---
 
 ## 2. Product Vision
 
-BMSx is a 360° festival solutions platform, not a ticketing transaction company. It serves three sides of the market:
+TAG is a 360° festival solutions platform, not a ticketing transaction company. It serves three sides of the market:
 
 - **Fans:** one app for tickets + accommodation, travel, meals, merchandise, local attractions, social features, and rewards — with an elevated UI/UX and transparent fees.
-- **Vendors:** a dedicated app integrated with the BMSx platform, with real-time functionality and resource pooling.
+- **Vendors:** a dedicated app integrated with the TAG platform, with real-time functionality and resource pooling.
 - **Festival companies/producers:** ML/AI predictive tooling, a next-generation platform, and secondary-market abuse mitigation through 360° transparency.
 
 Launch in Europe (incorporated in Ireland), then expand to emerging markets such as India (festivals of light and colour identified as opportunities).
@@ -95,7 +95,7 @@ The current landing page follows the wireframe outline (hero + search, carousel,
 | ID | Requirement | Acceptance criteria |
 |----|-------------|---------------------|
 | LP-1 | Single prominent search bar with natural-language semantic search (event, artist, venue, location) | Given a query like "indie rock in Dublin this weekend", when submitted, then results are filtered to matching genre, location, and date window; zero-result queries show nearest alternatives, never a dead end |
-| LP-2 | Above-the-fold value proposition communicating 360° service (tickets + stay + travel + meals) | 5-second test: ≥ 80% of test users can state what BMSx does [TBD: run test]; hero renders without layout shift (CLS < 0.1) |
+| LP-2 | Above-the-fold value proposition communicating 360° service (tickets + stay + travel + meals) | 5-second test: ≥ 80% of test users can state what TAG does [TBD: run test]; hero renders without layout shift (CLS < 0.1) |
 | LP-3 | "Events Near You" using coarse location (with permission) | Given location permission denied, then a country/city selector is offered; no blocking prompt on first paint |
 | LP-4 | Performance budget | LCP < 2.5 s and TTI < 3.5 s on mid-range mobile over 4G; images lazy-loaded below the fold |
 | LP-5 | Mobile-responsive layout | All P0 modules usable at 360 px width; carousel swipeable; no horizontal scroll |
