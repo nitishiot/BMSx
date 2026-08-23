@@ -89,6 +89,9 @@ move to `archive/`, promoted there deliberately, not auto-synced).
 
 - **Sync gate first.** `git fetch origin main` is the first tool call of
   every session before reading or claiming any status.
+- **Budget gate every session.** Ask Nitish for current usage stats
+  (session %, weekly %) at session start and before any costly step; state
+  fit against both before proceeding. See `.claude/rules/harness.md`.
 - **Spec before code.** No implementation without a written phase spec.
 - **Live verification over assertion.** "Should work" isn't done; a real,
   demonstrable run is.

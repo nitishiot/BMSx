@@ -22,6 +22,21 @@ build tooling exists and repeated misses justify a hook.
    Presentation or `archive/BMSx_PRD_v1_business_source.md` for scope — v2
    is pinned.
 
+## Token / budget gate
+
+Adapted from `References/PLAYBOOK.md` §7. At the **start of a new session**,
+and before any step estimated at meaningfully large cost (a new phase, a
+large refactor, a big multi-file generation): ask Nitish for his current
+usage stats (session %, weekly %), state whether the planned step fits
+against both, and proceed only on his go. This is a standing question, not
+a one-off — ask it again each new session, not just the first time this
+rule was written.
+
+Track observed burn rates here as real data points accumulate, so future
+estimates are grounded in this project's own cost profile rather than a
+generic guess:
+- *(none recorded yet — first entry goes here once a build phase has run)*
+
 ## Guardrails (generalized from SENTINEX's hard-won list)
 
 - **Stale local `main`.** Before merging, `git merge-base main origin/main`

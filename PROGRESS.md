@@ -78,3 +78,10 @@ current branch, and `origin/main` are identical. No divergence.
   TAG-named draft was the newer, more complete product spec (the original
   BMSx PRD is a subset — business/investor content only) and asked for it
   to be promoted with the retired "TAG" name renamed to "BMSx" throughout.
+- **2026-08-23** — Committed the scaffold (`b776873`) and pushed to
+  `origin/main` directly (not just the session branch), per the
+  session-branch guardrail. Made the budget gate a literal per-session
+  question (asking Nitish's session/weekly usage %) rather than only a
+  described pattern, in both `CLAUDE.md` and `.claude/rules/harness.md` —
+  Nitish flagged this needed to actually happen in new sessions, not just
+  be documented.
