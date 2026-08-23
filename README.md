@@ -17,6 +17,8 @@ BMSx-synced/
 ├── CLAUDE.md               ← agent working rules + bootstrap
 ├── PROGRESS.md             ← session continuity: status, next steps, decisions log
 ├── BMSx_PRD_v2.md          ← pinned scope doc (v2, draft)
+├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — 6 views + ADRs
+├── TAG_Architecture_v1.html ← same content, rendered for reading (Mermaid via CDN)
 ├── .claude/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails

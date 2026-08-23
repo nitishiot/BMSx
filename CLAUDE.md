@@ -61,6 +61,8 @@ BMSx-synced/
 ├── CLAUDE.md               ← this file — agent working rules + bootstrap
 ├── PROGRESS.md             ← session continuity: status, next steps, decisions log
 ├── BMSx_PRD_v2.md          ← pinned scope doc (v2, draft) — see "Spec handling" below
+├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — derived from the PRD
+├── TAG_Architecture_v1.html ← local rendered view of the same document
 ├── .claude/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails

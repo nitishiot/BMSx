@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TAG — Platform Architecture (v1)</title>
+<style>
+  :root{
+    --bg:#fbfaf8; --panel:#ffffff; --ink:#1c1a17; --muted:#5f5a52;
+    --line:#e3ded6; --accent:#b4531f; --accent-soft:#fdf1e8;
+    --warn-bg:#fff8e6; --warn-line:#e0b64a; --code-bg:#f2efe9;
+    --max:56rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16151a; --panel:#1e1d23; --ink:#e9e6e1; --muted:#a7a199;
+      --line:#33313a; --accent:#e8935c; --accent-soft:#2a2119;
+      --warn-bg:#2b2418; --warn-line:#7d6428; --code-bg:#26252c;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.65 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{display:grid; grid-template-columns:16rem minmax(0,1fr); gap:0; max-width:82rem; margin:0 auto;}
+  nav{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:2.4rem 1.2rem 3rem 1.6rem; border-right:1px solid var(--line);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",sans-serif; font-size:.82rem;
+  }
+  nav .brand{font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:.7rem; color:var(--accent); margin-bottom:.2rem}
+  nav .sub{color:var(--muted); font-size:.72rem; margin-bottom:1.6rem}
+  nav a{display:block; padding:.28rem 0; color:var(--muted); text-decoration:none; border-left:2px solid transparent; padding-left:.7rem; margin-left:-.7rem}
+  nav a:hover{color:var(--accent); border-left-color:var(--accent)}
+  nav .grp{margin-top:1rem; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); opacity:.7}
+  main{padding:2.6rem 2.4rem 8rem; max-width:var(--max)}
+  h1{font-size:2.1rem; line-height:1.2; margin:0 0 .3rem}
+  h2{font-size:1.42rem; margin:3.4rem 0 .8rem; padding-top:1.2rem; border-top:1px solid var(--line)}
+  h3{font-size:1.08rem; margin:2.2rem 0 .6rem; color:var(--accent)}
+  h4{font-size:.95rem; margin:1.6rem 0 .4rem; font-family:ui-sans-serif,system-ui,sans-serif}
+  .meta{font-family:ui-sans-serif,system-ui,sans-serif; font-size:.85rem; color:var(--muted); margin:0 0 1.8rem}
+  .meta b{color:var(--ink); font-weight:600}
+  .callout{
+    background:var(--warn-bg); border:1px solid var(--warn-line); border-left-width:4px;
+    border-radius:.3rem; padding:.9rem 1.1rem; margin:1.2rem 0; font-size:.92rem;
+  }
+  .callout p{margin:.4rem 0}
+  .callout p:first-child{margin-top:0} .callout p:last-child{margin-bottom:0}
+  .note{background:var(--accent-soft); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:.3rem; padding:.9rem 1.1rem; margin:1.2rem 0; font-size:.92rem}
+  table{border-collapse:collapse; width:100%; margin:1.2rem 0; font-size:.88rem;
+    font-family:ui-sans-serif,system-ui,"Segoe UI",sans-serif}
+  .scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  th,td{border:1px solid var(--line); padding:.5rem .7rem; text-align:left; vertical-align:top}
+  th{background:var(--code-bg); font-weight:600}
+  code{background:var(--code-bg); padding:.1em .35em; border-radius:.25em; font-size:.86em;
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+  .tbd{color:var(--accent); font-weight:600}
+  figure{margin:1.6rem 0; background:var(--panel); border:1px solid var(--line); border-radius:.4rem; padding:1rem; overflow-x:auto}
+  figcaption{font-family:ui-sans-serif,system-ui,sans-serif; font-size:.78rem; color:var(--muted); margin-top:.6rem; text-align:center}
+  .mermaid{text-align:center; min-height:2rem}
+  ul,ol{padding-left:1.3rem}
+  li{margin:.35rem 0}
+  footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--line); font-size:.8rem; color:var(--muted); font-family:ui-sans-serif,system-ui,sans-serif}
+  @media (max-width:60rem){
+    .wrap{grid-template-columns:1fr}
+    nav{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line)}
+    main{padding:1.6rem 1.2rem 5rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div class="brand">TAG</div>
+  <div class="sub">Platform Architecture v1<br>Draft — 23 Aug 2026</div>
+  <a href="#principles">Architecture principles</a>
+  <div class="grp">The six views</div>
+  <a href="#v1">1 · System context</a>
+  <a href="#v2">2 · Container view</a>
+  <a href="#v3">3 · Domain &amp; data model</a>
+  <a href="#v4">4 · Critical-path sequences</a>
+  <a href="#v5">5 · Cross-cutting concerns</a>
+  <a href="#v6">6 · Decisions &amp; open items</a>
+  <div class="grp">Reference</div>
+  <a href="#nfr">Non-functional targets</a>
+  <a href="#adr">ADR register</a>
+  <a href="#tbd">Consolidated TBDs</a>
+</nav>
+
+<main>
+<h1>TAG — Platform Architecture</h1>
+<p class="meta">
+<b>Product:</b> TAG 360° Festival Ticketing Platform &nbsp;·&nbsp;
+<b>Version:</b> v1 &nbsp;·&nbsp;
+<b>Status:</b> Draft for review — not signed off &nbsp;·&nbsp;
+<b>Date:</b> 23 August 2026<br>
+<b>Author:</b> Nitish (drafted with Claude) &nbsp;·&nbsp;
+<b>Derived from:</b> <code>BMSx_PRD_v2.md</code> §2, §7, §8, §10, §12, §13 &nbsp;·&nbsp;
+<b>Source of truth:</b> <code>TAG_Architecture_v1.md</code>
+</p>
+
+<div class="callout">
+<p><b>Naming note.</b> This document uses <b>TAG</b> as the product name, per Nitish's instruction on 2026-08-23. The repo's rules files (<code>CLAUDE.md</code>, <code>.claude/rules/product.md</code>) and the pinned PRD still say <b>BMSx</b> and mark TAG as retired. That contradiction is known and deliberate: the BMSx→TAG rename across the PRD, rules, README and landing page is a separate pass to run after this first build. Until it runs, treat TAG and BMSx as the same product.</p>
+</div>
+
+<div class="note">
+<p><b>Evidence discipline.</b> Every number here is either traceable to the PRD or marked <span class="tbd">[TBD]</span>. No latency, throughput or cost figure is asserted — there is no live system to measure, so those stay <span class="tbd">[TBD: no live system yet]</span> rather than being invented. The PSP and travel/stay partners are <b>not selected</b> (PRD §12, blocking question 2), so they are modelled as ports, not named.</p>
+</div>
+
+<h3>How to read this document</h3>
+<div class="scroll"><table>
+<tr><th>View</th><th>Question it answers</th></tr>
+<tr><td>1 · System context</td><td>What is TAG, who uses it, what does it depend on?</td></tr>
+<tr><td>2 · Container view</td><td>What gets deployed, and what state does each piece own?</td></tr>
+<tr><td>3 · Domain &amp; data model</td><td>Which service owns which noun, and how do they refer to each other?</td></tr>
+<tr><td>4 · Critical-path sequences</td><td>How do the two hardest journeys (J1, J2) actually execute?</td></tr>
+<tr><td>5 · Cross-cutting concerns</td><td>Payments isolation, GDPR/DPDP, EU AI Act, observability, NFRs</td></tr>
+<tr><td>6 · Decisions &amp; open items</td><td>What has been decided, what is deliberately deferred</td></tr>
+</table></div>
+<p>Two views from the original outline — the enumerated event-backbone catalogue and the Phase-1 build subset — were deliberately dropped for this revision. The event backbone is still <i>described</i> in view 2; what is missing is the publish/subscribe table. The Phase-1 subset moves into <code>build/MVP1_&lt;name&gt;/PHASE_1_SPEC.md</code> when Phase 1 is scoped.</p>
+
+<h2 id="principles">Architecture principles</h2>
+<p>Carried forward from PRD §8, restated with the consequence each one imposes.</p>
+<div class="scroll"><table>
+<tr><th>#</th><th>Principle</th><th>Consequence for the design</th></tr>
+<tr><td>A1</td><td><b>Burst-tolerant, pay-as-you-scale</b></td><td>Festival on-sales are extreme but <i>scheduled</i> burst traffic. The virtual queue and ticket inventory must scale independently of everything else — and must be the only things that have to.</td></tr>
+<tr><td>A2</td><td><b>Event-driven backbone</b></td><td>Order, inventory and vendor events publish to a broker. Real-time vendor dashboards subscribe; they never poll the orders database.</td></tr>
+<tr><td>A3</td><td><b>Payments isolation</b></td><td>Card data never enters TAG's own systems. The PCI-DSS boundary is one service plus the PSP.</td></tr>
+<tr><td>A4</td><td><b>AI as a platform layer</b></td><td>Recommendations, demand prediction and NLP are consumed over internal APIs by any surface. They read from the data lake, never from a domain service's database.</td></tr>
+<tr><td>A5</td><td><b>Compliance by design</b></td><td>Consent is a service other services must check, not a checkbox on a form. Erasure is a workflow, not a <code>DELETE</code>.</td></tr>
+<tr><td>A6</td><td><b>Multi-currency / multi-language from day one</b></td><td>Even though v1 ships Europe-only (PRD §4), money is never a bare number and user-facing strings are never hard-coded. Retrofitting after launch is the expensive path.</td></tr>
+<tr><td>A7</td><td><b>Vendor choices are ports, not commitments</b></td><td>PSP, travel/stay/ride APIs, maps and marketing platforms are unselected (PRD §12). Each is an interface owned by TAG with a swappable adapter behind it.</td></tr>
+</table></div>
+
+<h2 id="v1">View 1 — System context</h2>
+<p>Who and what TAG interacts with. Vocabulary is the PRD's: <b>Festival Goers</b> (B2C) and <b>Festival Clients &amp; Suppliers</b> (B2B — producers/promoters, vendors, artists/management, local government &amp; tourism).</p>
+<figure>
+<pre class="mermaid">
+flowchart TB
+    subgraph People["People"]
+        FG["Festival Goer<br/><i>P1 Freya, P2 Dev</i>"]
+        VN["Vendor<br/><i>P3 Marta</i>"]
+        PR["Festival Producer<br/><i>P4 Colm</i>"]
+        AF["Local Affiliate<br/><i>P5 Aoife</i>"]
+        OPS["TAG Ops / Trust and Safety"]
+    end
+
+    TAG["<b>TAG Platform</b><br/>360° festival ticketing<br/>and experience platform"]
+
+    subgraph Ext["External systems — all unselected, see ADR-004"]
+        PSP["Payment Service Provider<br/><i>card capture, payouts</i>"]
+        TRV["Travel / Stay / Ride APIs<br/><i>accommodation, flights, rentals</i>"]
+        MAP["Maps and Venue Imagery"]
+        MKT["Marketing and Ad Platforms"]
+        COM["Comms providers<br/><i>email, SMS, push</i>"]
+        ANA["Product Analytics"]
+    end
+
+    FG -->|"browse, book, attend, redeem"| TAG
+    VN -->|"apply, trade, watch live sales"| TAG
+    PR -->|"list festival, read demand forecasts"| TAG
+    AF -->|"list rooms / tables / rentals"| TAG
+    OPS -->|"moderate, support, settle"| TAG
+
+    TAG <-->|"tokenised payments, payouts"| PSP
+    TAG <-->|"search and book ancillaries"| TRV
+    TAG -->|"venue maps, geocoding"| MAP
+    TAG -->|"consent-gated audiences"| MKT
+    TAG -->|"transactional messages"| COM
+    TAG -->|"consent-gated events"| ANA
+</pre>
+<figcaption>View 1 — TAG in its environment. Personas per PRD §5.</figcaption>
+</figure>
+<p><b>What this view fixes.</b> TAG is a four-sided marketplace, not a shop. Each of the four counterparties both <i>supplies</i> something and <i>consumes</i> something, which is why a single-sided ticketing data model does not fit: an Affiliate's room and a Producer's ticket are both sellable inventory, and one Festival Goer's order can contain both.</p>
+
+<h2 id="v2">View 2 — Container view</h2>
+<p>What actually gets deployed and what state each piece owns. This expands PRD §8 with the pieces that sketch omits: data stores, the message broker, the queue service, the edge, and the consent service.</p>
+<figure>
+<pre class="mermaid">
+flowchart TB
+    subgraph Surfaces["Client surfaces"]
+        LP["Landing + Fan Web<br/><i>SSR/SSG, PRD §6</i>"]
+        FMA["Fan Mobile App"]
+        VAP["Vendor App<br/><i>native or web — TBD</i>"]
+        POR["Producer / Affiliate Portal"]
+        BOT["Chat / Chatbot surface"]
+    end
+
+    subgraph Edge["Edge"]
+        CDN["CDN + WAF"]
+        GW["API Gateway<br/>routing, rate limits, TLS"]
+        IDP["Identity and Access<br/><i>accounts, sessions, guest tokens</i>"]
+    end
+
+    subgraph Core["Core domain services"]
+        CAT["Event and Catalogue"]
+        QUE["Virtual Queue<br/><i>scales independently — A1</i>"]
+        INV["Ticketing and Inventory<br/><i>seat maps, allocations, holds</i>"]
+        ANC["Ancillary Bookings<br/><i>stay / travel / meals</i>"]
+        ORD["Orders and Cart<br/><i>saga orchestrator</i>"]
+        PAY["Payments and Fees<br/><b>PCI-DSS boundary</b>"]
+        SUB["Subscriptions and Rewards"]
+        VEN["Vendor Services<br/><i>marketplace, pooling, dashboards</i>"]
+        SOC["Community and Social"]
+        NOT["Notifications"]
+        CON["Consent and Privacy"]
+    end
+
+    BUS(["Event Broker<br/><i>durable topics, ordered per key</i>"])
+
+    subgraph Data["Data stores — one per service, never shared"]
+        DB[("Relational stores<br/><i>per-service schemas</i>")]
+        CACHE[("Cache / hot inventory counters")]
+        SRCH[("Search index<br/><i>semantic search LP-1</i>")]
+        OBJ[("Object storage<br/><i>media, QR, seat maps</i>")]
+        LAKE[("Data Lake<br/><i>append-only event history</i>")]
+    end
+
+    subgraph AI["AI / Data platform"]
+        REC["Recommendations"]
+        PRED["Demand and Pricing Prediction"]
+        NLP["Semantic Search / NLG / Chatbot"]
+        FEAT[("Feature store")]
+    end
+
+    subgraph Ports["Adapter layer — ports, ADR-004"]
+        PSPA["PSP adapter"]
+        TRVA["Travel / stay adapters"]
+        MAPA["Maps adapter"]
+        MKTA["Marketing adapter"]
+        COMA["Comms adapter"]
+    end
+
+    Surfaces --> CDN
+    Surfaces --> GW
+    GW --> IDP
+    GW --> Core
+    QUE --> INV
+    ORD --> INV
+    ORD --> ANC
+    ORD --> PAY
+    ORD --> SUB
+    Core --> DB
+    INV --> CACHE
+    CAT --> SRCH
+    CAT --> OBJ
+    Core --> BUS
+    BUS --> VEN
+    BUS --> NOT
+    BUS --> LAKE
+    LAKE --> AI
+    AI --> FEAT
+    AI -.->|"internal API, read only"| Core
+    PAY --> PSPA
+    ANC --> TRVA
+    CAT --> MAPA
+    NOT --> COMA
+    Core -->|"checked before profiling<br/>or marketing use"| CON
+    CON --> MKTA
+</pre>
+<figcaption>View 2 — deployable containers and the state each owns.</figcaption>
+</figure>
+
+<h3>Container responsibilities</h3>
+<div class="scroll"><table>
+<tr><th>Container</th><th>Owns</th><th>Why it is separate</th></tr>
+<tr><td><b>API Gateway</b></td><td>Routing, TLS, rate limiting, request auth</td><td>One place to throttle an on-sale before it reaches a domain service.</td></tr>
+<tr><td><b>Identity &amp; Access</b></td><td>Accounts, sessions, guest tokens, roles</td><td>Guest checkout is required in PRD §7 J1 — an identity model assuming registration would block it.</td></tr>
+<tr><td><b>Event &amp; Catalogue</b></td><td>Festival, Event, Artist, Venue, Zone, seat-map geometry</td><td>Read-heavy, cacheable, and the only service the landing page needs at scale.</td></tr>
+<tr><td><b>Virtual Queue</b></td><td>Queue position, admission tokens, fairness rules</td><td><b>The most burst-exposed component.</b> Split out so an on-sale spike scales one small stateless service, not the whole platform.</td></tr>
+<tr><td><b>Ticketing &amp; Inventory</b></td><td>TicketType, Allocation, Hold, issued Ticket</td><td>Correctness-critical: overselling is unrecoverable. Holds are time-boxed and released on expiry (PRD §7 J2: within 10 minutes).</td></tr>
+<tr><td><b>Orders &amp; Cart</b></td><td>Cart, Order, OrderLine</td><td>Orchestrates the bundled-checkout saga across inventory, ancillaries and payment.</td></tr>
+<tr><td><b>Payments &amp; Fees</b></td><td>PaymentIntent, FeeLine, refund, payout, settlement</td><td>Holds the PCI-DSS boundary (A3). Fee transparency (PRD §7 J1) is computed here so cart and payment can never disagree.</td></tr>
+<tr><td><b>Ancillary Bookings</b></td><td>Offer and Booking for stay / travel / meal / attraction</td><td>Wraps the unselected partner APIs; the rest of the platform never knows which partner served a booking.</td></tr>
+<tr><td><b>Subscriptions &amp; Rewards</b></td><td>Subscription, Tier, Rewards Points ledger</td><td>Points are money-like: an append-only ledger, not a mutable balance column.</td></tr>
+<tr><td><b>Vendor Services</b></td><td>Vendor, Stall, application, pooling, live dashboards</td><td>Subscribes to sales events (A2) rather than querying Orders — this is the reason the broker exists.</td></tr>
+<tr><td><b>Community &amp; Social</b></td><td>Thread, Post, Report, ModerationAction</td><td>Moderation and report/block are launch-gating per PRD §9 story 7, so they are in scope from the start.</td></tr>
+<tr><td><b>Notifications</b></td><td>Preferences, delivery records, templates</td><td>Consent-gated; on-sale notifications are themselves a burst event.</td></tr>
+<tr><td><b>Consent &amp; Privacy</b></td><td>ConsentRecord, ErasureRequest, ResidencyPolicy</td><td>A first-class service rather than a shared library, because consent checks and erasure must be auditable across every other service.</td></tr>
+</table></div>
+
+<h3>On deployment granularity — a flagged concern</h3>
+<div class="callout">
+<p>PRD §8 specifies "serverless microservices". That is the right <i>target</i>, and this view is drawn as it. It is <b>not</b> the right thing to build first at current team size. Thirteen independently deployed services impose distributed tracing, contract versioning, saga debugging and thirteen deployment pipelines before a single ticket has been sold.</p>
+<p><b>Recommendation (ADR-010, open):</b> build v1 as a <b>modular monolith</b> with the boundaries above enforced in code — separate modules, separate schemas, no cross-module database access — and extract only the containers that genuinely need it: <b>Virtual Queue</b> and <b>Ticketing &amp; Inventory</b> for independent scaling (A1), plus <b>Payments</b> for PCI scope isolation (A3). Every other boundary then stays a module boundary that can be pulled out later without a rewrite, precisely because the data-ownership rule in View 3 was never violated.</p>
+<p>This does not change the diagram. It changes what "one box" means at deploy time — and it is Nitish's decision to take.</p>
+</div>
+
+<h2 id="v3">View 3 — Domain &amp; data model</h2>
+<p>The rule that makes View 2 work: <b>each noun has exactly one owning service.</b> Other services hold the identifier and nothing else — no shared tables, no foreign keys across boundaries, no reading another service's database.</p>
+<figure>
+<pre class="mermaid">
+erDiagram
+    FESTIVAL ||--o{ EVENT : "has"
+    EVENT ||--o{ TICKET_TYPE : "offers"
+    TICKET_TYPE ||--o{ ALLOCATION : "split into"
+    ALLOCATION ||--o{ HOLD : "temporarily reserves"
+    ALLOCATION ||--o{ TICKET : "issues"
+    ACCOUNT ||--o{ ORDER : "places"
+    ORDER ||--|{ ORDER_LINE : "contains"
+    ORDER_LINE }o--o| TICKET : "may resolve to"
+    ORDER_LINE }o--o| ANCILLARY_BOOKING : "may resolve to"
+    ORDER_LINE }o--o| MERCHANDISE_ITEM : "may resolve to"
+    ORDER ||--|| PAYMENT_INTENT : "settled by"
+    ORDER ||--o{ FEE_LINE : "itemises"
+    ACCOUNT ||--o| SUBSCRIPTION : "holds"
+    ACCOUNT ||--o{ POINTS_ENTRY : "accrues"
+    ACCOUNT ||--o{ CONSENT_RECORD : "grants"
+    FESTIVAL ||--o{ VENDOR_STALL : "hosts"
+    VENDOR ||--o{ VENDOR_STALL : "operates"
+    VENDOR ||--o{ POOLING_OFFER : "posts"
+    AFFILIATE ||--o{ ANCILLARY_OFFER : "lists"
+    ANCILLARY_OFFER ||--o{ ANCILLARY_BOOKING : "booked as"
+    FESTIVAL ||--o{ COMMUNITY_THREAD : "has"
+</pre>
+<figcaption>View 3 — entities and their relationships, across service boundaries.</figcaption>
+</figure>
+
+<h3>Ownership map</h3>
+<div class="scroll"><table>
+<tr><th>Owning service</th><th>Entities</th><th>Referenced elsewhere only as</th></tr>
+<tr><td>Identity &amp; Access</td><td><code>Account</code>, <code>Profile</code>, <code>Session</code>, <code>GuestToken</code></td><td><code>account_id</code></td></tr>
+<tr><td>Event &amp; Catalogue</td><td><code>Festival</code>, <code>Event</code>, <code>Artist</code>, <code>Venue</code>, <code>Zone</code>, <code>SeatMap</code></td><td><code>festival_id</code>, <code>event_id</code></td></tr>
+<tr><td>Ticketing &amp; Inventory</td><td><code>TicketType</code>, <code>Allocation</code>, <code>Hold</code>, <code>Ticket</code></td><td><code>ticket_id</code>, <code>hold_id</code></td></tr>
+<tr><td>Orders &amp; Cart</td><td><code>Cart</code>, <code>Order</code>, <code>OrderLine</code></td><td><code>order_id</code></td></tr>
+<tr><td>Payments &amp; Fees</td><td><code>PaymentIntent</code>, <code>FeeLine</code>, <code>Refund</code>, <code>Payout</code>, <code>Settlement</code></td><td><code>payment_intent_id</code></td></tr>
+<tr><td>Ancillary Bookings</td><td><code>Affiliate</code>, <code>AncillaryOffer</code>, <code>AncillaryBooking</code></td><td><code>booking_id</code></td></tr>
+<tr><td>Subscriptions &amp; Rewards</td><td><code>Subscription</code>, <code>Tier</code>, <code>PointsEntry</code></td><td><code>subscription_id</code></td></tr>
+<tr><td>Vendor Services</td><td><code>Vendor</code>, <code>VendorStall</code>, <code>VendorApplication</code>, <code>PoolingOffer</code></td><td><code>vendor_id</code></td></tr>
+<tr><td>Merchandise <i>(a Catalogue + Orders concern for v1, not its own service)</i></td><td><code>MerchandiseItem</code></td><td><code>sku</code></td></tr>
+<tr><td>Community &amp; Social</td><td><code>CommunityThread</code>, <code>Post</code>, <code>Report</code>, <code>ModerationAction</code></td><td><code>thread_id</code></td></tr>
+<tr><td>Consent &amp; Privacy</td><td><code>ConsentRecord</code>, <code>ErasureRequest</code>, <code>ResidencyPolicy</code></td><td><code>account_id</code></td></tr>
+</table></div>
+
+<h3>Modelling rules that follow from the principles</h3>
+<ol>
+<li><b>Money is never a bare number.</b> Every monetary field is <code>{amount_minor, currency}</code> with an ISO-4217 code (A6). Fees are <code>FeeLine</code> rows, never one blended total — PRD §7 J1 requires an itemised breakdown at cart, and a blended column makes honest rendering impossible.</li>
+<li><b>A <code>Ticket</code> is not an <code>OrderLine</code>.</b> An order line resolves to a ticket, an ancillary booking, or merchandise. This is what makes the 360° bundled checkout (G2, ≥ 15% attach) a first-class concept rather than a bolt-on.</li>
+<li><b>Rewards Points are an append-only ledger.</b> <code>PointsEntry</code> rows carry a reason and a source reference; the balance is derived. A mutable balance cannot be reconciled after a dispute.</li>
+<li><b><code>Hold</code> is a real entity with an expiry</b>, not a flag on an allocation. J2's "queue drop-off returns inventory within 10 minutes" is an expiry sweep over holds.</li>
+<li><b>Translatable text lives in a side table keyed by locale</b> (A6), even though v1 is Europe-only.</li>
+<li><b>Every entity carrying personal data declares its erasure behaviour</b> — delete, anonymise, or retain under legal basis. A property of the model, not tribal knowledge, because View 5.2 depends on it.</li>
+</ol>
+
+<h2 id="v4">View 4 — Critical-path sequences</h2>
+<p>Two journeys decide whether this architecture works. Everything else is comparatively ordinary CRUD.</p>
+
+<h3>4.1 — J1: the 360° bundled checkout</h3>
+<p>The hard part: one cart can hold a ticket (TAG's own inventory, strongly consistent) <i>and</i> a hotel room (a partner's inventory, reachable only over an API that can fail or time out). These cannot commit in one transaction. The approach is an <b>orchestrated saga with per-line compensation</b>, owned by Orders &amp; Cart.</p>
+<figure>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor FG as Festival Goer
+    participant GW as API Gateway
+    participant ORD as Orders and Cart
+    participant INV as Ticketing and Inventory
+    participant ANC as Ancillary Bookings
+    participant TRV as Partner API (port)
+    participant PAY as Payments and Fees
+    participant PSP as PSP (port)
+    participant BUS as Event Broker
+
+    FG->>GW: Select tickets
+    GW->>ORD: Add ticket line to cart
+    ORD->>INV: Request hold (qty, zone, TTL)
+    INV-->>ORD: hold_id, expires_at
+    Note over INV: Inventory decrements at HOLD, not at payment.<br/>Overselling is the unrecoverable failure.
+
+    FG->>GW: Add accommodation (skippable step)
+    GW->>ORD: Add ancillary line
+    ORD->>ANC: Reserve offer
+    ANC->>TRV: Provisional booking
+    TRV-->>ANC: provisional_ref, or failure
+    ANC-->>ORD: booking_id, provisional
+    Note over ORD,TRV: If the partner fails or times out, the ticket line<br/>survives. Add-ons are skippable (PRD §7 J1) —<br/>never let an add-on block a ticket sale.
+
+    FG->>GW: View cart
+    GW->>ORD: Price cart
+    ORD->>PAY: Compute fees for all lines
+    PAY-->>ORD: FeeLines, itemised
+    ORD-->>FG: Total with per-line fee breakdown
+
+    FG->>GW: Pay (guest or logged in)
+    GW->>ORD: Confirm order
+    ORD->>PAY: Create PaymentIntent
+    PAY->>PSP: Authorise — card data never touches TAG
+    PSP-->>PAY: Authorised
+    PAY-->>ORD: Payment confirmed
+
+    par Commit each line
+        ORD->>INV: Convert hold to issued Ticket
+    and
+        ORD->>ANC: Confirm provisional booking
+        ANC->>TRV: Confirm
+    end
+
+    alt All lines committed
+        ORD->>BUS: OrderCompleted
+        BUS-->>FG: Confirmation, QR ticket, itinerary
+    else Partner confirmation fails after payment
+        ORD->>ANC: Compensate — cancel provisional
+        ORD->>PAY: Partial refund, that line only
+        ORD->>BUS: OrderPartiallyFulfilled
+        Note over ORD: The ticket stays valid. The fan keeps the<br/>festival and loses only the failed add-on.
+    end
+</pre>
+<figcaption>View 4.1 — J1, the core 360° booking journey (PRD §7).</figcaption>
+</figure>
+<h4>Design decisions this sequence forces</h4>
+<ul>
+<li><b>Inventory decrements at hold, not at payment.</b> The alternative oversells during exactly the minutes when it matters most.</li>
+<li><b>Payment authorises once, for the whole cart.</b> Per-line payment multiplies PSP fees and gives the fan several charges to reconcile.</li>
+<li><b>Partner failure after authorisation is a partial refund, never a whole-order rollback.</b> Cancelling a fan's festival ticket because a hotel API returned a 503 is the worst available outcome and contradicts PRD §7's "add-ons are non-intrusive" rule.</li>
+<li><b>Every step is idempotent, keyed by <code>cart_id</code>.</b> Retries on a mobile network are normal, not exceptional.</li>
+</ul>
+
+<h3>4.2 — J2: high-demand on-sale with virtual queue</h3>
+<p>Fairness is a stated product promise (PRD §9 story 3; PRD §11 tracks fairness complaints &lt; 0.5%). Fairness here is an <i>architectural</i> property, not a UI one.</p>
+<figure>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor FG as Festival Goer
+    participant NOT as Notifications
+    participant QUE as Virtual Queue
+    participant GW as API Gateway
+    participant INV as Ticketing and Inventory
+    participant ORD as Orders and Cart
+
+    FG->>NOT: Pre-register for on-sale
+    Note over NOT: Pre-registration makes the spike predictable —<br/>a capacity signal, not just a marketing list.
+
+    NOT-->>FG: On-sale opening notification
+    FG->>QUE: Join queue
+    QUE-->>FG: Position, estimated wait, signed queue token
+    Note over QUE: Position is assigned at join. Refreshing must<br/>never improve it — that is the fairness claim.
+
+    loop While waiting
+        FG->>QUE: Poll position (cheap, cached)
+        QUE-->>FG: Updated position
+    end
+
+    QUE->>QUE: Admit next batch at a rate<br/>Inventory can absorb
+    QUE-->>FG: Admission token, single use, expiring
+
+    FG->>GW: Enter checkout with admission token
+    GW->>INV: Request hold, token verified
+    INV-->>FG: Time-boxed hold
+    Note over INV: The hold clock is visible to the fan.<br/>Transparency is the product promise.
+
+    alt Fan completes checkout
+        FG->>ORD: Complete purchase
+        ORD->>INV: Convert hold to Ticket
+    else Fan abandons, or the hold expires
+        INV->>INV: Sweep expired holds
+        INV->>QUE: Release inventory back
+        Note over INV,QUE: PRD §7 J2 — returned within 10 minutes.
+    end
+</pre>
+<figcaption>View 4.2 — J2, the high-demand on-sale (PRD §7).</figcaption>
+</figure>
+<h4>Design decisions this sequence forces</h4>
+<ul>
+<li><b>The queue admits at a rate inventory can absorb.</b> This is the load-shedding mechanism: it converts an unbounded spike into a bounded arrival rate, so downstream services need not be sized for peak.</li>
+<li><b>Position is assigned once, at join, and signed.</b> A client that can influence its own position is not a fair queue, and duplicate-account abuse throttling (PRD §7 J2) needs a token it can attribute.</li>
+<li><b>Polling is served from cache, not from queue state.</b> Hundreds of thousands of clients polling a consistent store is itself the outage.</li>
+<li><b>Admission tokens are single-use and expiring.</b> Otherwise the queue is bypassable by replay and the fairness promise fails silently.</li>
+</ul>
+<p class="tbd">[TBD: queue-fairness operational definition. PRD §11 flags this as undefined — "fairness complaints &lt; 0.5% of queued users" cannot be measured until fairness is defined operationally.]</p>
+
+<h2 id="v5">View 5 — Cross-cutting concerns</h2>
+
+<h3>5.1 PCI-DSS boundary</h3>
+<figure>
+<pre class="mermaid">
+flowchart LR
+    subgraph OUT["Out of PCI-DSS scope — the rest of TAG"]
+        ORD["Orders and Cart"]
+        REST["All other services"]
+    end
+    subgraph IN["In scope"]
+        PAY["Payments and Fees<br/>tokens and references only"]
+    end
+    subgraph PSPZ["PSP — carries the card data"]
+        FLD["Hosted fields / SDK<br/><i>rendered in the fan's browser</i>"]
+        VLT["PSP vault"]
+    end
+
+    ORD -->|"amount, currency, order ref"| PAY
+    PAY -->|"create intent"| VLT
+    FLD -->|"card details go straight to the PSP,<br/>never through TAG"| VLT
+    VLT -->|"token, auth result"| PAY
+    PAY -->|"status only"| ORD
+</pre>
+<figcaption>View 5.1 — the payments isolation boundary (principle A3).</figcaption>
+</figure>
+<p>TAG stores <b>payment tokens and references, never a PAN</b>. Card capture happens in PSP-hosted fields rendered client-side, so card data never transits TAG infrastructure. Target posture is the lightest applicable self-assessment — <span class="tbd">[TBD: confirm SAQ level with the selected PSP and a QSA; depends on PRD §12 blocking question 2]</span>.</p>
+
+<h3>5.2 GDPR (EU launch) and DPDP Act (India expansion)</h3>
+<div class="scroll"><table>
+<tr><th>Obligation</th><th>Where it lives in this architecture</th></tr>
+<tr><td><b>Lawful basis / consent</b></td><td>Consent &amp; Privacy service. Any service doing profiling, marketing or analytics checks it first — recommendation profiling requires opt-in per PRD §8 principle 5.</td></tr>
+<tr><td><b>Right to erasure</b></td><td>An <code>ErasureRequest</code> fans out over the broker; each service applies its declared behaviour from View 3 rule 6. Financial records are retained under legal obligation, and that retention is documented rather than silent.</td></tr>
+<tr><td><b>Data minimisation</b></td><td>The data lake receives <i>events</i>, not table dumps. Identifiers are pseudonymised at ingest, so AI training never requires raw personal data.</td></tr>
+<tr><td><b>Data residency</b></td><td>EU-region deployment for v1. A <code>ResidencyPolicy</code> per account makes an India region additive rather than a migration (A6; PRD §4 non-goal 4).</td></tr>
+<tr><td><b>Portability</b></td><td>Order and booking history exports use the same fan-out mechanism as erasure.</td></tr>
+<tr><td><b>DPIA</b></td><td>Required for the recommendation/profiling systems. <span class="tbd">[TBD: DPIA not started — PRD §14 item 7.]</span></td></tr>
+</table></div>
+
+<h3>5.3 EU AI Act</h3>
+<p>Three systems are in scope: recommendations, demand/pricing prediction, and the NLP chatbot. PRD §8 assesses these as <i>likely</i> limited-risk with transparency obligations. That assessment is not a legal classification.</p>
+<p><span class="tbd">[TBD: EU AI Act classification — PRD §12 blocking question 4.]</span> Until legal confirms: build the transparency affordances now (disclose that the chatbot is AI, label AI-generated descriptions) because they are cheap now and expensive to retrofit — and do not ship consumer-facing dynamic pricing.</p>
+
+<h3>5.4 Observability</h3>
+<p>Absent from PRD §8, but required before any target in §5.5 can be <i>measured</i> rather than guessed:</p>
+<ul>
+<li><b>Correlation ID</b> issued at the gateway and propagated through every service call and broker message. Without it, a saga failure in View 4.1 is undebuggable.</li>
+<li><b>The four signals that matter at on-sale:</b> queue depth and admission rate; hold-to-order conversion; PSP authorisation latency and error rate; oversell count — which must be zero, and must alarm as a correctness bug, not a performance one.</li>
+<li><b>Business metrics ride the same event stream</b> as the vendor dashboards. PRD §11's leading metrics derive from the lake, so instrumentation is not a separate project.</li>
+</ul>
+
+<h3 id="nfr">5.5 Non-functional targets</h3>
+<div class="note"><p>Per <code>.claude/rules/build.md</code>, a target that has not been measured is a hypothesis. There is no live system, so the table below names <b>what must be measured</b> rather than asserting values.</p></div>
+<div class="scroll"><table>
+<tr><th>NFR</th><th>Status</th></tr>
+<tr><td>Landing page LCP / TTI</td><td>The only NFRs with real numbers today: LCP &lt; 2.5 s, TTI &lt; 3.5 s on mid-range mobile over 4G (PRD LP-4). <b>PROJECTED</b> until measured.</td></tr>
+<tr><td>On-sale concurrent queue entrants</td><td><span class="tbd">[TBD: no live system yet]</span> — must derive from a committed launch partner's audience (PRD §12 Q1). Festival audiences of 210K–600K (PRD §1) bound the problem; they are not a load target.</td></tr>
+<tr><td>Checkout P50 / P95 / max latency</td><td><span class="tbd">[TBD: no live system yet]</span></td></tr>
+<tr><td>Inventory oversell rate</td><td>Target zero. A correctness invariant rather than a performance target — and testable before launch.</td></tr>
+<tr><td>Broker delivery lag to vendor dashboards</td><td><span class="tbd">[TBD: no live system yet]</span> — "real-time" in PRD §9 story 8 needs a number before it can be signed off.</td></tr>
+<tr><td>Recovery behaviour on service restart</td><td><span class="tbd">[TBD: verify live once a first phase exists]</span></td></tr>
+<tr><td>Backpressure on partner ancillary APIs</td><td>Must degrade to "add-ons unavailable, tickets still sellable" — testable by fault injection before launch.</td></tr>
+<tr><td>Index/query coverage</td><td>Every hot query path gets a matching index, verified per phase.</td></tr>
+</table></div>
+
+<h2 id="v6">View 6 — Decisions and open items</h2>
+<h3 id="adr">Decisions taken in this document</h3>
+<div class="scroll"><table>
+<tr><th>ID</th><th>Decision</th><th>Rationale</th><th>Status</th></tr>
+<tr><td>ADR-001</td><td>Burst tolerance centred on an independently scaled Virtual Queue</td><td>On-sales are the only extreme-load event, and they are scheduled, therefore predictable</td><td>Accepted (PRD §8 A1)</td></tr>
+<tr><td>ADR-002</td><td>Event-driven backbone over a durable broker</td><td>Vendor dashboards must not poll the orders store; the lake needs an append-only source</td><td>Accepted (PRD §8 A2). Broker product <span class="tbd">[TBD]</span></td></tr>
+<tr><td>ADR-003</td><td>Payments isolated; card data confined to PSP-hosted fields</td><td>Keeps every other service out of PCI-DSS scope</td><td>Accepted (PRD §8 A3)</td></tr>
+<tr><td>ADR-004</td><td>External dependencies modelled as ports with swappable adapters</td><td>PSP and travel/stay partners are unselected (PRD §12 Q2); architecture must not block on a commercial decision</td><td>Accepted</td></tr>
+<tr><td>ADR-005</td><td>One owning service per entity; no shared database, no cross-service foreign keys</td><td>The rule that lets ADR-010 defer deployment granularity without a later rewrite</td><td>Accepted</td></tr>
+<tr><td>ADR-006</td><td>Bundled checkout is an orchestrated saga with per-line compensation</td><td>TAG's own inventory and partner inventory cannot share a transaction</td><td>Accepted</td></tr>
+<tr><td>ADR-007</td><td>Inventory decrements at hold; holds expire and sweep back</td><td>Prevents overselling and delivers J2's 10-minute inventory return</td><td>Accepted</td></tr>
+<tr><td>ADR-008</td><td>Rewards Points as an append-only ledger</td><td>Points are money-like and must reconcile after disputes</td><td>Accepted</td></tr>
+<tr><td>ADR-009</td><td>Consent as a service other services must call</td><td>Consent checks and erasure must be auditable platform-wide, not by per-service convention</td><td>Accepted</td></tr>
+<tr><td>ADR-010</td><td><b>Deployment granularity for v1: modular monolith, with Queue, Inventory and Payments extracted</b></td><td>Thirteen deployment pipelines before the first ticket sells is cost without benefit at current team size; ADR-005 preserves the option to extract later</td><td><b>Open — Nitish's decision</b></td></tr>
+</table></div>
+
+<h3>Open items inherited from the PRD</h3>
+<p>These shape or block architecture but are not architectural questions:</p>
+<ol>
+<li><b>Launch partners</b> (PRD §12 Q1) — until one is committed, every load target is unbounded guesswork.</li>
+<li><b>PSP and travel/stay partner selection</b> (PRD §12 Q2) — gates the PCI-DSS SAQ level and the ancillary adapter contracts. ADR-004 keeps the build unblocked meanwhile.</li>
+<li><b>Fee and rebate mechanics</b> (PRD §12 Q3) — the <code>FeeLine</code> model can express any scheme, but the rebate's funding source decides whether it is a fee line, a points entry, or a settlement adjustment.</li>
+<li><b>EU AI Act classification</b> (PRD §12 Q4).</li>
+<li><b>Vendor app: native or responsive web</b> (PRD §12 Q6).</li>
+<li><b>Community moderation model</b> (PRD §12 Q7).</li>
+</ol>
+
+<h3>What this document deliberately does not decide</h3>
+<ul>
+<li><b>Phase 1 scope.</b> That belongs in <code>build/MVP1_&lt;name&gt;/PHASE_1_SPEC.md</code>, written next.</li>
+<li><b>The legacy <code>server/</code> / <code>client/</code> scaffold.</b> Still an open decision (<code>PROGRESS.md</code>); nothing here builds on it.</li>
+<li><b>Technology selections.</b> No language, framework, cloud or database product is named. Those belong in the phase spec, where they can be justified against Phase 1's actual requirements rather than the whole platform's eventual ones.</li>
+</ul>
+
+<h2 id="tbd">Consolidated TBD list</h2>
+<div class="scroll"><table>
+<tr><th>#</th><th>TBD</th><th>Owner</th><th>Blocks</th></tr>
+<tr><td>1</td><td>Launch festival partners committed for v1</td><td>Commercial</td><td>All load targets</td></tr>
+<tr><td>2</td><td>PSP selection</td><td>Commercial + Engineering</td><td>PCI SAQ level, payment adapter</td></tr>
+<tr><td>3</td><td>Travel / stay / ride API partners; build vs. integrate</td><td>Commercial + Engineering</td><td>Ancillary adapter contracts</td></tr>
+<tr><td>4</td><td>Fee and rebate mechanics, and who funds the rebate</td><td>Finance</td><td>Fee model detail</td></tr>
+<tr><td>5</td><td>EU AI Act classification</td><td>Legal</td><td>Dynamic pricing and chatbot rollout</td></tr>
+<tr><td>6</td><td>DPIA for profiling / recommendations</td><td>Legal / Privacy</td><td>Recommendation launch</td></tr>
+<tr><td>7</td><td>Cloud provider and event-broker product</td><td>Engineering</td><td>Phase 1 spec</td></tr>
+<tr><td>8</td><td>Queue-fairness operational definition</td><td>Product</td><td>Fairness success metric</td></tr>
+<tr><td>9</td><td>Deployment granularity (ADR-010)</td><td>Nitish</td><td>Phase 1 structure</td></tr>
+<tr><td>10</td><td>Vendor app: native or responsive web</td><td>Engineering / Design</td><td>Vendor app phase</td></tr>
+<tr><td>11</td><td>Community moderation model</td><td>Ops / Trust &amp; Safety</td><td>Community launch</td></tr>
+<tr><td>12</td><td>Repo-surface classification for this document</td><td>Nitish</td><td>External sharing</td></tr>
+<tr><td>13</td><td>BMSx→TAG rename pass across PRD, rules, README, landing</td><td>Nitish</td><td>Vocabulary consistency</td></tr>
+<tr><td>14</td><td>Every NFR target in §5.5</td><td>Engineering</td><td>Phase sign-off criteria</td></tr>
+</table></div>
+
+<footer>
+TAG — Platform Architecture v1 · Draft, not signed off · 23 August 2026.<br>
+Source of truth is <code>TAG_Architecture_v1.md</code>; this page renders the same content.
+Diagrams render via Mermaid loaded from a CDN — this page needs an internet connection to draw them.
+</footer>
+</main>
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "loose",
+    flowchart: { htmlLabels: true, curve: "basis" },
+    sequence: { useMaxWidth: true, wrap: false }
+  });
+</script>
+</body>
+</html>
