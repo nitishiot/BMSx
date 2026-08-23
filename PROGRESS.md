@@ -61,12 +61,20 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Review `TAG_Architecture_v1.md`.** Two things need Nitish's decision
-   before Phase 1 can be specced: **ADR-010** (deployment granularity —
-   modular monolith with Queue/Inventory/Payments extracted, versus the PRD's
-   full serverless-microservices target) and the **BMSx→TAG rename pass**
-   across the PRD, rules files, README and landing page.
-2. On go-ahead: scope Phase 1 against `BMSx_PRD_v2.md` (§13 already
+1. **Next session (Sonnet tier, per Nitish): write the first phase spec.**
+   Nitish reviewed `TAG_Architecture_v1.md`/`.html` and confirmed the
+   diagrams render correctly. He will confirm **both open decisions in that
+   session, not before**, so the spec session must resolve them first:
+   - **ADR-010 — deployment granularity.** Modular monolith with Virtual
+     Queue, Ticketing & Inventory and Payments extracted (the architecture's
+     recommendation), versus the PRD §8 target of full serverless
+     microservices. This decides the phase spec's component structure, so it
+     cannot be deferred past the spec.
+   - **BMSx→TAG rename pass.** The architecture doc says TAG; the PRD,
+     `CLAUDE.md`, `.claude/rules/product.md`, `README.md` and `landing/`
+     still say BMSx and still mark TAG as retired. Confirm scope and timing
+     of the rename before writing a spec that has to pick one name.
+2. On those decisions: scope Phase 1 against `BMSx_PRD_v2.md` (§13 already
    proposes a phasing: Phase 1 = landing-page optimisation + core ticketing
    P0, Europe), write `build/MVP1_<name>/PHASE_1_SPEC.md` before any
    implementation.
@@ -148,4 +156,12 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   verified `0 0` after a fresh fetch. Lesson: the sync gate must verify the
   refspec, not just run `git fetch` — a narrow refspec makes the gate report
   confidently wrong answers.
+- **2026-08-23** — Architecture v1 reviewed by Nitish: the HTML render was
+  confirmed working (Mermaid diagrams draw correctly), closing the one
+  item this session could not verify itself. The document remains a **draft,
+  not signed off** — sign-off per `.claude/rules/build.md` needs the two
+  open decisions resolved first. Nitish chose to take those decisions in the
+  next session rather than this one, and to run that session on Sonnet, since
+  writing a phase spec against an already-written architecture is
+  well-specified work rather than judgement-heavy synthesis.
 
