@@ -19,15 +19,16 @@ user-facing copy, landing page content.
 
 Use exactly as `CLAUDE.md` defines: **TAG** (never "BMSx"), **Festival
 Goers** (B2C), **Festival Clients & Suppliers** (B2B — producers/promoters,
-vendors, artists, local government/tourism). Domain nouns (Festival,
-Ticket, Booking, Vendor, Merchandise, Rewards Points) come from the PRD
-verbatim.
+vendors, artists, local government/tourism), **Platform Admin** (internal
+role, P6 — approves/rejects/suspends Clients & Suppliers, never Festival
+Goers). Domain nouns (Festival, Ticket, Booking, Vendor, Merchandise,
+Rewards Points) come from the PRD verbatim.
 
 ## Spec handling
 
-`TAG_PRD_v2.md` is pinned — the working contract for scope. A session
+`TAG_PRD_v3.md` is pinned — the working contract for scope. A session
 extending or building against it:
-- Reads v2 directly, not the original Corporate Presentation (not in this
+- Reads v3 directly, not the original Corporate Presentation (not in this
   repo) or `archive/BMSx_PRD_v1_business_source.md` (superseded — historical
   business context only).
 - If a build phase needs to tighten or extend PRD scope, that's a

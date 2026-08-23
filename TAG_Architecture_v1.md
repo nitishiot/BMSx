@@ -274,17 +274,29 @@ erDiagram
 
 | Owning service | Entities | Referenced elsewhere only as |
 |----------------|----------|------------------------------|
-| Identity & Access | `Account`, `Profile`, `Session`, `GuestToken` | `account_id` |
-| Event & Catalogue | `Festival`, `Event`, `Artist`, `Venue`, `Zone`, `SeatMap` | `festival_id`, `event_id` |
+| Identity & Access | `Account`, `Profile`, `Session`, `GuestToken`, `Role`, `RoleAssignment`, `AuditLogEntry` | `account_id` |
+| Event & Catalogue | `Festival`, `Event`, `Artist`, `Venue`, `Zone`, `SeatMap`, `ProducerApplication` | `festival_id`, `event_id` |
 | Ticketing & Inventory | `TicketType`, `Allocation`, `Hold`, `Ticket` | `ticket_id`, `hold_id` |
 | Orders & Cart | `Cart`, `Order`, `OrderLine` | `order_id` |
 | Payments & Fees | `PaymentIntent`, `FeeLine`, `Refund`, `Payout`, `Settlement` | `payment_intent_id` |
-| Ancillary Bookings | `Affiliate`, `AncillaryOffer`, `AncillaryBooking` | `booking_id` |
+| Ancillary Bookings | `Affiliate`, `AffiliateApplication` *(P1)*, `AncillaryOffer`, `AncillaryBooking` | `booking_id` |
 | Subscriptions & Rewards | `Subscription`, `Tier`, `PointsEntry` | `subscription_id` |
-| Vendor Services | `Vendor`, `VendorStall`, `VendorApplication`, `PoolingOffer` | `vendor_id` |
+| Vendor Services | `Vendor`, `VendorStall`, `VendorApplication` *(P1)*, `PoolingOffer` | `vendor_id` |
 | Merchandise *(a Catalogue + Orders concern for v1, not its own service)* | `MerchandiseItem` | `sku` |
 | Community & Social | `CommunityThread`, `Post`, `Report`, `ModerationAction` | `thread_id` |
 | Consent & Privacy | `ConsentRecord`, `ErasureRequest`, `ResidencyPolicy` | `account_id` |
+
+**RBAC addition (PRD v3 PR-1, §5 P6, §7 J7).** `Role`/`RoleAssignment` live in
+Identity & Access — the one service every request is already authenticated
+against — rather than being duplicated per domain service. Each
+onboarding-gated role (Producer, Vendor, Affiliate) keeps its application
+record in its own owning service (`ProducerApplication`,
+`VendorApplication`, `AffiliateApplication`) per the one-owner rule; the
+Platform Admin approval queue reads across those services rather than
+owning the applications itself, and writes only to `RoleAssignment` and
+`AuditLogEntry` on approve/reject/suspend. Phase 1 builds the Producer path
+only — Vendor and Affiliate applications stay data-modelled but inactive
+until their P1 features ship (§10).
 
 ### Modelling rules that follow from the principles
 

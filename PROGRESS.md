@@ -5,6 +5,20 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Phase 1 spec drafted (2026-08-23, Sonnet session).**
+`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` exists — objective, in/out of
+scope, components (modular monolith + Virtual Queue/Ticketing &
+Inventory/Payments extracted per ADR-010), exit checks, NFR targets, open
+items. Not implemented, not signed off. Ahead of this, `TAG_PRD_v3.md` was
+created (RBAC/Platform Admin addition, see decisions log) and is now the
+pinned scope doc; `TAG_PRD_v2.md` is superseded but left in place.
+`TAG_Architecture_v1.md`/`.html` got a small addendum (Role/RoleAssignment/
+AuditLogEntry on Identity & Access; ProducerApplication/VendorApplication/
+AffiliateApplication on their owning services) — the `.html` render has not
+been regenerated from the `.md` since this edit, so treat it as one edit
+behind until re-rendered.
+
+
 **Ways-of-working scaffold in place.** The SENTINEX playbook/ways-of-working
 patterns (`References/`) have been adapted into `CLAUDE.md` and
 `.claude/rules/{harness,build,product}.md`, plus the folder scaffold
@@ -69,16 +83,19 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Next session (Sonnet tier): write the first phase spec.** Both blocking
-   decisions are now closed (see the log below), so this is unblocked
-   well-specified work — scope Phase 1 against `TAG_PRD_v2.md` §13 (Phase 1 =
-   landing-page optimisation + core ticketing P0, Europe) and write
-   `build/MVP1_<name>/PHASE_1_SPEC.md` before any implementation. Component
-   structure is fixed by ADR-010: modular monolith, with Virtual Queue,
-   Ticketing & Inventory and Payments extracted.
-2. Resolve the legacy-scaffold decision before Phase 1 touches `client/`
-   or `server/`.
-3. Open, not blocking: repo-surface classification (founder names, financial
+1. **Nitish to resolve the six open items in `PHASE_1_SPEC.md` §8** before
+   implementation starts: cache technology confirmation (Redis proposed,
+   unconfirmed), object storage product (blocked on cloud/vendor choice),
+   LP-1 "semantic search" P0 interpretation, PSP/travel partner selection,
+   launch festival commitment, legacy-scaffold disposition.
+2. Once those land (or Nitish says to proceed with the spec's stated
+   assumptions/TBDs), implementation begins against the frozen spec — no
+   spec edits after sign-off starts (`.claude/rules/build.md`).
+3. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+   touches it — the RBAC addendum edited the `.md` only.
+4. Resolve the legacy-scaffold decision before Phase 1 touches `client/`
+   or `server/` (spec's §2 builds fresh, so this doesn't block starting).
+5. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -192,3 +209,54 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   (`**BMSx** (never "TAG")`) and the judgement about which occurrences are
   historical record would go wrong under a blind substitution. Phase-1 spec
   work drops to Sonnet, per the original plan.
+- **2026-08-23 (Sonnet session)** — Nitish asked to add RBAC with a Platform
+  Admin role (approves vendors/producers/affiliates onto the platform;
+  explicitly not end-user account management) ahead of the Phase 1 spec.
+  Since no admin persona or RBAC requirement existed in `TAG_PRD_v2.md`,
+  this was scope-change territory per `CLAUDE.md`'s spec-handling rule, so
+  Nitish was asked how to capture it rather than silently folding it into
+  the phase spec. He chose **amend the PRD first**: `TAG_PRD_v3.md` created
+  (P6 Platform Admin persona, J7 approval journey, PR-1 RBAC requirement in
+  §10, one new TBD on admin staffing/SLA) and promoted to pinned scope doc;
+  all "pinned PRD" pointers repo-wide (`CLAUDE.md`, `.claude/rules/{harness,
+  product}.md`, `README.md`) repointed from v2 to v3. `TAG_PRD_v2.md` is
+  superseded but not moved to `archive/` yet (small enough diff, and v2 is
+  still useful as a diff base). `TAG_Architecture_v1.md`'s View 3 ownership
+  map got a matching addendum (Role/RoleAssignment/AuditLogEntry on Identity
+  & Access; a ProducerApplication/VendorApplication/AffiliateApplication
+  per owning service, keeping ADR-005's one-owner rule) since it was still
+  draft/unsigned and editing in place was cheaper than a v2 architecture doc
+  for a five-entity addition — flagged inline as following PR-1/P6/J7.
+- **2026-08-23 (Sonnet session)** — Database choice for Phase 1: **PostgreSQL
+  16**, one schema per monolith module plus its own instance for each of the
+  three ADR-010-extracted services (Virtual Queue, Ticketing & Inventory,
+  Payments). Reason: `TAG_Architecture_v1.md` View 2 already specifies
+  "relational stores, per-service schemas"; Ticketing & Inventory's
+  no-oversell requirement (ADR-007) needs real transactional guarantees a
+  relational engine gives directly; the repo's legacy (unrelated,
+  do-not-touch) scaffold already runs `postgres:16-alpine` in
+  `docker-compose.yml`, which is noted only as existing tooling familiarity
+  in the repo — not a reason to reuse any of that scaffold's code. Redis
+  was proposed for the Virtual Queue/Inventory hot-counter cache but flagged
+  `[TBD: confirm before implementation]` since nothing in the repo runs it
+  yet — this is a proposal, not a made decision, unlike Postgres.
+- **2026-08-23 (Sonnet session)** — Phase 1 spec drafted:
+  `build/MVP1_CoreTicketing/PHASE_1_SPEC.md`, scoped against `TAG_PRD_v3.md`
+  §13/§10/§6.1 and PR-1. Six open items flagged in the spec's §8 (cache
+  tech, object storage product, LP-1 semantic-search interpretation, PSP/
+  travel partner selection, launch festival commitment, legacy-scaffold
+  disposition) — none block writing the spec, several block starting
+  implementation. Not signed off; per `.claude/rules/build.md` status is
+  "spec drafted," not "built."
+- **2026-08-23 (Sonnet session)** — Discovered `.gitignore` had a blanket
+  `build/` rule from the legacy scaffold's boilerplate. It was dead weight
+  for its stated purpose (neither `client/`'s Vite build nor `server/`'s
+  tsc build outputs to a directory literally named `build/` — both use
+  `dist/`, already covered by its own rule) but was silently swallowing
+  this repo's real `build/` phase-spec folder: `git log --all -- build/`
+  showed **`build/README.md` had never actually been committed**, despite
+  `PROGRESS.md`'s "What's built so far" list claiming it was, since the
+  2026-08-23 scaffold session. Removed the `build/` line from `.gitignore`.
+  `build/README.md` and this session's `build/MVP1_CoreTicketing/
+  PHASE_1_SPEC.md` are now visible to `git status` for the first time and
+  need to actually be committed and pushed before this session ends.

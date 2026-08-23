@@ -17,10 +17,10 @@ build tooling exists and repeated misses justify a hook.
    - Behind → `git status --porcelain`, check for collisions, `pull --ff-only`,
      then re-read `PROGRESS.md` (post-fetch).
    - Even → continue.
-3. Read `PROGRESS.md`, then `TAG_PRD_v2.md` (or the active phase spec
+3. Read `PROGRESS.md`, then `TAG_PRD_v3.md` (or the active phase spec
    under `build/`, if one exists). Never re-read the original Corporate
-   Presentation or `archive/BMSx_PRD_v1_business_source.md` for scope — v2
-   is pinned.
+   Presentation, the superseded `TAG_PRD_v2.md`, or
+   `archive/BMSx_PRD_v1_business_source.md` for scope — v3 is pinned.
 
 ## Token / budget gate
 

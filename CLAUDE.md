@@ -23,10 +23,12 @@ If a session ever skips them, that's worth a decisions-log entry in
 **TAG** — a full-stack **festival ticketing & 360° experience platform**
 (ticketing, travel, accommodation, dining, merchandise, social/fan
 engagement, vendor management). Scope is defined in the pinned PRD,
-`TAG_PRD_v2.md` (v2, product/build spec — goals, personas, journeys,
-architecture, P0/P1/P2 requirements). `archive/BMSx_PRD_v1_business_source.md`
+`TAG_PRD_v3.md` (v3, product/build spec — goals, personas, journeys,
+architecture, P0/P1/P2 requirements; v3 adds the Platform Admin persona and
+an RBAC requirement over v2). `archive/BMSx_PRD_v1_business_source.md`
 is the earlier business/investor-facing doc (market, revenue model, funding)
-that v2 draws its market and revenue data from — read v2 for scope, not v1.
+that v2/v3 draw their market and revenue data from — read v3 for scope, not v1.
+`TAG_PRD_v2.md` is superseded but kept in place (not yet moved to `archive/`).
 
 **Fixed vocabulary — use exactly, never invent synonyms:**
 - **TAG** — the product/company name. (The repo carried the interim name
@@ -42,7 +44,7 @@ that v2 draws its market and revenue data from — read v2 for scope, not v1.
 
 ## Current stage
 
-**Pre-build.** `TAG_PRD_v2.md` exists as a draft (not yet signed off). No
+**Pre-build.** `TAG_PRD_v3.md` exists as a draft (not yet signed off). No
 product code exists yet for the platform it describes. Next planned step:
 a high-level comprehensive architecture diagram, building on §8's sketch —
 see `PROGRESS.md` → Next steps for status.
@@ -62,7 +64,8 @@ BMSx-synced/
 ├── README.md              ← project overview; opens with this same annotated tree
 ├── CLAUDE.md               ← this file — agent working rules + bootstrap
 ├── PROGRESS.md             ← session continuity: status, next steps, decisions log
-├── TAG_PRD_v2.md           ← pinned scope doc (v2, draft) — see "Spec handling" below
+├── TAG_PRD_v3.md           ← pinned scope doc (v3, draft) — see "Spec handling" below
+├── TAG_PRD_v2.md           ← superseded by v3 (adds Platform Admin persona + RBAC); kept in place, not archived yet
 ├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — derived from the PRD
 ├── TAG_Architecture_v1.html ← local rendered view of the same document
 ├── .claude/
@@ -74,7 +77,9 @@ BMSx-synced/
 │   ├── PLAYBOOK.md                    ← domain-agnostic ways-of-working source
 │   └── SENTINEX_WaysOfWorking_v1.html ← the process this file is adapted from
 ├── build/                   ← phase specs, one subfolder per MVP, written before implementation
-│   └── README.md            ← the phase-spec convention (empty of MVP folders until Phase 1 is scoped)
+│   ├── README.md            ← the phase-spec convention
+│   └── MVP1_CoreTicketing/
+│       └── PHASE_1_SPEC.md  ← Phase 1 spec, awaiting sign-off (not yet implemented)
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── README.md
 │   └── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
@@ -89,7 +94,7 @@ removes, or repurposes a top-level folder.
 
 ## Spec handling
 
-`TAG_PRD_v2.md` is the **pinned scope document**. Once a build phase
+`TAG_PRD_v3.md` is the **pinned scope document**. Once a build phase
 begins, work from it directly — don't re-derive scope from the original
 Corporate Presentation or from the superseded `archive/BMSx_PRD_v1_business_source.md`
 (useful only as historical business context: market sizing, revenue-split
@@ -123,7 +128,7 @@ move to `archive/`, promoted there deliberately, not auto-synced).
 
 `archive/BMSx_PRD_v1_business_source.md` names two proprietors (Ila
 Nicholson & Shane Mitchell) and carries funding targets and exit-strategy
-detail; `TAG_PRD_v2.md` still carries the revenue-split model (45%/21%/17%/17%).
+detail; `TAG_PRD_v3.md` (and the superseded v2) still carries the revenue-split model (45%/21%/17%/17%).
 Both live in a **public** GitHub repo (`nitishiot/BMSx`). The playbook's
 repo-surface / internal-only split (§8) hasn't been explicitly decided for
 this project. Flagged here as `[TBD: repo-surface classification for
