@@ -2,8 +2,21 @@
 
 Agent working rules for this repo. Adapted from `References/PLAYBOOK.md` and
 `References/SENTINEX_WaysOfWorking_v1.html` (the SENTINEX project's ways of
-working), scaled down for a small/solo project at an earlier stage. Read
-this file, then `PROGRESS.md`, at the start of every session.
+working), scaled down for a small/solo project at an earlier stage.
+
+**Auto-loaded alongside this file** (Claude Code's `@import` syntax pulls
+these into context at session start — no manual "please read X" needed):
+
+@PROGRESS.md
+@.claude/rules/harness.md
+@.claude/rules/build.md
+@.claude/rules/product.md
+
+Even so, this is context, not a hook — nothing here forces the first tool
+call to actually be `git fetch origin main`. Treat the imports as removing
+the excuse "I didn't see it," not as a guarantee the sync/budget gates ran.
+If a session ever skips them, that's worth a decisions-log entry in
+`PROGRESS.md` so the gap gets noticed, same as any other miss.
 
 ## What this project is
 
@@ -27,8 +40,10 @@ that v2 draws its market and revenue data from — read v2 for scope, not v1.
 
 ## Current stage
 
-**Pre-build.** PRD v1.0 exists as a draft (not yet signed off). No product
-code exists yet for the platform described in the PRD.
+**Pre-build.** `BMSx_PRD_v2.md` exists as a draft (not yet signed off). No
+product code exists yet for the platform it describes. Next planned step:
+a high-level comprehensive architecture diagram, building on §8's sketch —
+see `PROGRESS.md` → Next steps for status.
 
 **Legacy scaffold — do not build on top of, do not delete.** `server/` and
 `client/` contain an unrelated boarding-house/PG management app (rooms,
