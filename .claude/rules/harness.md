@@ -37,6 +37,15 @@ estimates are grounded in this project's own cost profile rather than a
 generic guess:
 - *(none recorded yet — first entry goes here once a build phase has run)*
 
+**Model-tier selection is part of the budget gate, not a separate call.**
+When starting a task, say which model tier fits it and why — reserve the
+highest-capability tier for judgment-heavy work (synthesising the PRD into
+an architecture, resolving an ambiguous scope question, a hard debugging
+session); default to a mid-tier workhorse for well-specified, incremental
+build work (CRUD endpoints, routine component work, following an already
+-written phase spec). State this per task, not once at project start —
+different sessions need different tiers.
+
 ## Guardrails (generalized from SENTINEX's hard-won list)
 
 - **Stale local `main`.** Before merging, `git merge-base main origin/main`

@@ -49,7 +49,10 @@ current branch, and `origin/main` are identical. No divergence.
 
 ## Next steps
 
-1. Nitish reviews this scaffold in VS Code.
+1. **New session, next up: high-level comprehensive architecture diagram**
+   — building on `BMSx_PRD_v2.md` §8's mermaid sketch, before Phase 1 gets
+   specced. Nitish deliberately chose a fresh session for this rather than
+   continuing here post-compact.
 2. On go-ahead: scope Phase 1 against `BMSx_PRD_v2.md` (§13 already
    proposes a phasing: Phase 1 = landing-page optimisation + core ticketing
    P0, Europe), write `build/MVP1_<name>/PHASE_1_SPEC.md` before any
@@ -85,3 +88,8 @@ current branch, and `origin/main` are identical. No divergence.
   described pattern, in both `CLAUDE.md` and `.claude/rules/harness.md` —
   Nitish flagged this needed to actually happen in new sessions, not just
   be documented.
+- **2026-08-23** — Budget gate answered: session and weekly usage both
+  under 20% — comfortable fit for the next task. Added model-tier
+  selection as part of the budget gate in `harness.md` (state which tier
+  fits a task and why, per task, not once) — Nitish asked for this to be a
+  standing reminder.
