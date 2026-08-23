@@ -5,6 +5,43 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Phase 1 implementation started: landing page slice built (2026-08-23,
+Sonnet session).** First implementation slice against `PHASE_1_SPEC.md`
+(per its §4 "Build sequencing" — landing page first, backend later).
+Nitish asked for a "features visible but greyed out" roadmap pattern on
+the landing page; added to the spec as LP-13 (implementation-level, not a
+PRD change). Stack confirmed: React + Vite + TypeScript / Node + Express +
+TypeScript + Prisma against Postgres 16 — added to the spec's §4.
+
+Rather than scaffolding a fresh client from nothing, found and used the
+existing `landing/index.html` (already flagged current in `CLAUDE.md`) as
+the base — it's a well-built static marketing page, but was missing LP-1
+(search), LP-3 (near-you), and real LP-7 (consent-gated analytics); its
+`window.bmsxAnalytics` hook was also dead code (nothing ever defined that
+global, so clicks tracked nowhere). Also found the 2026-08-23 BMSx→TAG
+rename pass had missed this file: the nav logo and footer logo still
+rendered literal "BMSx". Fixed all of it in place: TAG branding, a real
+`window.tagAnalytics` with consent gating and a visible accept/decline
+banner (LP-7), a structured genre+location search over a mock festival
+dataset (LP-1, per spec §5's confirmed interpretation), a geolocation-with
+-fallback "events near you" module (LP-3), and the LP-13 roadmap-teaser
+grid (6 P1 fan-facing features, copy sourced directly from PRD §10 — no
+invented copy). Verified live: installed Playwright in the scratchpad,
+served the page, drove it headlessly — search returns exactly the
+genre+location match (not a loose keyword match), the zero-result fallback
+fires, near-you's country fallback works, roadmap renders all 6 tiles
+correctly greyed with "Coming soon" badges, no BMSx text remains, zero
+console errors, no horizontal overflow at 360px. Screenshots taken but not
+saved into the repo (verification artifacts, not deliverables).
+**Not yet done:** producer portal (spec §2's "minimal Producer portal");
+no `chromium-cli` was available so a custom Playwright driver was
+hand-written for this check — worth `/run-skill-generator` if landing-page
+verification becomes a repeated step, per the `run` skill's own guidance.
+This is one slice of Phase 1, not the whole phase — none of `PHASE_1_SPEC.md`
+§6's exit checks are met yet (they need the full guest-to-ticket path
+against a real backend); still "built, awaiting sign-off" at the
+whole-phase level, and this slice itself hasn't been shown to Nitish yet.
+
 **Phase 1 spec drafted, three of six open items resolved (2026-08-23,
 Sonnet session).** `build/MVP1_CoreTicketing/PHASE_1_SPEC.md` exists —
 objective, in/out of scope, components (modular monolith + Virtual
@@ -93,14 +130,24 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. Implementation can begin against the frozen `PHASE_1_SPEC.md` — no spec
-   edits once implementation starts (`.claude/rules/build.md`), only the
-   three open items above still need resolving, and they gate specific
-   exit checks, not the start of build.
-2. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
-   touches it — the RBAC addendum and the legacy-scaffold archive edited
-   the `.md` only.
-3. Open, not blocking: repo-surface classification (founder names, financial
+1. **Show the landing-page slice to Nitish live** — first sign-off-protocol
+   step (real run, shown live) hasn't happened for this slice yet; do this
+   before building further on top of it.
+2. Build the minimal Producer portal (spec §2/§4) — React+Vite+TS, reusing
+   the `TAG_FEATURE_MANIFEST` pattern from `landing/index.html` for its own
+   `audience: 'producer'` roadmap tiles (Premium analytics, demand
+   prediction, customer data access, marketing services — already present
+   in the manifest, just unfiltered by the portal yet).
+3. Then the core-ticketing backend (Identity & Access, Event & Catalogue,
+   Virtual Queue, Ticketing & Inventory, Orders & Cart, Payments) — the
+   landing page's search/near-you currently read `MOCK_FESTIVALS`; that's
+   the seam where real API calls replace the mock once the backend exists.
+4. The three open items (object storage, PSP/travel partner, launch
+   festival) still need resolving before the exit checks that depend on
+   them (spec §6, checks 3–4) — not before backend build starts.
+5. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+   touches it — several sessions have now edited the `.md` only.
+6. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -288,3 +335,20 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   `build/README.md` and this session's `build/MVP1_CoreTicketing/
   PHASE_1_SPEC.md` are now visible to `git status` for the first time and
   need to actually be committed and pushed before this session ends.
+- **2026-08-23 (Sonnet session)** — Nitish asked to continue implementation
+  in-session and to add a "features visible but greyed out" pattern to
+  "the dashboard," clarified as the landing page. Confirmed stack (React+
+  Vite+TS client, Node+Express+TS+Prisma server, matching the Postgres
+  choice) and added it plus the greyed-tile pattern (as LP-13) to
+  `PHASE_1_SPEC.md` before writing code, per "spec before code." Chose to
+  extend the existing `landing/index.html` rather than scaffold a fresh
+  React landing page, since `CLAUDE.md` already names it current and it's
+  a strong, working asset — a static page also serves LP-4's performance
+  budget better than adding framework overhead for a page that's mostly
+  marketing content. React+Vite is still the plan for the Producer portal
+  and Platform Admin console, which don't exist yet and need real
+  interactivity/auth. Found and fixed two pre-existing bugs while there:
+  the BMSx→TAG rename pass (logged 2026-08-23 above) had missed this file
+  entirely (literal "BMSx" still in the nav and footer logos), and its
+  analytics hook (`window.bmsxAnalytics`) was dead code that nothing ever
+  defined. See PROGRESS.md → Status for what got built and verified.

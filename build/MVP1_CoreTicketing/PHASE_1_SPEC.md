@@ -35,6 +35,17 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
 - LP-5 mobile-responsive layout, 360px minimum.
 - LP-6 one primary CTA per module, click-through tracked.
 - LP-7 analytics instrumentation, consent-gated per GDPR.
+- **LP-13 (added 2026-08-23, implementation-level, not a PRD scope change)
+  — roadmap teaser.** Landing page and Producer portal both show tiles/nav
+  entries for P1/P2 features (§10) as visibly present but locked/greyed,
+  labelled "coming soon" — never a dead link, never styled identically to
+  a working feature. Content is a fixed manifest sourced directly from
+  PRD §10's P1/P2 lists (never invented copy). Landing shows fan-facing
+  items: subscriptions/rewards, recommendations, community, meal
+  pre-booking, AI chatbot. Producer portal shows: Premium analytics/
+  demand prediction, customer data access, marketing services. This is a
+  presentation-only addition — no new backend capability, no new PRD
+  persona or requirement, so it doesn't need a PRD revision.
 
 **Core ticketing (PRD §10 P0, journeys J1 and J2)**
 - Event & Catalogue: Festival, Event, Artist, Venue, Zone, SeatMap (read
@@ -116,6 +127,29 @@ budget), a minimal Producer portal (application submission + free-tier
 event setup), a minimal Platform Admin console (approval queue + audit
 log view). Fan Mobile App, Vendor App, and the full Producer/Affiliate
 Portal are P1/later per the architecture's container view.
+
+**Language & framework (confirmed 2026-08-23).** React + Vite + TypeScript
+for every client surface; Node.js + Express + TypeScript + Prisma for the
+monolith and each extracted service, all against PostgreSQL 16. Reason:
+matches the pattern already proven runnable in this repo's tooling (the
+now-archived legacy scaffold ran this exact combination against Postgres,
+`archive/legacy_boardinghouse_scaffold/`) — no code or schema reused from
+it, only the technology choice. This was left unnamed in
+`TAG_Architecture_v1.md` by design (architecture stays vendor/language
+-neutral); naming it here is exactly what that document deferred to this
+spec.
+
+**Build sequencing within Phase 1.** The spec's exit checks (§6) require
+the full path end to end, but implementation proceeds surface-by-surface
+rather than all at once. First slice: the landing page (LP-1 to LP-7,
+LP-13) and a minimal Producer portal, both against stub/mock data —
+proves the client surfaces and the LP-13 roadmap-teaser pattern before the
+core-ticketing backend (Identity & Access, Event & Catalogue, Virtual
+Queue, Ticketing & Inventory, Orders & Cart, Payments) is wired in. Later
+slices replace the stubs with real API calls. This sequencing is a
+build-order choice, not a scope change — every exit check in §6 still has
+to pass before Phase 1 as a whole is "built," and none of the exit checks
+are considered met by the landing-page slice alone.
 
 **Data stores.**
 

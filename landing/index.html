@@ -95,6 +95,57 @@ a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3p
 .scroll-track{width:1px;height:36px;background:linear-gradient(180deg,#FF2D60 0%,transparent 100%);animation:scrollAnim 2.4s ease-in-out infinite;transform-origin:top;}
 @keyframes scrollAnim{0%{transform:scaleY(0);opacity:0;}45%{transform:scaleY(1);opacity:1;}100%{transform:scaleY(1);opacity:0;transform-origin:bottom;}}
 
+/* SEARCH */
+.search-section{padding:3.5rem 2rem 2.5rem;background:var(--bg);}
+.search-inner{max-width:720px;margin:0 auto;text-align:center;}
+.search-inner h2{font-size:clamp(1.5rem,2.6vw,2rem);margin-bottom:1.25rem;}
+.search-form{display:flex;gap:.6rem;flex-wrap:wrap;}
+.search-form input{flex:1;min-width:0;padding:.9rem 1.25rem;border-radius:100px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--text);font-size:.9375rem;font-family:inherit;}
+.search-form input::placeholder{color:var(--faint);}
+.search-form input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.search-form button{background:var(--accent);color:#FFF;border:none;padding:.9rem 1.75rem;border-radius:100px;font-weight:600;font-size:.9375rem;cursor:pointer;transition:opacity .18s;}
+.search-form button:hover{opacity:.9;}
+.search-results{margin-top:1.75rem;text-align:left;display:none;}
+.search-results.show{display:block;}
+.search-results-note{font-size:.85rem;color:var(--muted);margin-bottom:.9rem;}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem;}
+.result-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;}
+.result-card h4{font-size:.95rem;margin-bottom:.3rem;}
+.result-card p{font-size:.8125rem;color:var(--muted);margin-bottom:.15rem;}
+.result-card a{display:inline-block;margin-top:.6rem;font-size:.825rem;font-weight:600;color:var(--accent);text-decoration:none;}
+
+/* NEAR YOU */
+.nearby-section{padding:1rem 2rem 3rem;background:var(--bg);}
+.nearby-inner{max-width:720px;margin:0 auto;}
+.nearby-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.nearby-header h3{font-size:1.1rem;}
+.nearby-btn{background:var(--bg-raised);color:var(--text);border:1px solid var(--border-md);padding:.55rem 1.1rem;border-radius:100px;font-size:.825rem;font-weight:600;cursor:pointer;}
+.nearby-fallback{display:none;gap:.6rem;align-items:center;margin-top:.75rem;flex-wrap:wrap;}
+.nearby-fallback.show{display:flex;}
+.nearby-fallback select{padding:.55rem .9rem;border-radius:10px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--text);font-family:inherit;font-size:.875rem;}
+.nearby-status{font-size:.8125rem;color:var(--muted);margin-top:.5rem;}
+
+/* CONSENT BANNER */
+.consent-banner{position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:400;max-width:560px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border-md);border-radius:16px;padding:1.1rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.25);display:none;gap:.75rem;flex-direction:column;}
+.consent-banner.show{display:flex;}
+.consent-banner p{font-size:.825rem;color:var(--muted);line-height:1.55;}
+.consent-actions{display:flex;gap:.6rem;justify-content:flex-end;}
+.consent-actions button{border-radius:100px;padding:.5rem 1.1rem;font-size:.8125rem;font-weight:600;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--text);}
+.consent-actions .consent-accept{background:var(--accent);color:#FFF;border-color:transparent;}
+
+/* ROADMAP TEASER (LP-13) */
+.roadmap-section{padding:5rem 2rem;background:var(--bg);}
+.roadmap-inner{max-width:1120px;margin:0 auto;}
+.roadmap-header{text-align:center;margin-bottom:3rem;}
+.roadmap-header h2{font-size:clamp(1.9rem,3.5vw,2.75rem);margin-bottom:.75rem;}
+.roadmap-header p{color:var(--muted);font-size:1rem;max-width:520px;margin:0 auto;}
+.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.roadmap-item{background:var(--bg-card);padding:1.75rem 1.5rem;display:flex;flex-direction:column;gap:.5rem;opacity:.55;filter:grayscale(.6);position:relative;cursor:default;}
+.roadmap-item .feat-icon{background:var(--bg-raised);}
+.roadmap-item h3{font-size:.9375rem;font-weight:600;display:flex;align-items:center;gap:.5rem;}
+.roadmap-item p{font-size:.85rem;color:var(--muted);line-height:1.6;}
+.roadmap-badge{align-self:flex-start;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);background:var(--bg-raised);border:1px solid var(--border-md);border-radius:100px;padding:.2rem .6rem;}
+
 /* STRIP */
 .strip{overflow:hidden;background:var(--bg);border-bottom:1px solid var(--border);padding:1.1rem 0;}
 .strip-track{display:flex;width:max-content;animation:marquee 26s linear infinite;}
@@ -198,7 +249,7 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 
 <a class="skip-link" href="#top">Skip to content</a>
 <nav aria-label="Main navigation">
-  <a class="logo" href="#top">BMS<span class="logo-dot">x</span></a>
+  <a class="logo" href="#top">TAG<span class="logo-dot">.</span></a>
   <ul class="nav-links" id="nav-links">
     <li><a href="#banners" data-analytics="nav_features">Features</a></li>
     <li><a href="#platform" data-analytics="nav_platform">Platform</a></li>
@@ -226,6 +277,45 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   <div class="scroll-hint">
     <div class="scroll-track"></div>
     <span>Scroll</span>
+  </div>
+</section>
+
+<!-- SEARCH (LP-1) -->
+<section class="search-section" id="search">
+  <div class="search-inner">
+    <h2>Find your next festival</h2>
+    <form class="search-form" id="search-form" role="search" aria-label="Festival search">
+      <label for="search-input" class="visually-hidden" style="position:absolute;left:-9999px;">Search by genre, artist, venue, or location</label>
+      <input id="search-input" type="text" placeholder="Try &quot;indie rock in Dublin this weekend&quot;" autocomplete="off"/>
+      <button type="submit" data-analytics="search_submit">Search</button>
+    </form>
+    <div class="search-results" id="search-results" aria-live="polite">
+      <p class="search-results-note" id="search-results-note"></p>
+      <div class="result-grid" id="search-result-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS NEAR YOU (LP-3) -->
+<section class="nearby-section" id="near-you">
+  <div class="nearby-inner">
+    <div class="nearby-header">
+      <h3>Events near you</h3>
+      <button class="nearby-btn" id="nearby-locate-btn" data-analytics="nearby_use_location">Use my location</button>
+    </div>
+    <div class="nearby-fallback" id="nearby-fallback">
+      <label for="nearby-country" style="font-size:.825rem;color:var(--muted);">Or pick a country/city:</label>
+      <select id="nearby-country" data-analytics="nearby_manual_select">
+        <option value="">Choose…</option>
+        <option value="IE">Ireland</option>
+        <option value="ES">Spain</option>
+        <option value="HU">Hungary</option>
+        <option value="BE">Belgium</option>
+        <option value="DE">Germany</option>
+      </select>
+    </div>
+    <p class="nearby-status" id="nearby-status"></p>
+    <div class="result-grid" id="nearby-result-grid"></div>
   </div>
 </section>
 
@@ -789,6 +879,18 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   </div>
 </section>
 
+<!-- ROADMAP TEASER (LP-13) -->
+<section class="roadmap-section" id="roadmap">
+  <div class="roadmap-inner">
+    <div class="roadmap-header">
+      <p class="eyebrow">What's Next</p>
+      <h2>Building toward the full 360° platform.</h2>
+      <p>Ticketing, search, and secure checkout are live today. These are next — greyed out because they're not built yet, not because they're not coming.</p>
+    </div>
+    <div class="roadmap-grid" id="roadmap-grid"></div>
+  </div>
+</section>
+
 <!-- PLANS -->
 <section class="plans-section" id="plans">
   <div class="plans-inner">
@@ -855,8 +957,16 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   </div>
 </div>
 
+<div class="consent-banner" id="consent-banner" role="dialog" aria-label="Cookie and analytics consent">
+  <p>We use analytics to see which parts of the page people use, so we can improve it. Analytics events only start firing after you accept — see PRD LP-7. No profiling without opt-in.</p>
+  <div class="consent-actions">
+    <button type="button" id="consent-decline">Decline</button>
+    <button type="button" class="consent-accept" id="consent-accept">Accept analytics</button>
+  </div>
+</div>
+
 <footer>
-  <span class="footer-logo">BMS<span>x</span></span>
+  <span class="footer-logo">TAG<span>.</span></span>
   <div class="footer-links">
     <a href="#">Privacy</a>
     <a href="#">Terms</a>
@@ -938,12 +1048,228 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   });
 })();
 
-// Analytics stub — swap for the real, consent-gated SDK before launch (PRD LP-7)
+// Analytics — consent-gated per GDPR (LP-7). No event fires, module-impression
+// or click, until the visitor accepts. This is the module wiring; the actual
+// analytics SDK/backend is a later Phase-1 build step (spec §7, event schema TBD).
+window.tagAnalytics = (function(){
+  const CONSENT_KEY = 'tag_analytics_consent';
+  let consented = localStorage.getItem(CONSENT_KEY) === 'granted';
+  const queue = [];
+
+  function send(name, detail){
+    // Placeholder sink until the real analytics endpoint exists — logs only,
+    // never fires without consent.
+    console.info('[tag-analytics]', name, detail || {});
+  }
+  function track(name, detail){
+    if(!consented){ queue.push([name, detail]); return; }
+    send(name, detail);
+  }
+  function grant(){
+    consented = true;
+    localStorage.setItem(CONSENT_KEY, 'granted');
+    queue.splice(0).forEach(([n,d]) => send(n,d));
+  }
+  function decline(){
+    consented = false;
+    localStorage.setItem(CONSENT_KEY, 'declined');
+    queue.length = 0;
+  }
+  return { track, grant, decline, get consented(){ return consented; } };
+})();
+
 (function(){
   document.body.addEventListener('click', e => {
     const el = e.target.closest('[data-analytics]');
-    if(el && window.bmsxAnalytics) window.bmsxAnalytics.track(el.dataset.analytics);
+    if(el) window.tagAnalytics.track(el.dataset.analytics);
   });
+  // Module-level impressions (LP-7): fire once per module when it enters view.
+  if('IntersectionObserver' in window){
+    const seen = new WeakSet();
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting && !seen.has(entry.target)){
+          seen.add(entry.target);
+          window.tagAnalytics.track('module_impression', { module: entry.target.id || entry.target.className });
+        }
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('section[id]').forEach(s => io.observe(s));
+  }
+})();
+
+// Consent banner (LP-7)
+(function(){
+  const banner = document.getElementById('consent-banner');
+  const stored = localStorage.getItem('tag_analytics_consent');
+  if(!stored) banner.classList.add('show');
+  document.getElementById('consent-accept').addEventListener('click', () => {
+    window.tagAnalytics.grant();
+    banner.classList.remove('show');
+  });
+  document.getElementById('consent-decline').addEventListener('click', () => {
+    window.tagAnalytics.decline();
+    banner.classList.remove('show');
+  });
+})();
+
+// Mock festival data — placeholder until Event & Catalogue (Phase 1 backend)
+// is wired in. Fields match the architecture's Festival/Event ownership (View 3).
+const MOCK_FESTIVALS = [
+  { id: 'wgm',  name: 'Westside Green Meadow', genre: 'indie rock', city: 'Dublin',    country: 'Ireland', countryCode: 'IE', date: '2027-06-12', lat: 53.35, lon: -6.26 },
+  { id: 'pss',  name: 'Primavera Sound Satellite', genre: 'indie rock', city: 'Barcelona', country: 'Spain',   countryCode: 'ES', date: '2027-06-02', lat: 41.39, lon: 2.16 },
+  { id: 'szg',  name: 'Sziget Nights',         genre: 'electronic',  city: 'Budapest',  country: 'Hungary',  countryCode: 'HU', date: '2027-08-10', lat: 47.50, lon: 19.04 },
+  { id: 'tml',  name: 'Tomorrowland Warmup',   genre: 'electronic',  city: 'Boom',      country: 'Belgium',  countryCode: 'BE', date: '2027-07-18', lat: 51.09, lon: 4.36 },
+  { id: 'wck',  name: 'Wacken Echoes',         genre: 'metal',       city: 'Wacken',    country: 'Germany',  countryCode: 'DE', date: '2027-08-01', lat: 54.00, lon: 9.39 },
+  { id: 'dfm',  name: 'Dublin Folk & Meadow',  genre: 'folk',        city: 'Dublin',    country: 'Ireland', countryCode: 'IE', date: '2027-05-22', lat: 53.35, lon: -6.26 },
+];
+
+function resultCardHTML(f){
+  return `<div class="result-card">
+    <h4>${f.name}</h4>
+    <p>${f.genre.replace(/\b\w/g, c => c.toUpperCase())} · ${f.city}, ${f.country}</p>
+    <p>${new Date(f.date).toLocaleDateString('en-IE', { day:'numeric', month:'short', year:'numeric' })}</p>
+    <a href="#app" data-analytics="result_view_${f.id}">View festival</a>
+  </div>`;
+}
+
+// LP-1: search — structured genre/location/date-window matching over the
+// mock catalogue. See PHASE_1_SPEC.md §5 for why this isn't a trained
+// semantic/embedding model in Phase 1.
+(function(){
+  const form = document.getElementById('search-form');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const note = document.getElementById('search-results-note');
+  const grid = document.getElementById('search-result-grid');
+
+  const KNOWN_GENRES = [...new Set(MOCK_FESTIVALS.map(f => f.genre))]; // ['indie rock','electronic','metal','folk']
+  const KNOWN_LOCATIONS = [...new Set(MOCK_FESTIVALS.flatMap(f => [f.city, f.country]))].map(s => s.toLowerCase());
+
+  // LP-1 acceptance criterion: filter to matching genre AND location (date
+  // window once real dated inventory exists). Structured extraction over the
+  // free-text query, not a trained model — see spec §5.
+  function parseQuery(q){
+    const lower = q.toLowerCase();
+    const genre = KNOWN_GENRES.find(g => lower.includes(g)) ||
+      (lower.includes('rock') ? 'indie rock' : null);
+    const location = KNOWN_LOCATIONS.find(loc => lower.includes(loc));
+    return { lower, genre, location };
+  }
+  function runSearch(q){
+    if(!q.trim()){ results.classList.remove('show'); return; }
+    const parsed = parseQuery(q);
+    let matches = MOCK_FESTIVALS.filter(f => {
+      const genreOk = !parsed.genre || f.genre === parsed.genre;
+      const locOk = !parsed.location ||
+        f.city.toLowerCase() === parsed.location || f.country.toLowerCase() === parsed.location;
+      return genreOk && locOk;
+    });
+    // No structured genre/location extracted at all — fall back to a loose
+    // keyword match rather than returning the whole catalogue.
+    if(!parsed.genre && !parsed.location){
+      matches = MOCK_FESTIVALS.filter(f =>
+        `${f.name} ${f.genre} ${f.city} ${f.country}`.toLowerCase().includes(parsed.lower));
+    }
+
+    let fallback = false;
+    if(matches.length === 0){
+      // Zero-result queries show nearest alternatives, never a dead end (LP-1).
+      fallback = true;
+      matches = MOCK_FESTIVALS.slice(0, 3);
+    }
+    note.textContent = fallback
+      ? `No exact match for "${q}" — here's what's close:`
+      : `${matches.length} festival${matches.length === 1 ? '' : 's'} matching "${q}"`;
+    grid.innerHTML = matches.map(resultCardHTML).join('');
+    results.classList.add('show');
+    window.tagAnalytics.track('search_query', { query: q, results: matches.length, fallback });
+  }
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+})();
+
+// LP-3: events near you — geolocation with permission; denial/unavailable
+// falls back to a country/city selector, never a blocking prompt on first
+// paint (the button is user-initiated, nothing runs on load).
+(function(){
+  const locateBtn = document.getElementById('nearby-locate-btn');
+  const fallback = document.getElementById('nearby-fallback');
+  const countrySelect = document.getElementById('nearby-country');
+  const status = document.getElementById('nearby-status');
+  const grid = document.getElementById('nearby-result-grid');
+
+  function haversineKm(lat1, lon1, lat2, lon2){
+    const R = 6371, toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function renderNearby(list, label){
+    status.textContent = list.length ? label : `No festivals found near ${label.replace(/^.*near /, '')} yet.`;
+    grid.innerHTML = list.map(resultCardHTML).join('');
+  }
+  function byCoords(lat, lon){
+    const ranked = MOCK_FESTIVALS
+      .map(f => ({ f, km: haversineKm(lat, lon, f.lat, f.lon) }))
+      .sort((a,b) => a.km - b.km)
+      .slice(0, 3)
+      .map(r => r.f);
+    renderNearby(ranked, 'Closest festivals to your location:');
+  }
+  function byCountryCode(code){
+    const inCountry = MOCK_FESTIVALS.filter(f => f.countryCode === code);
+    renderNearby(inCountry.length ? inCountry : MOCK_FESTIVALS.slice(0,3),
+      inCountry.length ? 'Festivals in your selected country:' : 'nothing in that country yet — showing trending festivals instead');
+  }
+
+  locateBtn.addEventListener('click', () => {
+    window.tagAnalytics.track('nearby_locate_clicked');
+    if(!('geolocation' in navigator)){
+      fallback.classList.add('show');
+      status.textContent = 'Location isn\'t available on this device — pick a country instead.';
+      return;
+    }
+    status.textContent = 'Finding festivals near you…';
+    navigator.geolocation.getCurrentPosition(
+      pos => byCoords(pos.coords.latitude, pos.coords.longitude),
+      () => {
+        fallback.classList.add('show');
+        status.textContent = 'Location permission declined — pick a country instead.';
+        window.tagAnalytics.track('nearby_permission_denied');
+      },
+      { timeout: 8000 }
+    );
+  });
+  countrySelect.addEventListener('change', () => {
+    if(countrySelect.value) byCountryCode(countrySelect.value);
+  });
+})();
+
+// LP-13: roadmap teaser — sourced from PRD §10's P1/P2 lists, never invented
+// copy. audience 'fan' renders here; 'producer' is the same manifest reused
+// by the producer portal (build/MVP1_CoreTicketing/PHASE_1_SPEC.md §2).
+const TAG_FEATURE_MANIFEST = [
+  { id: 'subs',    audience: 'fan', icon: '⭐', title: 'Subscriptions & Rewards', desc: 'Free/Basic/Premium tiers, points on every booking.', tier: 'P1' },
+  { id: 'rec',     audience: 'fan', icon: '🎯', title: 'Personalised Recommendations', desc: 'Suggestions based on taste and location.', tier: 'P1' },
+  { id: 'vendor',  audience: 'fan', icon: '🛍️', title: 'Vendor Marketplace', desc: 'Browse and pre-order from festival vendors.', tier: 'P1' },
+  { id: 'community', audience: 'fan', icon: '👥', title: 'Fan Community', desc: 'Threads per festival, connect before you arrive.', tier: 'P1' },
+  { id: 'meals',   audience: 'fan', icon: '🍔', title: 'Meal Pre-booking', desc: 'Skip the queue, order ahead.', tier: 'P1' },
+  { id: 'chatbot', audience: 'fan', icon: '💬', title: 'AI Chatbot Support', desc: 'Instant answers to booking and event questions.', tier: 'P1' },
+];
+(function(){
+  const grid = document.getElementById('roadmap-grid');
+  if(!grid) return;
+  grid.innerHTML = TAG_FEATURE_MANIFEST.filter(f => f.audience === 'fan').map(f => `
+    <div class="roadmap-item" role="group" aria-label="${f.title} — coming soon, not yet built">
+      <div class="feat-icon" aria-hidden="true">${f.icon}</div>
+      <h3>${f.title}</h3>
+      <p>${f.desc}</p>
+      <span class="roadmap-badge">Coming soon · ${f.tier}</span>
+    </div>
+  `).join('');
 })();
 </script>
 </body>
