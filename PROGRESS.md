@@ -5,6 +5,19 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Landing-page slice signed off (2026-08-23, Sonnet session).** Demoed
+live (served at `localhost:4173` from the actual `landing/index.html`,
+then widened the structural section max-widths from 1000–1120px to 1800px
+per Nitish's request — the fixed-width containers were leaving visible
+gutters on wide screens; typographic max-widths on paragraphs/hero text
+were left alone since those exist for line-length readability, not
+whitespace). Nitish reviewed and said "sign-off, looks good." **This is a
+slice sign-off, not the Phase 1 sign-off** — `PHASE_1_SPEC.md` §9 ties
+Phase 1 sign-off to all of §6's exit checks passing (full guest-to-ticket
+path against a real backend), which haven't been built yet. No `phase-1`
+git tag yet — `.claude/rules/build.md` reserves that for the whole-phase
+sign-off. Next slice: Producer portal.
+
 **Phase 1 implementation started: landing page slice built (2026-08-23,
 Sonnet session).** First implementation slice against `PHASE_1_SPEC.md`
 (per its §4 "Build sequencing" — landing page first, backend later).
@@ -130,24 +143,23 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Show the landing-page slice to Nitish live** — first sign-off-protocol
-   step (real run, shown live) hasn't happened for this slice yet; do this
-   before building further on top of it.
-2. Build the minimal Producer portal (spec §2/§4) — React+Vite+TS, reusing
-   the `TAG_FEATURE_MANIFEST` pattern from `landing/index.html` for its own
-   `audience: 'producer'` roadmap tiles (Premium analytics, demand
-   prediction, customer data access, marketing services — already present
-   in the manifest, just unfiltered by the portal yet).
-3. Then the core-ticketing backend (Identity & Access, Event & Catalogue,
+1. **Active: build the minimal Producer portal** (spec §2/§4) — React+
+   Vite+TS, reusing the `TAG_FEATURE_MANIFEST` pattern from
+   `landing/index.html` for its own `audience: 'producer'` roadmap tiles
+   (Premium analytics, demand prediction, customer data access, marketing
+   services — already present in the manifest, just unfiltered by the
+   portal yet). Landing-page slice is signed off (see Status/decisions
+   log) — this is the next slice in the sequence.
+2. Then the core-ticketing backend (Identity & Access, Event & Catalogue,
    Virtual Queue, Ticketing & Inventory, Orders & Cart, Payments) — the
    landing page's search/near-you currently read `MOCK_FESTIVALS`; that's
    the seam where real API calls replace the mock once the backend exists.
-4. The three open items (object storage, PSP/travel partner, launch
+3. The three open items (object storage, PSP/travel partner, launch
    festival) still need resolving before the exit checks that depend on
    them (spec §6, checks 3–4) — not before backend build starts.
-5. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+4. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
    touches it — several sessions have now edited the `.md` only.
-6. Open, not blocking: repo-surface classification (founder names, financial
+5. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -352,3 +364,21 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   entirely (literal "BMSx" still in the nav and footer logos), and its
   analytics hook (`window.bmsxAnalytics`) was dead code that nothing ever
   defined. See PROGRESS.md → Status for what got built and verified.
+- **2026-08-23 (Sonnet session)** — Landing-page slice demoed to Nitish two
+  ways: first a published Artifact copy (content identical to
+  `landing/index.html`, minus the outer `<html>/<head>/<body>` the
+  Artifact wrapper supplies, `localStorage` calls wrapped in `try/catch`
+  for the artifact sandbox — scratchpad-only, not committed to the repo),
+  then — on request — the actual file served at `localhost:4173` via a
+  plain Node static server, since Nitish wanted to view it locally rather
+  than as a Claude-hosted link. While reviewing at a wide viewport, asked
+  to remove the visible left/right gutters; widened `.banners`,
+  `.platform-inner`, `.plans-inner`, `.roadmap-inner` from their
+  1000–1120px caps to 1800px, leaving the hero/paragraph/search-box
+  max-widths untouched (those keep body text at a readable line length,
+  not artificial whitespace — conflating the two would have hurt
+  readability to chase a width complaint that wasn't about them).
+  Signed off after that fix. Per `.claude/rules/build.md`'s protocol (real
+  run shown live, then explicit approval) — this closes both remaining
+  steps for the landing-page slice specifically, not for Phase 1 as a
+  whole (see Status).
