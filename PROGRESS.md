@@ -62,13 +62,35 @@ John** — lands on the Founder's org chart as real data. CTO sees neither
 tab. Zero console errors. Client `tsc -b --force` + `vite build` and
 server `tsc --noEmit` all clean.
 
+**Follow-up (same session).** Nitish reviewed the All events tab live and
+found it off: the column rule was technically met (720px) but a 1308px,
+ten-column table sat inside a 672px scrolling box, showing six columns
+and hiding the rest with no visual cue, in a bare grid unlike the card
+language used everywhere else. Rebuilt as nested cards sized to the
+column — a four-tile summary strip, then festival → session → zone →
+ticket type with issued/remaining inline; existing theme tokens only,
+nothing scrolls sideways. Measured at 1440px: 720px column on All
+events, New hires and `/tickets`, no element overflowing its box, no
+page-level horizontal scroll, zero console errors.
+
+He also asked why "AI Data Engineer" floated beside the two Founders on
+the org chart. Cause: the verification run created that role with no
+`reportsToOrgRoleId`, and a parentless role is a root of the forest by
+design (that is how the two Founders exist). **Nitish chose to re-parent
+it under VP of Tech** rather than delete it; done and verified — the
+chart is back to exactly two roots and the role's chain now reads VP of
+Tech → CTO → Founder & Managing Director. The underlying gap (the create
+-role form allows a role with no reporting line) is now specified as
+**IO-7 in `PHASE_1_CT_INCREMENT_SPEC.md` §2.5 — spec only, not built**,
+awaiting his go-ahead.
+
 Two verification-run artefacts, flagged rather than quietly cleaned:
 Playwright's case-insensitive `hasText` matched Nitish's **pre-existing**
 "AI Data engineer" role (key `Data Analyst 2`) instead of the one the
 test created, so **Paul John is currently assigned to that real role** —
 which is exactly the outcome he asked for, so it was left in place; and
-the test-created duplicate role `ai_data_engineer_<timestamp>` is still
-in the chart as a third root, awaiting his per-record go-ahead to delete.
+the test-created duplicate role `ai_data_engineer_<timestamp>` was
+re-parented under VP of Tech at his direction (not deleted).
 One check reported FAIL twice before being understood: it asked the Head
 of Product Development's dashboard for an org chart (that role holds
 neither roster capability, so it has no tree widget) and then used the

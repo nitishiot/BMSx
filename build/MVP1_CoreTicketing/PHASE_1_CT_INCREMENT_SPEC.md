@@ -143,6 +143,43 @@ narrower act than restructuring the org.
   is an easy and dangerous assumption: silently minting a staff account
   from a typed name would hand out real access.
 
+### 2.5 IO-7 — A new org role must state its reporting line
+
+**Status: specified, not built** (2026-08-24) — filed here for the same
+reason as §2.4, and awaiting Nitish's go-ahead before implementation.
+
+`POST /internal-ops/org-roles` accepts `reportsToOrgRoleId` as optional,
+and the "Org roles admin" form lets a role be saved without one. A role
+with no parent becomes a **root of the org forest** — `buildFullTree`
+returns every parentless role, and `OrgForest` draws them side by side.
+That is correct and necessary for TAG's two Founders, who genuinely have
+no one above them; it is wrong for everything else. A role created
+without a reporting line silently appears floating beside the Founders on
+the company chart, which is what happened on 2026-08-24 when a
+verification run created an "AI Data Engineer" role with no parent
+(re-parented under **VP of Tech** at Nitish's direction, rather than
+deleted — see `PROGRESS.md`).
+
+- The create-role form makes **reporting line required**, with an
+  explicit, deliberately awkward "This is a top-level role (reports to
+  no one)" checkbox for the founder case — so a root is chosen, never
+  arrived at by leaving a field blank.
+- `POST /org-roles` enforces the same rule server-side: reject a create
+  with neither `reportsToOrgRoleId` nor an explicit `isTopLevel: true`,
+  since the client is not the gate (`.claude/rules/design.md`).
+- **Existing parentless roles are not migrated or auto-parented.** The
+  two Founders are legitimately parentless, and guessing a parent for
+  anything else would invent org structure. Any other root is surfaced
+  in the console as "No reporting line — assign one", left for a human.
+- Out of scope: deleting org roles. There is no delete endpoint today,
+  and removing a role that people report through needs a re-parenting
+  policy first. `[TBD: role deletion/deactivation policy]`
+
+**Exit checks:** creating a role with no reporting line and no
+`isTopLevel` flag is rejected (400) by the API and blocked by the form;
+creating one with `isTopLevel: true` succeeds and appears as a root;
+the company chart shows exactly two roots after the check, unchanged.
+
 ## 3. Explicitly out of scope
 
 - **Per-event ticket-holder lists for Internal Ops** (who bought what).
