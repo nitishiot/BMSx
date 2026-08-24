@@ -5,6 +5,31 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Real QR rendering: built, awaiting sign-off (2026-08-24, Sonnet
+session).** Nitish picked this as the next item after signing off the
+Fan Web checkout UI. Corrected a mischaracterisation from earlier in this
+session: the confirmation screen's tickets previously showed the opaque
+`qrCode` text token with a note saying real QR rendering was blocked on
+the object-storage product decision (spec §8). That conflated two things
+— *persisting* a QR image (needs storage, still TBD) and *generating* one
+(a pure client-side computation, no storage involved at all). Rendering
+was never actually blocked; corrected in `PHASE_1_SPEC.md`, not silently
+fixed.
+
+Added `qrcode` (+ `@types/qrcode`) to `client/`. `FestivalPage.tsx`'s
+confirmation screen now encodes each ticket's `qrCode` token into a real
+PNG QR image client-side (`QRCode.toDataURL`), rendered inline; the raw
+token stays visible as a small text caption underneath for reference. No
+backend change — `Ticket.qrCode` was already a real unique token, only
+the confirmation screen's rendering changed.
+
+Verified live with Playwright, and — going a step further than "an image
+tag appeared" — actually decoded the rendered QR: extracted the `<img>`'s
+PNG data URL, decoded its pixels with `jsQR`, and confirmed the decoded
+text exactly matches the ticket's `qrCode` token. Typecheck and
+production build (`tsc -b && vite build`) both clean. **Not yet shown to
+Nitish live.**
+
 **Fan Web checkout UI + Ticketing & Inventory/Orders & Cart backend:
 signed off together (2026-08-24, Sonnet session).** Nitish reviewed both
 live at `localhost:5173` — screenshots of the real "Summer with Linkin"
@@ -525,12 +550,12 @@ current branch, and `origin/main` were identical at session start (`0 0`).
    (`/festival/:id`), both built this session (awaiting sign-off, see
    Status) — J1 (search → festival page → zone/ticket selection → cart →
    guest checkout → confirmation) now runs end to end against real
-   infrastructure, demoable live at `localhost:5173/festival/:id`. Still
-   needed: Virtual Queue (admission gating ahead of purchase — exit check
-   4 needs this), a real Payments/PSP integration (currently a stub
-   adapter — exit check 3's "real payment-sandbox authorisation" needs
-   this), real scannable QR rendering (currently an opaque text token —
-   gated on the object storage product decision, §8), Ancillary Bookings,
+   infrastructure, demoable live at `localhost:5173/festival/:id`, and its
+   confirmation screen now shows a real scannable QR code (built this
+   session — awaiting sign-off, see Status). Still needed: Virtual Queue
+   (admission gating ahead of purchase — exit check 4 needs this), a real
+   Payments/PSP integration (currently a stub adapter — exit check 3's
+   "real payment-sandbox authorisation" needs this), Ancillary Bookings,
    Consent & Privacy, Notifications (spec §2/§4).
 2. LP-3 "Use my location" nearby search still only ranks the six mock
    festivals — needs venue lat/lon collection (not built anywhere yet)
@@ -937,3 +962,15 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   scripted HTTP, logged above) had already closed step 1. No `phase-1` tag
   — sub-slice sign-off, same reservation as every prior slice this
   project.
+- **2026-08-24 (Sonnet session)** — Nitish picked "QR rendering" as the
+  next item. Caught and corrected a scoping error made earlier this same
+  session: `PHASE_1_SPEC.md`'s Fan Web UI entry had said real QR
+  rendering was blocked on the object-storage product decision (§8) —
+  wrong, that TBD is about *persisting* a QR asset (e.g. for email), not
+  *generating* one, and generation needs no storage at all. Built it as a
+  pure client-side computation (`qrcode` npm package) rather than waiting
+  on an unrelated open decision. Verification went one step further than
+  usual: rather than just asserting an `<img>` tag rendered, decoded the
+  actual PNG pixel data with `jsQR` and confirmed the decoded text matches
+  the ticket's token exactly — proves the QR is genuinely scannable, not
+  just image-shaped.

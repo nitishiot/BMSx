@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import QRCode from 'qrcode';
 import {
   addCartItem,
   checkout,
@@ -43,6 +44,7 @@ export function FestivalPage({ festivalId }: Props) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
   const [confirmation, setConfirmation] = useState<{ order: Order; tickets: Ticket[] } | null>(null);
+  const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +119,23 @@ export function FestivalPage({ festivalId }: Props) {
     setTicketTypesByZone(Object.fromEntries(entries));
   }
 
+  // Encodes each ticket's qrCode token into a real scannable QR image,
+  // client-side — no asset persistence involved, so this isn't gated on
+  // the object storage decision (spec §8) the way a stored/emailed QR
+  // asset would be.
+  useEffect(() => {
+    if (!confirmation) return;
+    let cancelled = false;
+    Promise.all(
+      confirmation.tickets.map(async (t) => [t.id, await QRCode.toDataURL(t.qrCode, { margin: 1, width: 180 })] as const),
+    ).then((entries) => {
+      if (!cancelled) setQrDataUrls(Object.fromEntries(entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmation]);
+
   async function handleCheckout(e: React.FormEvent) {
     e.preventDefault();
     if (!cart) return;
@@ -163,10 +182,12 @@ export function FestivalPage({ festivalId }: Props) {
               <div className="ticket-card" key={t.id}>
                 <p className="ticket-event">{info?.eventName ?? festival.name}</p>
                 <p className="ticket-zone">{info?.zoneName ?? ''} — {info?.ticketType.name ?? 'Ticket'}</p>
+                {qrDataUrls[t.id] ? (
+                  <img className="ticket-qr-image" src={qrDataUrls[t.id]} alt={`Scannable QR ticket ${t.qrCode}`} />
+                ) : (
+                  <p className="ticket-qr-note">Generating QR code…</p>
+                )}
                 <p className="ticket-qr">{t.qrCode}</p>
-                <p className="ticket-qr-note">
-                  Opaque token, not a scannable QR image — object storage/QR rendering is [TBD: PHASE_1_SPEC.md §8].
-                </p>
               </div>
             );
           })}

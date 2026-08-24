@@ -115,6 +115,19 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
     page's real-festival link resolves to this page and the mock-festival
     fallback link is unchanged. **Not yet built:** Virtual Queue admission
     gating ahead of this flow, and a real PSP (still the stub adapter).
+  - **Real QR rendering (added 2026-08-24, implementation-level, not a
+    PRD scope change).** The confirmation screen's tickets now render an
+    actual scannable QR code (`qrcode` npm package, PNG data URL, encoded
+    client-side from the ticket's `qrCode` token) instead of the opaque
+    text token shown before. Correction to this document's earlier
+    framing: QR *rendering* isn't gated on the object-storage decision
+    (§8, item 1) the way an earlier note here implied — that TBD is about
+    *persisting* a QR image (e.g. for an email attachment), not
+    generating one, and generation is a pure client-side computation
+    needing no storage at all. Verified live with Playwright plus a real
+    QR decode (`jsQR` against the rendered PNG's pixel data) confirming
+    the decoded content exactly matches the ticket's `qrCode` token — not
+    just that an image tag was present.
 - Payments & Fees: PaymentIntent, FeeLine, Refund — itemised fees at cart,
   PCI scope isolated to this service (ADR-003). **Stubbed for the
   Ticketing & Inventory/Orders & Cart sub-slice above** — a real PSP
