@@ -385,3 +385,14 @@
 }
 .hire-holder { font-size: .875rem; font-weight: 600; }
 .hire-actions .submit-btn { padding: .4rem 1rem; font-size: .8125rem; }
+
+/* IO-7 — the deliberate top-level opt-in on the create-role form. */
+.ops-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  font-size: .8125rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.ops-checkbox input { margin-top: .15rem; }

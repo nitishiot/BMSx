@@ -149,6 +149,9 @@ function OrgRolesAdmin() {
   const [roleTitle, setRoleTitle] = useState('');
   const [roleDept, setRoleDept] = useState('');
   const [reportsTo, setReportsTo] = useState('');
+  // IO-7 (PHASE_1_CT_INCREMENT_SPEC.md §2.5) — rootlessness is a choice
+  // made on purpose, never the result of leaving the field blank.
+  const [topLevel, setTopLevel] = useState(false);
 
   const [capKey, setCapKey] = useState('');
   const [capDesc, setCapDesc] = useState('');
@@ -168,6 +171,11 @@ function OrgRolesAdmin() {
   useEffect(reload, []);
 
   const roles = flattenTree(tree);
+  // Only meaningful on the full company forest. A subtree's root is the
+  // caller's own role, which is legitimately not top-level — flagging it
+  // would be a false warning. manage_org always returns the forest, so
+  // this is belt and braces.
+  const unclaimedRoots = (Array.isArray(tree) ? tree : []).filter((r) => !r.isTopLevel);
 
   async function handleCreateRole(e: FormEvent) {
     e.preventDefault();
@@ -177,9 +185,10 @@ function OrgRolesAdmin() {
         key: roleKey.trim(),
         title: roleTitle.trim(),
         department: roleDept.trim() || undefined,
-        reportsToOrgRoleId: reportsTo || null,
+        reportsToOrgRoleId: topLevel ? null : reportsTo,
+        isTopLevel: topLevel,
       });
-      setRoleKey(''); setRoleTitle(''); setRoleDept(''); setReportsTo('');
+      setRoleKey(''); setRoleTitle(''); setRoleDept(''); setReportsTo(''); setTopLevel(false);
       setStatus(`Created role "${roleTitle}".`);
       reload();
     } catch (err) {
@@ -236,10 +245,17 @@ function OrgRolesAdmin() {
         <input placeholder="key (e.g. data_analyst)" value={roleKey} onChange={(e) => setRoleKey(e.target.value)} required />
         <input placeholder="title" value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} required />
         <input placeholder="department (optional)" value={roleDept} onChange={(e) => setRoleDept(e.target.value)} />
-        <select value={reportsTo} onChange={(e) => setReportsTo(e.target.value)}>
-          <option value="">Reports to… (optional, top-level if blank)</option>
+        {/* IO-7: a role must say where it sits. The API rejects a create
+            with neither a manager nor an explicit top-level claim — this
+            is the same rule one level up, not the only gate. */}
+        <select value={reportsTo} onChange={(e) => setReportsTo(e.target.value)} required={!topLevel} disabled={topLevel}>
+          <option value="">Reports to…</option>
           {roles.map((r) => <option key={r.id} value={r.id}>{r.title}{r.personName ? ` — ${r.personName}` : ''}</option>)}
         </select>
+        <label className="ops-checkbox">
+          <input type="checkbox" checked={topLevel} onChange={(e) => setTopLevel(e.target.checked)} />
+          This is a top-level role (reports to no one) — only the Founders should be this
+        </label>
         <button type="submit" className="submit-btn">Create role</button>
       </form>
 
@@ -265,6 +281,16 @@ function OrgRolesAdmin() {
           <button type="button" className="submit-btn secondary" onClick={handleRevoke} disabled={!grantRoleId || !grantCapId}>Revoke</button>
         </div>
       </form>
+
+      {/* IO-7: any root nobody claimed as top-level is surfaced, not
+          auto-parented — guessing a manager would invent org structure. */}
+      {unclaimedRoots.length > 0 && (
+        <p className="saved-banner error">
+          No reporting line — assign one: {unclaimedRoots.map((r) => r.title).join(', ')}. These
+          roles have no manager and were not marked top-level, so they render beside the Founders
+          on the chart.
+        </p>
+      )}
 
       <h3 className="ops-subheading">Current org chart</h3>
       {!tree && !error && <p className="ops-widget-note">Loading…</p>}

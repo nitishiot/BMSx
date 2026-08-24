@@ -46,7 +46,7 @@ internalOpsRouter.get('/org-chart', requireAuth, loadStaffContext, async (req, r
   }
 
   const rows: OrgRoleRow[] = await prisma.orgRole.findMany({
-    select: { id: true, key: true, title: true, department: true, personName: true, reportsToOrgRoleId: true },
+    select: { id: true, key: true, title: true, department: true, personName: true, reportsToOrgRoleId: true, isTopLevel: true },
   });
 
   if (canSeeFullCompany) {
@@ -74,13 +74,27 @@ internalOpsRouter.get('/capabilities', requireAuth, loadStaffContext, requireCap
   res.json({ capabilities });
 });
 
-const createOrgRoleSchema = z.object({
-  key: z.string().min(1),
-  title: z.string().min(1),
-  department: z.string().optional(),
-  personName: z.string().optional(),
-  reportsToOrgRoleId: z.string().uuid().nullable().optional(),
-});
+// PHASE_1_CT_INCREMENT_SPEC.md §2.5 (IO-7) — a role must say where it
+// sits. Either it reports to someone, or rootlessness is claimed
+// explicitly with isTopLevel; leaving both out is rejected rather than
+// silently producing another root on the company chart.
+const createOrgRoleSchema = z
+  .object({
+    key: z.string().min(1),
+    title: z.string().min(1),
+    department: z.string().optional(),
+    personName: z.string().optional(),
+    reportsToOrgRoleId: z.string().uuid().nullable().optional(),
+    isTopLevel: z.boolean().optional(),
+  })
+  .refine((v) => !!v.reportsToOrgRoleId || v.isTopLevel === true, {
+    message: 'A role must report to someone, or be explicitly marked top-level',
+    path: ['reportsToOrgRoleId'],
+  })
+  .refine((v) => !(v.reportsToOrgRoleId && v.isTopLevel), {
+    message: 'A top-level role cannot also report to someone',
+    path: ['isTopLevel'],
+  });
 
 internalOpsRouter.post('/org-roles', requireAuth, loadStaffContext, requireCapability('manage_org'), async (req, res) => {
   const parsed = createOrgRoleSchema.safeParse(req.body);
@@ -93,7 +107,9 @@ internalOpsRouter.post('/org-roles', requireAuth, loadStaffContext, requireCapab
     res.status(409).json({ error: 'An OrgRole with that key already exists' });
     return;
   }
-  const created = await prisma.orgRole.create({ data: parsed.data });
+  const created = await prisma.orgRole.create({
+    data: { ...parsed.data, isTopLevel: parsed.data.isTopLevel ?? false },
+  });
   res.status(201).json({ orgRole: created });
 });
 

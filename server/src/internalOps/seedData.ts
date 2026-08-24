@@ -8,11 +8,13 @@ export interface OrgRoleSeed {
   department: string;
   personName?: string;
   reportsToKey?: string;
+  // IO-7: only the two Founders are deliberately rootless.
+  isTopLevel?: boolean;
 }
 
 export const ORG_ROLES: OrgRoleSeed[] = [
-  { key: 'founder_md', title: 'Founder & Managing Director', department: 'Executive', personName: 'Ila Nicholson' },
-  { key: 'founder_creative', title: 'Founder & Creative Director', department: 'Executive', personName: 'Shane Mitchell' },
+  { key: 'founder_md', title: 'Founder & Managing Director', department: 'Executive', personName: 'Ila Nicholson', isTopLevel: true },
+  { key: 'founder_creative', title: 'Founder & Creative Director', department: 'Executive', personName: 'Shane Mitchell', isTopLevel: true },
 
   // --- Under Founder & Managing Director ---
   { key: 'cfo', title: 'CFO', department: 'Finance', personName: 'Jon Abelarde', reportsToKey: 'founder_md' },

@@ -5,6 +5,9 @@ export interface OrgRoleRow {
   department: string | null;
   personName: string | null;
   reportsToOrgRoleId: string | null;
+  // IO-7 — whether rootlessness was claimed deliberately. Carried through
+  // to the tree so the console can flag a root that nobody chose.
+  isTopLevel?: boolean;
 }
 
 export interface OrgTreeNode {
@@ -13,11 +16,20 @@ export interface OrgTreeNode {
   title: string;
   department: string | null;
   personName: string | null;
+  isTopLevel: boolean;
   children: OrgTreeNode[];
 }
 
 function toNode(row: OrgRoleRow): OrgTreeNode {
-  return { id: row.id, key: row.key, title: row.title, department: row.department, personName: row.personName, children: [] };
+  return {
+    id: row.id,
+    key: row.key,
+    title: row.title,
+    department: row.department,
+    personName: row.personName,
+    isTopLevel: row.isTopLevel ?? false,
+    children: [],
+  };
 }
 
 // Builds the subtree rooted at `rootId` from a flat OrgRole row list —

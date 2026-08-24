@@ -145,8 +145,19 @@ narrower act than restructuring the org.
 
 ### 2.5 IO-7 — A new org role must state its reporting line
 
-**Status: specified, not built** (2026-08-24) — filed here for the same
-reason as §2.4, and awaiting Nitish's go-ahead before implementation.
+**Status: built 2026-08-24, awaiting sign-off** — filed here for the same
+reason as §2.4.
+
+**As built**, one addition beyond the sketch below: `OrgRole` gained an
+`isTopLevel` flag (migration `20260824100000_org_role_top_level`, seeded
+`true` for the two Founders). A null `reportsToOrgRoleId` alone cannot
+distinguish "deliberately a root" from "someone forgot" — without a
+recorded intent, the console could only have flagged the Founders as
+problems forever. `PATCH /org-roles/:id` is deliberately *not* gated the
+same way: re-parenting to null is how a role legitimately becomes
+unassigned mid-restructure, and the console's banner is the safety net
+that surfaces it (verified by orphaning a role and watching the banner
+appear, then clear).
 
 `POST /internal-ops/org-roles` accepts `reportsToOrgRoleId` as optional,
 and the "Org roles admin" form lets a role be saved without one. A role

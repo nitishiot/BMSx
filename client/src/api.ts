@@ -535,6 +535,9 @@ export interface OrgTreeNode {
   title: string;
   department: string | null;
   personName: string | null;
+  // IO-7 — true only where rootlessness was claimed deliberately (the two
+  // Founders). Any other root is a role missing its reporting line.
+  isTopLevel: boolean;
   children: OrgTreeNode[];
 }
 
@@ -569,6 +572,7 @@ export interface CreateOrgRoleInput {
   department?: string;
   personName?: string;
   reportsToOrgRoleId?: string | null;
+  isTopLevel?: boolean;
 }
 
 export async function createOpsOrgRole(input: CreateOrgRoleInput): Promise<void> {

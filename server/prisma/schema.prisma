@@ -482,6 +482,12 @@ model OrgRole {
   department        String?
   personName        String?
   reportsToOrgRoleId String?
+  // PHASE_1_CT_INCREMENT_SPEC.md §2.5 (IO-7) — a parentless role is a root
+  // of the org forest. That is correct for TAG's two Founders and wrong for
+  // everything else, and a null reportsToOrgRoleId alone can't tell the two
+  // apart. This flag records that rootlessness was chosen, so the console
+  // can flag every other root as needing a reporting line.
+  isTopLevel        Boolean  @default(false)
   createdAt         DateTime @default(now())
 
   reportsTo OrgRole?  @relation("OrgRoleReports", fields: [reportsToOrgRoleId], references: [id])

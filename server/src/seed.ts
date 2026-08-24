@@ -47,8 +47,8 @@ async function main() {
     const reportsToOrgRoleId = role.reportsToKey ? (orgRoleIdByKey.get(role.reportsToKey) ?? null) : null;
     const created = await prisma.orgRole.upsert({
       where: { key: role.key },
-      update: { title: role.title, department: role.department, personName: role.personName, reportsToOrgRoleId },
-      create: { key: role.key, title: role.title, department: role.department, personName: role.personName, reportsToOrgRoleId },
+      update: { title: role.title, department: role.department, personName: role.personName, reportsToOrgRoleId, isTopLevel: role.isTopLevel ?? false },
+      create: { key: role.key, title: role.title, department: role.department, personName: role.personName, reportsToOrgRoleId, isTopLevel: role.isTopLevel ?? false },
     });
     orgRoleIdByKey.set(role.key, created.id);
   }

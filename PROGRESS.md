@@ -5,6 +5,45 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**IO-7 (a new org role must state its reporting line): built, awaiting
+sign-off (2026-08-24, Opus session).** Closes the gap that let a
+verification run's "AI Data Engineer" role draw beside the two Founders.
+
+`OrgRole` gained `isTopLevel` (migration
+`20260824100000_org_role_top_level`, seeded `true` for the two Founders
+only) — a null `reportsToOrgRoleId` alone can't tell "deliberately a
+root" from "someone forgot", so without a recorded intent the console
+would have had to flag the Founders as problems forever. The migration
+was generated with `--from-schema-datasource` and read before applying
+(one `ADD COLUMN`, no drops), per the lesson logged earlier this repo.
+
+`POST /internal-ops/org-roles` now rejects a create with neither a
+manager nor an explicit `isTopLevel: true`, and rejects claiming both.
+The console's create-role form makes the reporting-line select required
+and adds a deliberately wordy "This is a top-level role (reports to no
+one) — only the Founders should be this" checkbox that disables the
+select. Existing rootless roles are **not** auto-parented: any root not
+marked top-level is surfaced in Org roles admin as "No reporting line —
+assign one", left for a human, because guessing a manager would invent
+org structure. `PATCH /org-roles/:id` stays ungated for this — dropping
+a reporting line mid-restructure is legitimate, and the banner is the
+safety net.
+
+Verified two ways: an 11-check HTTP walk (both rejection cases 400; a
+create with a manager and a create with an explicit top-level claim both
+201; the explicit one really becomes a third root; the company chart's
+two roots are both claimed; the re-parented AI Data Engineer sits inside
+the tree) and a 6-check Playwright run (select required, submit blocked
+without it, the checkbox disables the select, orphaning a role really
+surfaces the banner and restoring its parent clears it). Zero console
+errors; client `tsc -b --force` + `vite build` and server `tsc --noEmit`
+clean. **Not yet shown to Nitish live.**
+
+**Test data left behind by these runs** (no delete endpoint exists — role
+deletion is explicitly out of scope, `[TBD: role deletion/deactivation
+policy]`): `io7_child_<ts>` and `io7_top_<ts>`, both parked under VP of
+Tech. Flagged rather than quietly left.
+
 **Event visibility increment (`build/MVP1_CoreTicketing/
 PHASE_1_CT_INCREMENT_SPEC.md`): built, awaiting sign-off (2026-08-24,
 Opus session).** Spec written first, then all three items built and
