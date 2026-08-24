@@ -5,6 +5,45 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Three feedback fixes on the unified-auth pass: built, awaiting sign-off
+(2026-08-24, Opus session).** Nitish reviewed the previous pass and raised
+three items; all three are built and verified live in a real browser.
+
+1. **"Download Free" text colour didn't match "Get the App — Free".**
+   Root cause, not a repaint: `.nav-links a{color:rgba(237,238,248,.5)}`
+   (specificity 0,1,1) was beating `.nav-btn{color:#FFF}` (0,1,0), so the
+   nav pill's label rendered muted grey while the hero's identical pill
+   rendered white. Fixed by scoping the white to `.nav-links .nav-btn`
+   (plus its `:hover`, which `.nav-links a:hover` would otherwise have
+   taken over). Computed colour now measures `rgb(255,255,255)` on both.
+
+2. **Internal Ops staff land on `/ops` straight after sign-in.**
+   `GET /api/auth/me` now also returns `homeHref`, resolved server-side
+   (`resolveHomeHref` in `server/src/routes/auth.ts`) from the same
+   roles/capabilities the `portals` list uses: staff → `/ops`, a
+   `platform_admin` → `/admin`, everyone else → `/account`. `LoginPage`
+   redirects to that value. Deliberately *not* a client-side role→page
+   map, per `.claude/rules/design.md` — the client would drift from what
+   the API actually grants. `?next=` still wins over it, so a redirect
+   into sign-in still returns you where you were.
+
+3. **The confirmation screen was a dead end after the QR rendered.**
+   Added a `.confirmation-actions` row: a primary pill "Take me back to
+   the festival grounds" (to the landing page) and a secondary outlined
+   "Grab more tickets" (back to this festival). `.submit-btn` gained
+   anchor-safe defaults (`display:inline-block`, `text-decoration:none`)
+   and the `.secondary` outlined variant already used in Internal Ops, so
+   both reuse the decided pill language rather than a new button shape.
+
+Verified with a 12-check Playwright run against the real running server +
+Postgres: both pills measure the same computed colour; Founder and CTO
+both land on `/ops`, the Platform Admin on `/admin`, a freshly registered
+fan on `/account`, and `?next=/survey` still overrides all of it; a full
+real checkout on "Fan Web Test Festival" renders the QR and both new
+actions, and the homepage action really lands on the landing page. Zero
+console errors. Server `tsc --noEmit` and client `tsc -b --force` +
+`vite build` all clean. **Not yet shown to Nitish live.**
+
 **Unified authentication + single-origin app: built, awaiting sign-off
 (2026-08-24, Opus session).** Nitish reviewed the previous pass, found a
 login failure he thought was a bug, and asked for the full credential

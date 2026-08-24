@@ -61,6 +61,10 @@ export interface SessionView {
   staff: { orgRoleKey: string; title: string; displayName: string; capabilities: string[] } | null;
   navLinks: { key: string; label: string }[];
   portals: { key: string; label: string; href: string }[];
+  // Where sign-in should land this session when no ?next= was given —
+  // resolved server-side from the same RBAC as `portals`, so the client
+  // never has to guess which surface a persona belongs on.
+  homeHref: string;
 }
 
 // The single source of truth every nav renders from. Returns null when

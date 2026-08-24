@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { login } from '../api';
+import { getSession, login } from '../api';
 import { AutoAppNav } from '../components/AppNav';
 import './AuthPage.css';
 
@@ -21,7 +21,17 @@ export function LoginPage() {
       await login(email, password);
       // Honour ?next= so a redirect into sign-in returns you where you were.
       const next = new URLSearchParams(window.location.search).get('next');
-      window.location.href = next && next.startsWith('/') ? next : '/account';
+      if (next && next.startsWith('/')) {
+        window.location.href = next;
+        return;
+      }
+      // Otherwise land on the surface this persona actually belongs on:
+      // Internal Ops staff go straight to /ops, a Platform Admin to
+      // /admin, a fan to /account. The destination is resolved by the
+      // server (`homeHref` from GET /auth/me) alongside the portals list,
+      // never guessed from roles here.
+      const session = await getSession();
+      window.location.href = session?.homeHref ?? '/account';
     } catch {
       // The API deliberately returns one generic message for every failure
       // mode so a login attempt can't be used to discover which emails

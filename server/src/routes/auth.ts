@@ -103,6 +103,7 @@ export interface SessionView {
   staff: { orgRoleKey: string; title: string; displayName: string; capabilities: string[] } | null;
   navLinks: NavLink[];
   portals: { key: string; label: string; href: string }[];
+  homeHref: string;
 }
 
 // Portal entry points, filtered by what this session may actually reach.
@@ -119,6 +120,18 @@ function resolvePortals(roles: string[], isStaff: boolean, hasSurvey: boolean) {
   }
   if (isStaff) portals.push({ key: 'ops', label: 'Internal Ops', href: '/ops' });
   return portals;
+}
+
+// Where sign-in lands a session when no explicit ?next= was given.
+// Resolved here, from the same roles/capabilities the portals list uses,
+// rather than guessed client-side — Internal Ops staff go straight to the
+// Ops console, a Platform Admin to the admin console, everyone else to
+// their account (Nitish's ask, 2026-08-24). Highest-privilege surface the
+// session can actually reach wins; ?next= still overrides it.
+function resolveHomeHref(roles: string[], isStaff: boolean) {
+  if (isStaff) return '/ops';
+  if (roles.includes('platform_admin')) return '/admin';
+  return '/account';
 }
 
 // The one endpoint every surface's nav calls. Returns identity + product
@@ -151,6 +164,7 @@ authRouter.get('/me', requireAuth, async (req, res) => {
       : null,
     navLinks: resolveNavLinks(capabilities),
     portals: resolvePortals(req.account!.roles, !!profile, !!surveyResponse),
+    homeHref: resolveHomeHref(req.account!.roles, !!profile),
   };
   res.json(view);
 });

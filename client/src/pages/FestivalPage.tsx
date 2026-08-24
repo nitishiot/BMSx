@@ -9,6 +9,7 @@ import {
   getPublicFestival,
   getZoneTicketTypes,
   removeCartItem,
+  LANDING_BASE,
   type CartView,
   type CatalogueEvent,
   type Festival,
@@ -201,6 +202,14 @@ export function FestivalPage({ festivalId }: Props) {
               </div>
             );
           })}
+        </div>
+        {/* Nowhere to go after the QR renders was a dead end — the
+            confirmation screen was the last page of the flow with no way
+            back into the product. Primary action returns to the landing
+            page; secondary keeps browsing this festival. */}
+        <div className="confirmation-actions">
+          <a className="submit-btn" href={LANDING_BASE}>Take me back to the festival grounds</a>
+          <a className="submit-btn secondary" href={`/festival/${festival.id}`}>Grab more tickets</a>
         </div>
       </div>
       </>

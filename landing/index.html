@@ -73,7 +73,11 @@ nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;
 /* "Download Free" keeps the same filled-pill treatment as the hero's
    "Get the App — Free" (.btn-primary) — one visual language for a
    primary action, per .claude/rules/design.md. */
-.nav-links .nav-btn{padding:.5rem 1.2rem;border-radius:100px;}
+.nav-links .nav-btn{padding:.5rem 1.2rem;border-radius:100px;color:#FFF;}
+/* .nav-links a's colour (specificity 0,1,1) would otherwise beat
+   .nav-btn's white (0,1,0), leaving the pill's label muted grey while
+   the hero's identical pill reads white. */
+.nav-links .nav-btn:hover{color:#FFF;}
 .nav-auth{display:flex;align-items:center;gap:.9rem;}
 /* display:flex would otherwise beat the [hidden] attribute's default
    display:none, leaving both auth states visible at once. */

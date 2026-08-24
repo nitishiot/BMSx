@@ -76,5 +76,11 @@
   font-size: .875rem;
   cursor: pointer;
 }
+/* The same pill also serves as a link on the confirmation screen, so it
+   needs anchor-safe defaults (per .claude/rules/design.md's button shape
+   convention — same shape, outlined for the secondary action). */
+.submit-btn { display: inline-block; text-decoration: none; text-align: center; }
+.submit-btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border-md); }
+.confirmation-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
 .submit-btn:hover { opacity: .9; }
 .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
