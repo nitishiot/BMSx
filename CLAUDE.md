@@ -96,6 +96,7 @@ BMSx-synced/
 │   ├── README.md
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see above)
+├── Product/                  ← presentation-ready artefacts (self-contained HTML) — see its README
 ├── landing/                  ← static landing page — current, matches the PRD
 ├── client/                   ← Producer portal + Platform Admin console (Phase 1 slice, React+Vite+TS) — current, not legacy
 └── server/                   ← core-ticketing backend (Phase 1 slice, Node+Express+TS+Prisma/Postgres) — current, not legacy

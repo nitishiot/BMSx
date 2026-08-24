@@ -1,0 +1,523 @@
+<title>TAG Founder Demo Run Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  /* TAG's own token set, mirrored from client/src/theme.css so this page and
+     the product it documents read as one system. Light in bare :root, dark in
+     both guarded blocks. */
+  :root {
+    --bg:#F0EFF6; --bg-card:#FFFFFF; --bg-raised:#E8E7F0;
+    --text:#0D0C1A; --muted:#5A5878; --faint:#8C8CAE;
+    --accent:#E8194B; --warm:#B85400; --cool:#3050E0; --good:#17804A;
+    --border:rgba(13,12,26,0.09); --border-md:rgba(13,12,26,0.16); --rule:rgba(13,12,26,0.12);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#08080D; --bg-card:#111119; --bg-raised:#1A1A28;
+      --text:#EDEEF8; --muted:#8A8ABA; --faint:#56567C;
+      --accent:#FF2D60; --warm:#FF9A45; --cool:#7B92FF; --good:#3FCC85;
+      --border:rgba(237,238,248,0.08); --border-md:rgba(237,238,248,0.17); --rule:rgba(237,238,248,0.14);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#08080D; --bg-card:#111119; --bg-raised:#1A1A28;
+    --text:#EDEEF8; --muted:#8A8ABA; --faint:#56567C;
+    --accent:#FF2D60; --warm:#FF9A45; --cool:#7B92FF; --good:#3FCC85;
+    --border:rgba(237,238,248,0.08); --border-md:rgba(237,238,248,0.17); --rule:rgba(237,238,248,0.14);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: 'Syne', 'Inter', sans-serif; font-weight: 800; letter-spacing: -.028em; line-height: 1.05; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  code, .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: .8125em; font-variant-ligatures: none; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  header.masthead { border-bottom: 1px solid var(--rule); padding: 3rem 0 1.75rem; margin-bottom: 2.25rem; }
+  .wordmark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; display: block; margin-bottom: 1.75rem; }
+  .wordmark span { color: var(--accent); }
+  .eyebrow { font-size: .6875rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
+  header.masthead h1 { font-size: clamp(2.2rem, 5.5vw, 3.6rem); margin-bottom: .9rem; }
+  .standfirst { font-size: 1rem; color: var(--muted); max-width: 60ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.75rem; }
+  .meta div { display: flex; flex-direction: column; }
+  .meta dt { font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .meta dd { margin: 0; font-size: .875rem; }
+
+  .shell { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 3rem; align-items: start; }
+  nav.index { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: .25rem; }
+  nav.index p { font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: .4rem; }
+  nav.index a { color: var(--muted); text-decoration: none; font-size: .8438rem; padding: .15rem 0 .15rem .7rem; border-left: 2px solid transparent; transition: color .15s, border-color .15s; }
+  nav.index a:hover { color: var(--text); border-left-color: var(--accent); }
+  @media (max-width: 920px) {
+    .shell { grid-template-columns: 1fr; gap: 1.75rem; }
+    nav.index { position: static; flex-flow: row wrap; gap: .4rem .9rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--rule); }
+    nav.index p { width: 100%; margin: 0; }
+    nav.index a { border-left: none; padding-left: 0; }
+  }
+
+  section { margin-bottom: 3.5rem; scroll-margin-top: 1.5rem; }
+  section > h2 { font-size: 1.6rem; margin-bottom: .4rem; }
+  .lede { color: var(--muted); font-size: .9375rem; max-width: 66ch; margin-bottom: 1.5rem; }
+  h3.sub { font-size: .8125rem; font-family: 'Syne', sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 2rem 0 .75rem; }
+
+  /* tables carry most of the content */
+  .scroll { overflow-x: auto; border: 1px solid var(--border-md); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: .875rem; }
+  th, td { text-align: left; padding: .55rem .8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { background: var(--bg-raised); font-size: .6563rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: 'JetBrains Mono', monospace; font-size: .8125rem; white-space: nowrap; }
+  td.n { width: 2rem; font-family: 'JetBrains Mono', monospace; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .yes { color: var(--good); font-weight: 600; }
+  .no { color: var(--faint); }
+  .matrix th:not(:first-child), .matrix td:not(:first-child) { text-align: center; }
+  .matrix tbody th { font-weight: 600; font-size: .8125rem; background: none; text-transform: none; letter-spacing: 0; color: var(--text); }
+
+  /* journey blocks */
+  .run { border: 1px solid var(--border-md); border-radius: 14px; background: var(--bg-card); padding: 1.15rem 1.25rem 1.35rem; margin-bottom: 1rem; }
+  .run-head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: .3rem; }
+  .run-no { font-family: 'JetBrains Mono', monospace; font-size: .75rem; color: var(--accent); }
+  .run-head h3 { font-size: 1.125rem; }
+  .run-sub { color: var(--muted); font-size: .875rem; margin-bottom: .9rem; }
+  .who { font-size: .625rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; padding: .12rem .55rem; border-radius: 100px; border: 1px solid currentColor; }
+  .who.fan { color: var(--cool); } .who.producer { color: var(--warm); }
+  .who.admin { color: var(--accent); } .who.staff { color: var(--good); }
+
+  /* flow strip — the shape of the journey before the detail of it */
+  .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: .35rem; margin-bottom: 1rem; }
+  .flow .node {
+    flex: 1 1 118px; min-width: 118px; background: var(--bg-raised);
+    border: 1px solid var(--border-md); border-radius: 8px; padding: .45rem .6rem;
+  }
+  .flow .node b { display: block; font-size: .8125rem; font-weight: 600; }
+  .flow .node span { display: block; font-family: 'JetBrains Mono', monospace; font-size: .6875rem; color: var(--muted); margin-top: .1rem; }
+  .flow .arrow { align-self: center; color: var(--faint); font-size: .875rem; flex: 0 0 auto; }
+  .flow .node.end { border-color: var(--accent); }
+
+  .beat { margin-top: .9rem; padding-left: .85rem; border-left: 2px solid var(--accent); font-size: .875rem; }
+  .beat b { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .1rem; }
+
+  /* cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: .6rem; }
+  .card { background: var(--bg-card); border: 1px solid var(--border-md); border-radius: 12px; padding: .85rem .95rem; }
+  .card h4 { margin: 0 0 .25rem; font-size: .875rem; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0; }
+  .card p { font-size: .8125rem; color: var(--muted); }
+  .chip { display: inline-block; font-size: .5938rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; padding: .1rem .45rem; border-radius: 100px; border: 1px solid currentColor; margin-bottom: .45rem; }
+  .chip.live { color: var(--good); } .chip.partial { color: var(--warm); }
+  .chip.specced { color: var(--cool); } .chip.roadmap { color: var(--faint); }
+
+  figure { margin: 0 0 1.25rem; }
+  figure svg { max-width: 100%; height: auto; display: block; }
+  figcaption { font-size: .8125rem; color: var(--muted); margin-top: .6rem; max-width: 66ch; }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 1.25rem; color: var(--muted); font-size: .875rem; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <span class="wordmark">TAG<span>.</span></span>
+  <p class="eyebrow">Founder demo · run sheet</p>
+  <h1>Six journeys, forty minutes, nothing faked.</h1>
+  <p class="standfirst">
+    Every screen is driven by a real Express API and a real PostgreSQL database on your machine.
+    Where something is a stand-in, it says so — here and on screen. Run the journeys in order:
+    each leaves the state the next one needs.
+  </p>
+  <dl class="meta">
+    <div><dt>Build</dt><dd class="mono">main @ 5dcb3bc</dd></div>
+    <div><dt>Prepared</dt><dd>24 August 2026</dd></div>
+    <div><dt>Environment</dt><dd>Local — nothing deployed</dd></div>
+    <div><dt>Short version</dt><dd>Journeys 1 and 5 — 12 min</dd></div>
+  </dl>
+</header>
+
+<div class="shell">
+  <nav class="index" aria-label="Sections">
+    <p>Contents</p>
+    <a href="#setup">Before you start</a>
+    <a href="#journeys">The journeys</a>
+    <a href="#rbac">Who can see what</a>
+    <a href="#offer">What TAG offers</a>
+    <a href="#stack">How it's built</a>
+    <a href="#caveats">Know before you're asked</a>
+  </nav>
+
+  <main>
+
+  <section id="setup">
+    <h2>Before you start</h2>
+    <p class="lede">Three processes, one address. Landing page and app share an origin, so a person stays signed in as they move between them.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Step</th><th>Command</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Database &amp; cache</td><td class="mono">cd server &amp;&amp; docker compose up -d</td><td>Postgres :5433, Redis :6380 — non-default ports, so TAG never collides with anything else on the machine</td></tr>
+          <tr><td class="n">2</td><td>Seed the data</td><td class="mono">npm run seed</td><td>35 org roles, 8 capabilities, 4 sign-ins</td></tr>
+          <tr><td class="n">3</td><td>Start the API</td><td class="mono">npm run dev</td><td>Express on :4000</td></tr>
+          <tr><td class="n">4</td><td>Start the app</td><td class="mono">cd client &amp;&amp; npm run dev</td><td>Everything at <span class="mono">localhost:5173</span>, landing page included</td></tr>
+          <tr><td class="n">5</td><td>Second browser profile</td><td class="mono">—</td><td>Journey 3 needs producer and admin signed in at once; a private window is enough</td></tr>
+          <tr><td class="n">6</td><td>Sanity check</td><td class="mono">/ → search "fan"</td><td>Real festivals come back. Empty list means the API is down — the landing page stays up regardless, by design</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Seeded sign-ins</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Email</th><th>Password</th><th>Who</th><th>Lands on</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">founder@tag.local</td><td class="mono">changeme123</td><td>Ila Nicholson — Founder &amp; MD. Every staff capability.</td><td class="mono">/ops</td></tr>
+          <tr><td class="mono">nitish@tag.local</td><td class="mono">changeme123</td><td>Head of Product Development.</td><td class="mono">/ops</td></tr>
+          <tr><td class="mono">cto@tag.local</td><td class="mono">changeme123</td><td>CTO — deliberately narrow. Proves the permissions are real.</td><td class="mono">/ops</td></tr>
+          <tr><td class="mono">admin@tag.local</td><td class="mono">changeme123</td><td>Platform Admin — approves and suspends producers.</td><td class="mono">/admin</td></tr>
+          <tr><td colspan="4">Fans register live in journey 2 — the registration is part of the demo, so don't pre-create one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:.9rem;">Development placeholders set by the seed script, overridable by environment variable. Not production credentials.</p>
+
+    <div class="beat">
+      <b>Recommended prep · 10 min</b>
+      Seeded festivals carry test names (“Fan Web Test Festival”). Run journey 3 first to create one
+      properly named festival with real zones and prices, then demo journey 1 against that.
+    </div>
+  </section>
+
+  <section id="journeys">
+    <h2>The journeys</h2>
+    <p class="lede">Flow first, then the clicks. Tight on time? Run 1 and 5: a fan buying a ticket, and the permissions holding when you push on them.</p>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">01</span><h3>Discover a festival, walk out with a ticket</h3><span class="who fan">Festival Goer</span></div>
+      <p class="run-sub">The core product in ninety seconds. No account needed.</p>
+      <div class="flow">
+        <div class="node"><b>Search</b><span>/</span></div><span class="arrow">→</span>
+        <div class="node"><b>Festival</b><span>/festival/:id</span></div><span class="arrow">→</span>
+        <div class="node"><b>Cart</b><span>hold taken</span></div><span class="arrow">→</span>
+        <div class="node"><b>Checkout</b><span>guest email</span></div><span class="arrow">→</span>
+        <div class="node"><b>Pay</b><span>stub adapter</span></div><span class="arrow">→</span>
+        <div class="node end"><b>QR ticket</b><span>issued</span></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Do</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Search a genre and city, or a festival name</td><td>Mock and real festivals sit side by side — the real ones came from the database a moment ago</td></tr>
+            <tr><td class="n">2</td><td>Click <b>View festival</b> on a real result</td><td>Sessions, zones and ticket types, all entered by a promoter</td></tr>
+            <tr><td class="n">3</td><td><b>Add to cart</b></td><td>Remaining count drops instantly — a real allocation held, not a display trick</td></tr>
+            <tr><td class="n">4</td><td>Open the cart</td><td>Itemised subtotal / fee / total. Say it: the 10% fee is a placeholder, there's no agreed schedule</td></tr>
+            <tr><td class="n">5</td><td>Checkout as a guest</td><td>Payment always authorises — a labelled stub, no provider chosen</td></tr>
+            <tr><td class="n">6</td><td>Land on confirmation</td><td>A real scannable QR per ticket, drawn in the browser from the ticket's unique token</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="beat"><b>The line worth saying</b>“That isn't a picture of a QR code. Our tests decode the pixels and check the payload matches the ticket in the database.”</div>
+    </article>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">02</span><h3>One account, every surface</h3><span class="who fan">Festival Goer</span></div>
+      <p class="run-sub">Register once; the identity follows you across marketing site, account and tickets.</p>
+      <div class="flow">
+        <div class="node"><b>Register</b><span>/register</span></div><span class="arrow">→</span>
+        <div class="node"><b>Account</b><span>/account</span></div><span class="arrow">→</span>
+        <div class="node"><b>Back to landing</b><span>/</span></div><span class="arrow">→</span>
+        <div class="node"><b>Portals menu</b><span>server-resolved</span></div><span class="arrow">→</span>
+        <div class="node end"><b>My tickets</b><span>/tickets</span></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Do</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Register from the landing page, live</td><td>One sign-in and one registration page for every persona</td></tr>
+            <tr><td class="n">2</td><td>Navigate back to <span class="mono">/</span></td><td>Name still top-right. One origin, one session — this was broken twice before it was fixed properly</td></tr>
+            <tr><td class="n">3</td><td>Open <b>Portals</b></td><td>A fan is offered account, survey, producer — never the admin console. The list is computed server-side from real roles</td></tr>
+            <tr><td class="n">4</td><td>Open <span class="mono">/tickets</span></td><td>Tickets from journey 1 with QRs redrawn. Closing the confirmation tab no longer loses the ticket</td></tr>
+            <tr><td class="n">5</td><td>Optional: <span class="mono">/survey</span></td><td>Twelve real questions; the answers resurface in journey 4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">03</span><h3>A promoter applies, is approved, goes on sale</h3><span class="who producer">Festival Client</span><span class="who admin">Platform Admin</span></div>
+      <p class="run-sub">The supply side. Two browser profiles, so the approval is genuinely one account approving another.</p>
+      <div class="flow">
+        <div class="node"><b>Apply</b><span>/producer</span></div><span class="arrow">→</span>
+        <div class="node"><b>Pending</b><span>polls</span></div><span class="arrow">→</span>
+        <div class="node"><b>Approve</b><span>/admin · reason</span></div><span class="arrow">→</span>
+        <div class="node"><b>Event setup</b><span>venue · zone · price</span></div><span class="arrow">→</span>
+        <div class="node"><b>On sale</b><span>searchable</span></div><span class="arrow">→</span>
+        <div class="node end"><b>Suspend</b><span>audited</span></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Window</th><th>Do</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Producer</td><td>Submit an application at <span class="mono">/producer</span></td><td>Company, contact, what they run</td></tr>
+            <tr><td class="n">2</td><td>Producer</td><td>Leave it on “pending”</td><td>Nobody can approve themselves — that button was deliberately removed</td></tr>
+            <tr><td class="n">3</td><td>Admin</td><td>Approve from the queue</td><td>A written reason is required, and it's recorded</td></tr>
+            <tr><td class="n">4</td><td>Producer</td><td>Watch it flip to event setup</td><td>No reload — the page polls for the decision</td></tr>
+            <tr><td class="n">5</td><td>Producer</td><td>Create festival → venue → session → zone → ticket type</td><td>Then find that festival by searching the landing page</td></tr>
+            <tr><td class="n">6</td><td>Admin</td><td><b>Suspend</b> the producer, then reinstate</td><td>Access disappears and says so plainly; every action wrote an audit entry both sides can read</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="beat"><b>Why it matters commercially</b>Approval, suspension and the audit trail are what let TAG onboard promoters it doesn't know yet without handing over the platform.</div>
+    </article>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">04</span><h3>Running the company from the inside</h3><span class="who staff">Internal Ops</span></div>
+      <p class="run-sub">Staff console — org chart, everything on sale platform-wide, hiring. Sign in as the Founder for the fullest view.</p>
+      <div class="flow">
+        <div class="node"><b>Sign in</b><span>founder@tag.local</span></div><span class="arrow">→</span>
+        <div class="node"><b>Org chart</b><span>35 roles</span></div><span class="arrow">→</span>
+        <div class="node"><b>All events</b><span>every producer</span></div><span class="arrow">→</span>
+        <div class="node"><b>New hires</b><span>assign a name</span></div><span class="arrow">→</span>
+        <div class="node end"><b>Survey responses</b><span>real answers</span></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Tab</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Sign-in</td><td>Staff land on <span class="mono">/ops</span> directly — no detour through a fan account page</td></tr>
+            <tr><td class="n">2</td><td>Company org chart</td><td>All 35 roles across both founder branches, real names, collapsible by team</td></tr>
+            <tr><td class="n">3</td><td>All events</td><td>Every festival from every producer, with tickets issued and stock left. Aggregate only — no purchaser names, and that's a privacy decision, not an omission</td></tr>
+            <tr><td class="n">4</td><td>New hires</td><td>Open positions first. Type a name, Assign, switch to the chart — they're on it. It grants no login; that's a separate act</td></tr>
+            <tr><td class="n">5</td><td>Org roles admin</td><td>Create a role, grant it a capability, live. No code change needed for a role that didn't exist a minute ago</td></tr>
+            <tr><td class="n">6</td><td>Survey responses</td><td>The answers from journey 2, joined to the account that gave them</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">05</span><h3>The permissions hold when you push on them</h3><span class="who staff">Internal Ops</span><span class="who admin">Platform Admin</span></div>
+      <p class="run-sub">The strongest two minutes in the demo, and the easiest to skip. Show what people <em>can't</em> do.</p>
+      <div class="flow">
+        <div class="node"><b>Sign in as CTO</b><span>same page</span></div><span class="arrow">→</span>
+        <div class="node"><b>Tabs missing</b><span>no all-events</span></div><span class="arrow">→</span>
+        <div class="node"><b>Type /admin</b><span>by hand</span></div><span class="arrow">→</span>
+        <div class="node end"><b>Refused</b><span>API too</span></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Do</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Sign out, sign in as <span class="mono">cto@tag.local</span></td><td>Same page, same password field, no special route</td></tr>
+            <tr><td class="n">2</td><td>Look at the console tabs</td><td>No All events, no New hires — the CTO holds neither capability</td></tr>
+            <tr><td class="n">3</td><td>Type <span class="mono">/admin</span> into the address bar</td><td>Refused plainly, with a route back to sign-in. Hiding a link isn't the security — the API refuses independently</td></tr>
+            <tr><td class="n">4</td><td>Repeat with a fan account</td><td>The Portals menu never offered the admin console in the first place</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="beat"><b>The line worth saying</b>“The menu isn't guessing what you should see. It asks the server, and the server answers from the same permissions that guard the data.”</div>
+    </article>
+
+    <article class="run">
+      <div class="run-head"><span class="run-no">06</span><h3>Closing on the roadmap</h3><span class="who fan">Festival Goer</span></div>
+      <p class="run-sub">Optional, and a good place to end: what's coming, without pretending it's here.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Where</th><th>Point at</th></tr></thead>
+          <tbody>
+            <tr><td class="n">1</td><td>Landing page, roadmap tiles</td><td>Travel, stays, dining, merchandise, rewards — greyed, marked <em>Coming soon</em>, copy taken from the product spec rather than invented</td></tr>
+            <tr><td class="n">2</td><td>Producer portal</td><td>Same pattern: premium analytics, demand prediction, marketing services</td></tr>
+            <tr><td class="n">3</td><td>The close</td><td>The ticket is the wedge. The 360° experience is the business</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section id="rbac">
+    <h2>Who can see what</h2>
+    <p class="lede">Keep this open during journey 5. Every cell is decided by the server from the account's real roles and capabilities — the client holds no list of its own.</p>
+    <div class="scroll">
+      <table class="matrix">
+        <thead>
+          <tr><th>Account</th><th>My account</th><th>My tickets</th><th>Producer portal</th><th>Admin console</th><th>Internal Ops</th><th>All events</th><th>New hires</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>Fan</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><th>Approved producer</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><th>Platform Admin</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><th>CTO</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><th>Head of Product Dev</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><th>Founder &amp; MD</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:.9rem;">
+      Two rows worth reading aloud: the <b>Platform Admin cannot reach Internal Ops</b>, and the
+      <b>Founder cannot reach the admin console</b> — staff authority and product authority are
+      separate axes, on purpose.
+    </p>
+  </section>
+
+  <section id="offer">
+    <h2>What TAG offers</h2>
+    <p class="lede">A festival platform that intends to own the whole trip, not just the wristband. Status is what can be shown today.</p>
+    <div class="grid">
+      <div class="card"><span class="chip live">Live</span><h4>Ticketing</h4><p>Search, festival pages, zones, cart with itemised fees, guest checkout, scannable QR, a tickets page that survives a closed tab.</p></div>
+      <div class="card"><span class="chip live">Live</span><h4>Promoter onboarding</h4><p>Application, approval with a required reason, suspension, reinstatement, audit trail both sides read.</p></div>
+      <div class="card"><span class="chip live">Live</span><h4>Event authoring</h4><p>Festivals, venues, dated sessions, line-ups, zones, allocations — searchable by fans within seconds.</p></div>
+      <div class="card"><span class="chip live">Live</span><h4>Internal operations</h4><p>35-role org chart, capability permissions, platform-wide event roster, hiring, fan research.</p></div>
+      <div class="card"><span class="chip partial">Backend only</span><h4>No-oversell inventory</h4><p>Proven against ten simultaneous buyers for five seats: exactly five succeeded, stock never went negative.</p></div>
+      <div class="card"><span class="chip partial">Stand-in</span><h4>Payments</h4><p>Labelled stub behind a real interface. Swapping in a live provider is contained; the provider is an open commercial decision.</p></div>
+      <div class="card"><span class="chip specced">Specced</span><h4>Virtual queue</h4><p>Admission gating for on-sale surges. Last core-ticketing piece with no external dependency — the next thing worth building.</p></div>
+      <div class="card"><span class="chip specced">Specced</span><h4>Notifications</h4><p>Confirmations and reminders. Blocked on choosing an email provider; today the link goes to the server log.</p></div>
+      <div class="card"><span class="chip roadmap">Roadmap</span><h4>Travel &amp; stays</h4><p>Flights, transfers, accommodation alongside the ticket. Needs partner agreements first.</p></div>
+      <div class="card"><span class="chip roadmap">Roadmap</span><h4>Dining &amp; merchandise</h4><p>On-site ordering and official merchandise through the same cart and account.</p></div>
+      <div class="card"><span class="chip roadmap">Roadmap</span><h4>Fan engagement &amp; rewards</h4><p>Social features and rewards points that make the account worth keeping between festivals.</p></div>
+      <div class="card"><span class="chip roadmap">Roadmap</span><h4>Vendor management</h4><p>Local suppliers, artists and tourism boards, onboarded through the machinery promoters already use.</p></div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>How it's built</h2>
+    <p class="lede">Boring on purpose. Everything below is either load-bearing in the demo or recorded as a decision with a reason.</p>
+
+    <figure>
+      <svg viewBox="0 0 880 430" role="img" aria-label="One React app and a static landing page share an origin and one session token, calling a single Express service whose modules each own one Postgres schema; payments and email are swappable stand-ins, and Redis is provisioned but unused.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g fill="none" stroke="currentColor" stroke-width="1" opacity="0.9">
+
+          <text x="0" y="14" font-size="11" fill="currentColor" opacity="0.6" font-family="'JetBrains Mono',monospace">BROWSER · one origin, one session token</text>
+          <rect x="0" y="26" width="880" height="66" rx="10" opacity="0.35"/>
+          <rect x="14" y="40" width="158" height="38" rx="6"/>
+          <text x="93" y="64" font-size="12" text-anchor="middle" fill="currentColor">Landing page</text>
+          <rect x="186" y="40" width="158" height="38" rx="6"/>
+          <text x="265" y="64" font-size="12" text-anchor="middle" fill="currentColor">Fan Web</text>
+          <rect x="358" y="40" width="158" height="38" rx="6"/>
+          <text x="437" y="64" font-size="12" text-anchor="middle" fill="currentColor">Producer portal</text>
+          <rect x="530" y="40" width="158" height="38" rx="6"/>
+          <text x="609" y="64" font-size="12" text-anchor="middle" fill="currentColor">Admin console</text>
+          <rect x="702" y="40" width="164" height="38" rx="6"/>
+          <text x="784" y="64" font-size="12" text-anchor="middle" fill="currentColor">Internal Ops</text>
+
+          <line x1="440" y1="92" x2="440" y2="128" marker-end="url(#ar)"/>
+          <text x="450" y="114" font-size="11" fill="currentColor" opacity="0.75">GET /auth/me · roles, portals, nav</text>
+
+          <text x="0" y="150" font-size="11" fill="currentColor" opacity="0.6" font-family="'JetBrains Mono',monospace">EXPRESS · one deployable, modular inside</text>
+          <rect x="0" y="162" width="880" height="104" rx="10" opacity="0.35"/>
+          <rect x="14" y="178" width="130" height="34" rx="6"/><text x="79" y="199" font-size="11" text-anchor="middle" fill="currentColor">Identity &amp; access</text>
+          <rect x="158" y="178" width="130" height="34" rx="6"/><text x="223" y="199" font-size="11" text-anchor="middle" fill="currentColor">Catalogue</text>
+          <rect x="302" y="178" width="130" height="34" rx="6"/><text x="367" y="199" font-size="11" text-anchor="middle" fill="currentColor">Inventory</text>
+          <rect x="446" y="178" width="130" height="34" rx="6"/><text x="511" y="199" font-size="11" text-anchor="middle" fill="currentColor">Orders &amp; cart</text>
+          <rect x="590" y="178" width="130" height="34" rx="6"/><text x="655" y="199" font-size="11" text-anchor="middle" fill="currentColor">Survey</text>
+          <rect x="734" y="178" width="132" height="34" rx="6"/><text x="800" y="199" font-size="11" text-anchor="middle" fill="currentColor">Internal Ops</text>
+          <rect x="302" y="222" width="130" height="32" rx="6" stroke-dasharray="4 3"/><text x="367" y="242" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.8">Virtual queue</text>
+          <rect x="446" y="222" width="130" height="32" rx="6" stroke-dasharray="4 3"/><text x="511" y="242" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.8">Payments</text>
+          <text x="590" y="243" font-size="10" fill="currentColor" opacity="0.6">dashed = stand-in or not built</text>
+
+          <line x1="200" y1="266" x2="200" y2="308" marker-end="url(#ar)"/>
+          <text x="210" y="292" font-size="11" fill="currentColor" opacity="0.75">one schema per module · no FK across them</text>
+
+          <text x="0" y="330" font-size="11" fill="currentColor" opacity="0.6" font-family="'JetBrains Mono',monospace">POSTGRES 16 · port 5433</text>
+          <rect x="0" y="342" width="620" height="46" rx="10" opacity="0.35"/>
+          <rect x="12" y="354" width="92" height="24" rx="5"/><text x="58" y="370" font-size="10" text-anchor="middle" fill="currentColor">identity</text>
+          <rect x="112" y="354" width="92" height="24" rx="5"/><text x="158" y="370" font-size="10" text-anchor="middle" fill="currentColor">catalogue</text>
+          <rect x="212" y="354" width="92" height="24" rx="5"/><text x="258" y="370" font-size="10" text-anchor="middle" fill="currentColor">inventory</text>
+          <rect x="312" y="354" width="92" height="24" rx="5"/><text x="358" y="370" font-size="10" text-anchor="middle" fill="currentColor">orders</text>
+          <rect x="412" y="354" width="92" height="24" rx="5"/><text x="458" y="370" font-size="10" text-anchor="middle" fill="currentColor">survey</text>
+          <rect x="512" y="354" width="96" height="24" rx="5"/><text x="560" y="370" font-size="10" text-anchor="middle" fill="currentColor">internalops</text>
+
+          <rect x="648" y="342" width="106" height="46" rx="10" stroke-dasharray="4 3" opacity="0.6"/>
+          <text x="701" y="362" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.8">Redis 7</text>
+          <text x="701" y="377" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.6">provisioned, unused</text>
+
+          <rect x="768" y="342" width="112" height="46" rx="10" stroke-dasharray="4 3" opacity="0.6"/>
+          <text x="824" y="362" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.8">PSP · Email</text>
+          <text x="824" y="377" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.6">adapters, unchosen</text>
+        </g>
+      </svg>
+      <figcaption>
+        One deployable service with real seams inside it. Each module owns one Postgres schema and
+        no foreign key crosses a schema boundary — which is what lets the queue, inventory and
+        payments be split into their own services later without a data migration. Dashed boxes are
+        stand-ins or not yet built.
+      </figcaption>
+    </figure>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Layer</th><th>Choice</th><th>Why it's there</th></tr></thead>
+        <tbody>
+          <tr><td>Front end</td><td class="mono">React 19 · Vite · TypeScript</td><td>Every app surface; strict types, builds clean</td></tr>
+          <tr><td>Landing page</td><td class="mono">Static HTML/CSS</td><td>No framework cost on the page that must load fastest</td></tr>
+          <tr><td>Tickets</td><td class="mono">qrcode</td><td>QR drawn in the browser — no storage decision needed to render one</td></tr>
+          <tr><td>API</td><td class="mono">Node · Express 5 · TypeScript</td><td>One deployable, modular inside</td></tr>
+          <tr><td>Data access</td><td class="mono">Prisma 5</td><td>Schema and migrations; pinned to 5 deliberately, not drifted to 7</td></tr>
+          <tr><td>Validation</td><td class="mono">Zod</td><td>Every request body parsed before it reaches logic</td></tr>
+          <tr><td>Auth</td><td class="mono">bcrypt · server sessions</td><td>One credential store, one token, invalidated server-side on sign-out</td></tr>
+          <tr><td>Database</td><td class="mono">PostgreSQL 16</td><td>Transactional guarantees the no-oversell rule depends on</td></tr>
+          <tr><td>Cache</td><td class="mono">Redis 7</td><td>Provisioned for the virtual queue; not in use yet, and the diagram says so</td></tr>
+          <tr><td>Verification</td><td class="mono">Playwright · scripted API walks</td><td>Real browser runs plus permission-refusal checks, per feature</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Decisions still open</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Decision</th><th>Blocks</th><th>Kind of call</th></tr></thead>
+        <tbody>
+          <tr><td>Payment provider</td><td>Real money end to end</td><td>Commercial</td></tr>
+          <tr><td>Email provider</td><td>Confirmations, verified sign-up</td><td>Commercial</td></tr>
+          <tr><td>Cloud host</td><td>A link you can send after the demo</td><td>Commercial</td></tr>
+          <tr><td>Object storage</td><td>Stored ticket assets, media</td><td>Follows the host</td></tr>
+          <tr><td>Travel &amp; stay partners</td><td>The 360° proposition</td><td>Partnership</td></tr>
+          <tr><td>Launch festival</td><td>A first real on-sale</td><td>Partnership</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="caveats">
+    <h2>Know before you're asked</h2>
+    <p class="lede">Say these before someone finds them. Each is a recorded gap, and most wait on a decision rather than engineering time.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Gap</th><th>What actually happens</th><th>What unblocks it</th></tr></thead>
+        <tbody>
+          <tr><td>Payments</td><td>The payment step always succeeds — a stand-in behind a real interface</td><td>Choosing a provider</td></tr>
+          <tr><td>Emails</td><td>Nothing is sent; links go to the server log</td><td>Choosing a provider</td></tr>
+          <tr><td>Queueing</td><td>No waiting room for a high-demand on-sale</td><td>Build — nothing external blocks it</td></tr>
+          <tr><td>“Near me”</td><td>Ranks sample festivals only; real venues have no coordinates</td><td>Capture lat/lon at venue setup</td></tr>
+          <tr><td>Booking fee</td><td>10% placeholder</td><td>An agreed fee schedule</td></tr>
+          <tr><td>Test data</td><td>Festivals and roles created by verification runs are still in the database</td><td>An agreed clean-up</td></tr>
+          <tr><td>Hosting</td><td>Runs on one machine; nothing to send afterwards</td><td>A cloud decision</td></tr>
+          <tr><td>Sign-off</td><td>Built and verified, not formally approved</td><td>Frame it as “ready to review”, not “shipped”</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Source of truth: <code>PROGRESS.md</code> for what's built, <code>TAG_PRD_v3.md</code> for
+    scope, the phase specs under <code>build/</code> for what each slice promised. If this page
+    disagrees with them, they're right.
+  </footer>
+
+  </main>
+</div>
+</div>
