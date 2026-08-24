@@ -5,6 +5,7 @@ import { AdminConsole } from './pages/AdminConsole';
 import { FestivalPage } from './pages/FestivalPage';
 import { SurveyPage } from './pages/SurveyPage';
 import { AccountPage } from './pages/AccountPage';
+import { MyTicketsPage } from './pages/MyTicketsPage';
 import { InternalOpsConsole } from './pages/InternalOpsConsole';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -74,6 +75,7 @@ export default function App() {
   if (festivalMatch) return <FestivalPage festivalId={festivalMatch[1]} />;
   if (path.startsWith('/survey')) return <SurveyPage />;
   if (path.startsWith('/account')) return <AccountPage />;
+  if (path.startsWith('/tickets')) return <MyTicketsPage />;
   if (path.startsWith('/ops')) return <InternalOpsConsole />;
   if (path.startsWith('/login')) return <LoginPage />;
   if (path.startsWith('/register')) return <RegisterPage />;

@@ -113,6 +113,10 @@ export interface SessionView {
 function resolvePortals(roles: string[], isStaff: boolean, hasSurvey: boolean) {
   const portals: { key: string; label: string; href: string }[] = [];
   portals.push({ key: 'account', label: 'My account', href: '/account' });
+  // PHASE_1_CT_INCREMENT_SPEC.md §2.2 — every signed-in account can reach
+  // its own tickets; the endpoint scopes them to the session, so there is
+  // nothing role-specific to gate here.
+  portals.push({ key: 'tickets', label: 'My tickets', href: '/tickets' });
   if (!hasSurvey) portals.push({ key: 'survey', label: 'Fan survey', href: '/survey' });
   portals.push({ key: 'producer', label: 'Producer portal', href: '/producer' });
   if (roles.includes('platform_admin')) {

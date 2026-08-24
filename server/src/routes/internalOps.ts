@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { requireAuth } from '../auth';
-import { loadStaffContext, requireCapability, resolveNavLinks } from '../internalOps/auth';
+import { loadStaffContext, requireAnyCapability, requireCapability, resolveNavLinks } from '../internalOps/auth';
 import { buildFullTree, buildSubtree, type OrgRoleRow } from '../internalOps/tree';
 
 export const internalOpsRouter = Router();
@@ -35,9 +35,13 @@ internalOpsRouter.get('/org-chart', requireAuth, loadStaffContext, async (req, r
   // manage_org also unlocks the full tree (PHASE_1_IO_INCREMENT_SPEC.md
   // §2) — the org-admin UI needs to see the whole chart to edit it, same
   // reasoning as view_company_rollup's "superset" grant.
-  const canSeeFullCompany = caps.includes('view_company_rollup') || caps.includes('manage_org');
+  // assign_new_hire likewise: naming a hire means picking the role to
+  // name them against, which needs the chart (PHASE_1_CT_INCREMENT_SPEC.md
+  // §2.4). Read-only either way — this endpoint writes nothing.
+  const canSeeFullCompany =
+    caps.includes('view_company_rollup') || caps.includes('manage_org') || caps.includes('assign_new_hire');
   if (!canSeeFullCompany && !caps.includes('view_engineering_roster')) {
-    res.status(403).json({ error: 'Requires view_company_rollup, view_engineering_roster, or manage_org' });
+    res.status(403).json({ error: 'Requires view_company_rollup, view_engineering_roster, manage_org, or assign_new_hire' });
     return;
   }
 
@@ -178,6 +182,108 @@ internalOpsRouter.get('/survey-responses', requireAuth, loadStaffContext, requir
       createdAt: r.createdAt,
       answers: r.answers,
       account: accountById.get(r.accountId) ?? null,
+    })),
+  });
+});
+
+// ---------------------------------------------------------------------
+// PHASE_1_CT_INCREMENT_SPEC.md §2.4 — record a hire against an open
+// position. Narrower than the generic role PATCH on purpose: HR names
+// people, it doesn't restructure the org. Naming someone here creates
+// NO login — StaffProfile/Credential stay separate acts.
+// ---------------------------------------------------------------------
+const assignPersonSchema = z.object({ personName: z.string().trim().min(1).max(120).nullable() });
+
+internalOpsRouter.patch(
+  '/org-roles/:id/person',
+  requireAuth,
+  loadStaffContext,
+  requireAnyCapability('assign_new_hire', 'manage_org'),
+  async (req, res) => {
+    const parsed = assignPersonSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
+    const updated = await prisma.orgRole
+      .update({ where: { id: String(req.params.id) }, data: { personName: parsed.data.personName } })
+      .catch(() => null);
+    if (!updated) {
+      res.status(404).json({ error: 'OrgRole not found' });
+      return;
+    }
+    res.json({ orgRole: updated });
+  },
+);
+
+// ---------------------------------------------------------------------
+// PHASE_1_CT_INCREMENT_SPEC.md §2.1 — platform-wide event roster,
+// read-only, gated on view_all_events. Assembled in application code
+// across the catalogue / inventory / orders / identity schemas, which
+// hold no FKs across their boundaries (ADR-005): each schema is queried
+// in one bounded batch keyed by the previous level's id set, never once
+// per row (§7's no-N+1 target).
+// ---------------------------------------------------------------------
+internalOpsRouter.get('/events', requireAuth, loadStaffContext, requireCapability('view_all_events'), async (_req, res) => {
+  const festivals = await prisma.festival.findMany({
+    orderBy: { startDate: 'asc' },
+    include: { events: { orderBy: { startsAt: 'asc' }, include: { venue: true, zones: { orderBy: { name: 'asc' } } } } },
+  });
+
+  const zoneIds = festivals.flatMap((f) => f.events.flatMap((e) => e.zones.map((z) => z.id)));
+  const ticketTypes = zoneIds.length
+    ? await prisma.ticketType.findMany({ where: { zoneId: { in: zoneIds } }, include: { allocation: true } })
+    : [];
+
+  const ticketTypeIds = ticketTypes.map((t) => t.id);
+  const issued = ticketTypeIds.length
+    ? await prisma.ticket.groupBy({ by: ['ticketTypeId'], where: { ticketTypeId: { in: ticketTypeIds } }, _count: { _all: true } })
+    : [];
+  const issuedByTicketType = new Map(issued.map((row) => [row.ticketTypeId, row._count._all]));
+
+  const producers = await prisma.account.findMany({
+    where: { id: { in: [...new Set(festivals.map((f) => f.producerAccountId))] } },
+    select: { id: true, name: true, email: true },
+  });
+  const producerById = new Map(producers.map((a) => [a.id, a]));
+
+  const typesByZone = new Map<string, typeof ticketTypes>();
+  for (const t of ticketTypes) {
+    const list = typesByZone.get(t.zoneId) ?? [];
+    list.push(t);
+    typesByZone.set(t.zoneId, list);
+  }
+
+  res.json({
+    festivals: festivals.map((f) => ({
+      id: f.id,
+      name: f.name,
+      venue: f.venue,
+      startDate: f.startDate,
+      endDate: f.endDate,
+      producer: producerById.get(f.producerAccountId) ?? null,
+      events: f.events.map((e) => ({
+        id: e.id,
+        name: e.name,
+        startsAt: e.startsAt,
+        endsAt: e.endsAt,
+        venue: { name: e.venue.name, city: e.venue.city, country: e.venue.country },
+        zones: e.zones.map((z) => ({
+          id: z.id,
+          name: z.name,
+          capacity: z.capacity,
+          priceTier: z.priceTier,
+          ticketTypes: (typesByZone.get(z.id) ?? []).map((t) => ({
+            id: t.id,
+            name: t.name,
+            priceMinorUnits: t.priceMinorUnits,
+            currency: t.currency,
+            allocationTotal: t.allocation?.totalQuantity ?? null,
+            allocationRemaining: t.allocation?.remaining ?? null,
+            ticketsIssued: issuedByTicketType.get(t.id) ?? 0,
+          })),
+        })),
+      })),
     })),
   });
 });

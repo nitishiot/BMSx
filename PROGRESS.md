@@ -5,6 +5,78 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Event visibility increment (`build/MVP1_CoreTicketing/
+PHASE_1_CT_INCREMENT_SPEC.md`): built, awaiting sign-off (2026-08-24,
+Opus session).** Spec written first, then all three items built and
+verified against the real server + Postgres.
+
+1. **Internal Ops all-events roster (CT-15).** New `view_all_events`
+   capability (Founder & Managing Director, Head of Product Development);
+   `GET /internal-ops/events` returns every festival across all producers
+   with producer, sessions, venues, zones, ticket types, allocation
+   totals/remaining and issued counts, assembled in application code
+   across the catalogue/inventory/orders/identity schemas (ADR-005, no
+   cross-schema FK) in bounded batches, not one query per row. New "All
+   events" console tab (`components/OpsEventRoster.tsx`), rendered from
+   the server-resolved `navLinks`. Read-only and aggregate — **no
+   purchaser identities**, which was Nitish's explicit choice and also
+   the right one: names/emails on an internal console needs a DPDP/GDPR
+   purpose decision, not a capability flag added in passing.
+
+2. **Fan "My tickets" (CT-16).** New `/tickets` page and
+   `GET /account/tickets`, scoped to the session's account — there is no
+   account parameter to pass. Each ticket's QR is re-rendered client-side
+   from its token, so a closed confirmation tab no longer loses the
+   ticket. Guest checkout complicates "mine": orders carry a nullable
+   `accountId` *and* a `guestEmail`, so the endpoint matches `accountId`
+   plus `guestEmail` **only when `Account.emailVerifiedAt` is set** —
+   without that guard, registering with an email someone else used at
+   guest checkout would hand over their tickets. Registration doesn't
+   verify email yet (spec §5 gap 1), so in practice the `accountId` rule
+   carries it today.
+
+3. **New-hire assignment (IO-6).** New `assign_new_hire` capability,
+   deliberately separate from `manage_org` — HR should be able to name a
+   hire without being able to restructure the org (granted to Founder,
+   Head of Product Development and HR/`cao_hr`). New
+   `PATCH /internal-ops/org-roles/:id/person`, gated by a new
+   `requireAnyCapability` helper (accepts `assign_new_hire` **or**
+   `manage_org`), and a "New hires" tab listing every role with open
+   positions first. Only a name is collected, per Nitish's instruction —
+   no start date, contract or contact details; and naming someone
+   creates **no login** (`StaffProfile`/`Credential` stay separate acts).
+
+Verified two ways. (1) A 26-check HTTP walk: CTO gets 403 on both new
+endpoints and unauthenticated gets 401, while Head of Product Development
+and Founder get 200; the roster's 17 festivals/7 with inventory carry
+real allocation counts and resolve the producer across the identity
+boundary; a hire assignment round-trips through the org chart and
+clearing reopens the position; two freshly registered buyers see only
+their own tickets, an abandoned cart yields none, and anonymous is 401.
+(2) A 15-check Playwright run: anonymous `/tickets` says so and points at
+`/login?next=/tickets`; a real buyer's QR image **decodes** (jsQR) to
+exactly the ticket's token; the roster's wide table scrolls inside its
+own container with no page-level horizontal scroll; and the worked
+example from Nitish's request — create "AI Data Engineer", assign **Paul
+John** — lands on the Founder's org chart as real data. CTO sees neither
+tab. Zero console errors. Client `tsc -b --force` + `vite build` and
+server `tsc --noEmit` all clean.
+
+Two verification-run artefacts, flagged rather than quietly cleaned:
+Playwright's case-insensitive `hasText` matched Nitish's **pre-existing**
+"AI Data engineer" role (key `Data Analyst 2`) instead of the one the
+test created, so **Paul John is currently assigned to that real role** —
+which is exactly the outcome he asked for, so it was left in place; and
+the test-created duplicate role `ai_data_engineer_<timestamp>` is still
+in the chart as a third root, awaiting his per-record go-ahead to delete.
+One check reported FAIL twice before being understood: it asked the Head
+of Product Development's dashboard for an org chart (that role holds
+neither roster capability, so it has no tree widget) and then used the
+wrong selector (`.org-chart-node`; the real class is `.org-chart-card`)
+while nodes from depth 2 down start collapsed. Both were bugs in the
+check, not the product — re-verified against the Founder's chart with
+the subtree expanded. **Not yet shown to Nitish live.**
+
 **Three feedback fixes on the unified-auth pass: built, awaiting sign-off
 (2026-08-24, Opus session).** Nitish reviewed the previous pass and raised
 three items; all three are built and verified live in a real browser.

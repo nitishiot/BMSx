@@ -16,6 +16,8 @@ import {
 } from '../api';
 import { PRODUCER_FEATURE_MANIFEST } from '../featureManifest';
 import { OrgTree, OrgForest } from '../components/OrgTree';
+import { OpsEventRoster } from '../components/OpsEventRoster';
+import { OpsNewHires } from '../components/OpsNewHires';
 import { AppNav, AutoAppNav } from '../components/AppNav';
 import './InternalOpsConsole.css';
 
@@ -321,7 +323,7 @@ function SurveyResponsesWidget() {
 // "Survey responses" tabs, a CTO sees neither, without any client code
 // change when a new role is granted an existing capability (same
 // genericity contract as the dashboard widgets).
-type OpsView = 'dashboard' | 'org-admin' | 'survey-responses';
+type OpsView = 'dashboard' | 'org-admin' | 'survey-responses' | 'all-events' | 'hiring';
 
 export function InternalOpsConsole() {
   const [session, setSession] = useState<SessionView | null>(null);
@@ -360,6 +362,8 @@ export function InternalOpsConsole() {
 
   const hasOrgAdmin = session!.navLinks.some((l) => l.key === 'org-admin');
   const hasSurveyResponses = session!.navLinks.some((l) => l.key === 'survey-responses');
+  const hasAllEvents = session!.navLinks.some((l) => l.key === 'all-events');
+  const hasHiring = session!.navLinks.some((l) => l.key === 'hiring');
 
   return (
     <>
@@ -368,7 +372,7 @@ export function InternalOpsConsole() {
       <p className="eyebrow">Internal Ops</p>
       <h1>Welcome, {staff.displayName}.</h1>
 
-      {(hasOrgAdmin || hasSurveyResponses) && (
+      {(hasOrgAdmin || hasSurveyResponses || hasAllEvents || hasHiring) && (
         <div className="ops-tabs" role="tablist" aria-label="Internal Ops sections">
           <button type="button" role="tab" aria-selected={view === 'dashboard'} className={view === 'dashboard' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('dashboard')}>Dashboard</button>
           {hasOrgAdmin && (
@@ -377,12 +381,20 @@ export function InternalOpsConsole() {
           {hasSurveyResponses && (
             <button type="button" role="tab" aria-selected={view === 'survey-responses'} className={view === 'survey-responses' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('survey-responses')}>Survey responses</button>
           )}
+          {hasAllEvents && (
+            <button type="button" role="tab" aria-selected={view === 'all-events'} className={view === 'all-events' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('all-events')}>All events</button>
+          )}
+          {hasHiring && (
+            <button type="button" role="tab" aria-selected={view === 'hiring'} className={view === 'hiring' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('hiring')}>New hires</button>
+          )}
         </div>
       )}
 
       {view === 'dashboard' && <DashboardWidgets capabilities={staff.capabilities} />}
       {view === 'org-admin' && hasOrgAdmin && <OrgRolesAdmin />}
       {view === 'survey-responses' && hasSurveyResponses && <SurveyResponsesWidget />}
+      {view === 'all-events' && hasAllEvents && <OpsEventRoster />}
+      {view === 'hiring' && hasHiring && <OpsNewHires />}
       </div>
     </>
   );

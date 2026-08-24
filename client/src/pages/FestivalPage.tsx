@@ -7,6 +7,7 @@ import {
   getCart,
   getPublicEvents,
   getPublicFestival,
+  getSession,
   getZoneTicketTypes,
   removeCartItem,
   LANDING_BASE,
@@ -47,6 +48,14 @@ export function FestivalPage({ festivalId }: Props) {
   const [checkingOut, setCheckingOut] = useState(false);
   const [confirmation, setConfirmation] = useState<{ order: Order; tickets: Ticket[] } | null>(null);
   const [qrDataUrls, setQrDataUrls] = useState<Record<string, string>>({});
+  // Only used to decide whether the confirmation screen offers "See all
+  // my tickets" — a guest's order isn't tied to an account, so that page
+  // would be empty for them (PHASE_1_CT_INCREMENT_SPEC.md §2.2/§2.3).
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    getSession().then((s) => setSignedIn(!!s));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,6 +219,10 @@ export function FestivalPage({ festivalId }: Props) {
         <div className="confirmation-actions">
           <a className="submit-btn" href={LANDING_BASE}>Take me back to the festival grounds</a>
           <a className="submit-btn secondary" href={`/festival/${festival.id}`}>Grab more tickets</a>
+          {/* PHASE_1_CT_INCREMENT_SPEC.md §2.2 — a signed-in buyer's
+              tickets are retrievable later; a guest's are not tied to
+              an account, so offering them the page would be a dead end. */}
+          {signedIn && <a className="submit-btn secondary" href="/tickets">See all my tickets</a>}
         </div>
       </div>
       </>

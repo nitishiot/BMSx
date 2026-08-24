@@ -1,0 +1,61 @@
+/* 720px app content column, per .claude/rules/design.md — same shape as
+   every other single-column page in client/. Colours are theme tokens
+   only; no new hex values. */
+.my-tickets {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+.my-tickets h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: .5rem 0 .5rem; }
+.my-tickets .eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; margin: 0; }
+.my-tickets .apply-sub { color: var(--muted); font-size: .9375rem; line-height: 1.6; }
+
+.my-tickets .submit-btn {
+  display: inline-block;
+  text-decoration: none;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: .7rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: .875rem;
+  cursor: pointer;
+}
+.my-tickets .submit-btn:hover { opacity: .9; }
+
+.my-tickets .saved-banner.error {
+  background: color-mix(in srgb, var(--bad) 12%, transparent);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  font-size: .875rem;
+}
+
+.ticket-order { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-md); }
+.ticket-order-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: .8125rem;
+  color: var(--muted);
+  margin-bottom: .9rem;
+}
+
+.my-tickets .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.my-tickets .ticket-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-md);
+  border-radius: 14px;
+  padding: 1rem;
+}
+.ticket-festival { font-weight: 700; margin: 0 0 .15rem; }
+.ticket-event { margin: 0 0 .15rem; font-size: .875rem; }
+.ticket-venue, .ticket-when { margin: 0 0 .15rem; font-size: .8125rem; color: var(--muted); }
+.my-tickets .ticket-zone { margin: .1rem 0 .7rem; font-size: .8125rem; color: var(--muted); }
+.my-tickets .ticket-qr-image { width: 140px; height: 140px; border-radius: 8px; background: #fff; padding: 8px; margin-bottom: .6rem; }
+.my-tickets .ticket-qr { font-family: monospace; font-size: .7rem; word-break: break-all; margin: 0 0 .5rem; color: var(--muted); }
+.my-tickets .ticket-qr-note { color: var(--muted); font-size: .7rem; margin: .4rem 0; }
+.ticket-link { font-size: .8125rem; color: var(--accent); text-decoration: none; font-weight: 600; }
+.ticket-link:hover { text-decoration: underline; }

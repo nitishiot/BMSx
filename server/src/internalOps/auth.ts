@@ -52,6 +52,20 @@ export function requireCapability(key: string) {
   };
 }
 
+// PHASE_1_CT_INCREMENT_SPEC.md §2.4 — the first gate in this codebase
+// that accepts more than one capability: a manage_org holder can already
+// set personName through the generic role PATCH, so refusing them the
+// narrow new-hire route would be arbitrary.
+export function requireAnyCapability(...keys: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!keys.some((k) => req.staff?.capabilities.includes(k))) {
+      res.status(403).json({ error: `Requires one of: ${keys.join(', ')}` });
+      return;
+    }
+    next();
+  };
+}
+
 // PHASE_1_IO_INCREMENT_SPEC.md §2/§5 — nav links resolved server-side from
 // the caller's actual capabilities, so the client renders nav from data
 // rather than a client-side capability→link map that could drift from
@@ -67,6 +81,8 @@ const NAV_LINKS_BY_CAPABILITY: Record<string, NavLink> = {
   view_company_rollup: { key: 'company', label: 'Company org chart' },
   view_survey_responses: { key: 'survey-responses', label: 'Survey responses' },
   manage_org: { key: 'org-admin', label: 'Org roles admin' },
+  view_all_events: { key: 'all-events', label: 'All events' },
+  assign_new_hire: { key: 'hiring', label: 'New hires' },
 };
 
 export function resolveNavLinks(capabilities: string[]): NavLink[] {

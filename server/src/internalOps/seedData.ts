@@ -68,13 +68,19 @@ export const CAPABILITIES: CapabilitySeed[] = [
   // capability-maps-to-job-level pattern the other four keys follow).
   { key: 'manage_org', description: 'Create/edit OrgRoles and Capabilities, grant/revoke capability assignments' },
   { key: 'view_survey_responses', description: 'View real fan survey responses (LP-14 SurveyResponse rows)' },
+  // PHASE_1_CT_INCREMENT_SPEC.md §2.1/§2.4 — platform-wide event
+  // visibility, and recording a hire against an open position. The
+  // latter is deliberately separate from manage_org: HR should be able
+  // to name a hire without also being able to restructure the org.
+  { key: 'view_all_events', description: 'View every festival and event across all producers, with allocation and sales counts' },
+  { key: 'assign_new_hire', description: 'Assign a person to an existing org role (record a new hire against an open position)' },
 ];
 
 // PHASE_1_IO_SPEC.md §7 (+ PHASE_1_IO_INCREMENT_SPEC.md §2) — capability
 // grants for the three priority roles. Founder & Managing Director gets
 // every capability ("superset").
 export const ORG_ROLE_CAPABILITIES: Record<string, string[]> = {
-  head_of_product_dev: ['view_product_roadmap', 'manage_org', 'view_survey_responses'],
+  head_of_product_dev: ['view_product_roadmap', 'manage_org', 'view_survey_responses', 'view_all_events', 'assign_new_hire'],
   cto: ['view_engineering_roster', 'manage_team'],
   founder_md: [
     'view_product_roadmap',
@@ -83,5 +89,11 @@ export const ORG_ROLE_CAPABILITIES: Record<string, string[]> = {
     'view_company_rollup',
     'manage_org',
     'view_survey_responses',
+    'view_all_events',
+    'assign_new_hire',
   ],
+  // HR is the role that actually records hires. No staff login is seeded
+  // for cao_hr today, so this grant isn't directly demoable — made now so
+  // the intent lives in the data rather than waiting on a code change.
+  cao_hr: ['assign_new_hire'],
 };

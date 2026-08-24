@@ -608,3 +608,81 @@ export async function getOpsSurveyResponses(): Promise<OpsSurveyResponse[]> {
   const { responses } = await request<{ responses: OpsSurveyResponse[] }>('/internal-ops/survey-responses', {}, token);
   return responses;
 }
+
+// --- PHASE_1_CT_INCREMENT_SPEC.md §2.1 — platform-wide event roster ---
+// (view_all_events only; the endpoint enforces it, this is just the read)
+
+export interface OpsRosterTicketType {
+  id: string;
+  name: string;
+  priceMinorUnits: number;
+  currency: string;
+  allocationTotal: number | null;
+  allocationRemaining: number | null;
+  ticketsIssued: number;
+}
+
+export interface OpsRosterFestival {
+  id: string;
+  name: string;
+  venue: string;
+  startDate: string;
+  endDate: string;
+  producer: { id: string; name: string; email: string } | null;
+  events: {
+    id: string;
+    name: string;
+    startsAt: string;
+    endsAt: string;
+    venue: { name: string; city: string; country: string };
+    zones: { id: string; name: string; capacity: number; priceTier: string; ticketTypes: OpsRosterTicketType[] }[];
+  }[];
+}
+
+export async function getOpsAllEvents(): Promise<OpsRosterFestival[]> {
+  const token = getOpsToken();
+  const { festivals } = await request<{ festivals: OpsRosterFestival[] }>('/internal-ops/events', {}, token);
+  return festivals;
+}
+
+// --- PHASE_1_CT_INCREMENT_SPEC.md §2.4 — record a hire against a role ---
+// Passing null clears the assignment (the role becomes an open position).
+
+export async function assignOpsPerson(orgRoleId: string, personName: string | null): Promise<void> {
+  const token = getOpsToken();
+  await request(`/internal-ops/org-roles/${orgRoleId}/person`, {
+    method: 'PATCH',
+    body: JSON.stringify({ personName }),
+  }, token);
+}
+
+// --- PHASE_1_CT_INCREMENT_SPEC.md §2.2 — the caller's own tickets ---
+// Scoped server-side to the session; there is no account parameter to
+// pass, by design.
+
+export interface MyTicket {
+  id: string;
+  qrCode: string;
+  issuedAt: string;
+  ticketTypeName: string;
+  zoneName: string | null;
+  eventName: string | null;
+  startsAt: string | null;
+  festivalId: string | null;
+  festivalName: string | null;
+  venue: { name: string; city: string; country: string } | null;
+}
+
+export interface MyTicketOrder {
+  id: string;
+  createdAt: string;
+  totalMinorUnits: number;
+  currency: string;
+  tickets: MyTicket[];
+}
+
+export async function getMyTickets(): Promise<MyTicketOrder[]> {
+  const token = getSessionToken();
+  const { orders } = await request<{ orders: MyTicketOrder[] }>('/account/tickets', {}, token);
+  return orders;
+}

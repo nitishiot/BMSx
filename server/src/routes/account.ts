@@ -53,3 +53,72 @@ accountRouter.post('/resend-verification', requireAuth, async (req, res) => {
   const verificationTokenForDemo = await createAndSendVerificationEmail(account.id, account.email);
   res.json({ verificationTokenForDemo });
 });
+
+// ---------------------------------------------------------------------
+// PHASE_1_CT_INCREMENT_SPEC.md §2.2/§2.3 — the caller's own tickets.
+// Scoped to the session's account id, never a request parameter (same
+// rule as /festivals/mine). Checkout is guest-capable, so an order may
+// carry only a guestEmail; those are matched too, but ONLY for an
+// account whose email is verified — otherwise registering with an email
+// someone else used at guest checkout would hand over their tickets.
+// Cross-schema assembly in application code, no FK across boundaries
+// (ADR-005).
+// ---------------------------------------------------------------------
+accountRouter.get('/tickets', requireAuth, async (req, res) => {
+  const account = await prisma.account.findUniqueOrThrow({ where: { id: req.account!.id } });
+
+  const orders = await prisma.order.findMany({
+    where: {
+      status: 'paid',
+      OR: account.emailVerifiedAt
+        ? [{ accountId: account.id }, { guestEmail: account.email }]
+        : [{ accountId: account.id }],
+    },
+    orderBy: { createdAt: 'desc' },
+    include: { lines: true },
+  });
+
+  const tickets = orders.length
+    ? await prisma.ticket.findMany({ where: { orderId: { in: orders.map((o) => o.id) } }, orderBy: { issuedAt: 'asc' } })
+    : [];
+
+  const ticketTypes = tickets.length
+    ? await prisma.ticketType.findMany({ where: { id: { in: [...new Set(tickets.map((t) => t.ticketTypeId))] } } })
+    : [];
+  const zones = ticketTypes.length
+    ? await prisma.zone.findMany({
+        where: { id: { in: [...new Set(ticketTypes.map((t) => t.zoneId))] } },
+        include: { event: { include: { venue: true, festival: true } } },
+      })
+    : [];
+
+  const zoneById = new Map(zones.map((z) => [z.id, z]));
+  const ticketTypeById = new Map(ticketTypes.map((t) => [t.id, t]));
+
+  res.json({
+    orders: orders.map((order) => ({
+      id: order.id,
+      createdAt: order.createdAt,
+      totalMinorUnits: order.totalMinorUnits,
+      currency: order.currency,
+      tickets: tickets
+        .filter((t) => t.orderId === order.id)
+        .map((t) => {
+          const ticketType = ticketTypeById.get(t.ticketTypeId);
+          const zone = ticketType ? zoneById.get(ticketType.zoneId) : undefined;
+          return {
+            id: t.id,
+            qrCode: t.qrCode,
+            issuedAt: t.issuedAt,
+            ticketTypeName: ticketType?.name ?? 'Ticket',
+            zoneName: zone?.name ?? null,
+            eventName: zone?.event.name ?? null,
+            startsAt: zone?.event.startsAt ?? null,
+            festivalId: zone?.event.festival.id ?? null,
+            festivalName: zone?.event.festival.name ?? null,
+            venue: zone ? { name: zone.event.venue.name, city: zone.event.venue.city, country: zone.event.venue.country } : null,
+          };
+        }),
+    })),
+  });
+});

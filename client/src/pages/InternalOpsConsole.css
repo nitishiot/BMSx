@@ -274,3 +274,48 @@
 .survey-response-answers dt { font-size: .7rem; color: var(--muted); margin-top: .5rem; }
 .survey-response-answers dt:first-child { margin-top: 0; }
 .survey-response-answers dd { margin: .1rem 0 0; font-size: .8125rem; }
+
+/* PHASE_1_CT_INCREMENT_SPEC.md §2.1/§2.4 — All events + New hires tabs.
+   Tokens only, no new colours; the roster is wide content inside the
+   720px console column, so it scrolls in its own container rather than
+   widening the page (.claude/rules/design.md). */
+.ops-note { color: var(--muted); font-size: .8125rem; line-height: 1.6; margin: 0 0 1rem; }
+.ops-error { color: var(--bad); font-size: .875rem; }
+.ops-muted { color: var(--faint); }
+
+.ops-table-scroll { overflow-x: auto; border: 1px solid var(--border-md); border-radius: 10px; }
+.ops-table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: .8125rem; }
+.ops-table th, .ops-table td { padding: .5rem .7rem; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.ops-table thead th { background: var(--bg-raised); color: var(--muted); font-weight: 600; position: sticky; top: 0; }
+.ops-table tbody tr:last-child td { border-bottom: none; }
+
+.hire-list { list-style: none; padding: 0; margin: 0; }
+.hire-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: .6rem .8rem;
+  border: 1px solid var(--border-md);
+  border-radius: 8px;
+  background: var(--bg-raised);
+  margin-bottom: .5rem;
+}
+/* A filled role is settled business — recedes so open positions read
+   first, matching the sort order. */
+.hire-row.filled { opacity: .72; }
+.hire-role { display: flex; flex-direction: column; gap: .1rem; font-size: .875rem; }
+.hire-role .ops-muted { font-size: .75rem; }
+.hire-actions { display: flex; align-items: center; gap: .5rem; }
+.hire-actions input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  border-radius: 8px;
+  color: var(--text);
+  padding: .4rem .6rem;
+  font: inherit;
+  font-size: .8125rem;
+}
+.hire-holder { font-size: .875rem; font-weight: 600; }
+.hire-actions .submit-btn { padding: .4rem 1rem; font-size: .8125rem; }
