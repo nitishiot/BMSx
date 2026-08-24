@@ -43,20 +43,21 @@
   code, .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: .8125em; font-variant-ligatures: none; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+  .wrap { max-width: 1800px; margin: 0 auto; padding: 0 1.5rem 5rem; }
 
   header.masthead { border-bottom: 1px solid var(--rule); padding: 3rem 0 1.75rem; margin-bottom: 2.25rem; }
   .wordmark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; display: block; margin-bottom: 1.75rem; }
   .wordmark span { color: var(--accent); }
   .eyebrow { font-size: .6875rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
   header.masthead h1 { font-size: clamp(2.2rem, 5.5vw, 3.6rem); margin-bottom: .9rem; }
-  .standfirst { font-size: 1rem; color: var(--muted); max-width: 60ch; }
+  .standfirst { font-size: 1.0625rem; color: var(--muted); max-width: 62ch; }
   .meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.75rem; }
   .meta div { display: flex; flex-direction: column; }
   .meta dt { font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
   .meta dd { margin: 0; font-size: .875rem; }
 
-  .shell { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 3rem; align-items: start; }
+  .shell { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 4rem; align-items: start; }
+  .shell > * { min-width: 0; }
   nav.index { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: .25rem; }
   nav.index p { font-size: .6875rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: .4rem; }
   nav.index a { color: var(--muted); text-decoration: none; font-size: .8438rem; padding: .15rem 0 .15rem .7rem; border-left: 2px solid transparent; transition: color .15s, border-color .15s; }
@@ -107,6 +108,14 @@
   .flow .arrow { align-self: center; color: var(--faint); font-size: .875rem; flex: 0 0 auto; }
   .flow .node.end { border-color: var(--accent); }
 
+  .run-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .run-body > * { min-width: 0; }
+  @media (min-width: 1280px) {
+    .run-body { grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.6fr); align-items: start; }
+    .run-body .flow { margin-bottom: 0; flex-direction: column; }
+    .run-body .flow .node { flex: 0 0 auto; width: 100%; }
+    .run-body .flow .arrow { align-self: flex-start; margin-left: 1.15rem; line-height: 1; transform: rotate(90deg); }
+  }
   .beat { margin-top: .9rem; padding-left: .85rem; border-left: 2px solid var(--accent); font-size: .875rem; }
   .beat b { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .1rem; }
 
@@ -205,7 +214,8 @@
     <article class="run">
       <div class="run-head"><span class="run-no">01</span><h3>Discover a festival, walk out with a ticket</h3><span class="who fan">Festival Goer</span></div>
       <p class="run-sub">The core product in ninety seconds. No account needed.</p>
-      <div class="flow">
+      <div class="run-body">
+        <div class="flow">
         <div class="node"><b>Search</b><span>/</span></div><span class="arrow">→</span>
         <div class="node"><b>Festival</b><span>/festival/:id</span></div><span class="arrow">→</span>
         <div class="node"><b>Cart</b><span>hold taken</span></div><span class="arrow">→</span>
@@ -226,13 +236,15 @@
           </tbody>
         </table>
       </div>
+      </div>
       <div class="beat"><b>The line worth saying</b>“That isn't a picture of a QR code. Our tests decode the pixels and check the payload matches the ticket in the database.”</div>
     </article>
 
     <article class="run">
       <div class="run-head"><span class="run-no">02</span><h3>One account, every surface</h3><span class="who fan">Festival Goer</span></div>
       <p class="run-sub">Register once; the identity follows you across marketing site, account and tickets.</p>
-      <div class="flow">
+      <div class="run-body">
+        <div class="flow">
         <div class="node"><b>Register</b><span>/register</span></div><span class="arrow">→</span>
         <div class="node"><b>Account</b><span>/account</span></div><span class="arrow">→</span>
         <div class="node"><b>Back to landing</b><span>/</span></div><span class="arrow">→</span>
@@ -251,12 +263,14 @@
           </tbody>
         </table>
       </div>
+      </div>
     </article>
 
     <article class="run">
       <div class="run-head"><span class="run-no">03</span><h3>A promoter applies, is approved, goes on sale</h3><span class="who producer">Festival Client</span><span class="who admin">Platform Admin</span></div>
       <p class="run-sub">The supply side. Two browser profiles, so the approval is genuinely one account approving another.</p>
-      <div class="flow">
+      <div class="run-body">
+        <div class="flow">
         <div class="node"><b>Apply</b><span>/producer</span></div><span class="arrow">→</span>
         <div class="node"><b>Pending</b><span>polls</span></div><span class="arrow">→</span>
         <div class="node"><b>Approve</b><span>/admin · reason</span></div><span class="arrow">→</span>
@@ -277,13 +291,15 @@
           </tbody>
         </table>
       </div>
+      </div>
       <div class="beat"><b>Why it matters commercially</b>Approval, suspension and the audit trail are what let TAG onboard promoters it doesn't know yet without handing over the platform.</div>
     </article>
 
     <article class="run">
       <div class="run-head"><span class="run-no">04</span><h3>Running the company from the inside</h3><span class="who staff">Internal Ops</span></div>
       <p class="run-sub">Staff console — org chart, everything on sale platform-wide, hiring. Sign in as the Founder for the fullest view.</p>
-      <div class="flow">
+      <div class="run-body">
+        <div class="flow">
         <div class="node"><b>Sign in</b><span>founder@tag.local</span></div><span class="arrow">→</span>
         <div class="node"><b>Org chart</b><span>35 roles</span></div><span class="arrow">→</span>
         <div class="node"><b>All events</b><span>every producer</span></div><span class="arrow">→</span>
@@ -303,12 +319,14 @@
           </tbody>
         </table>
       </div>
+      </div>
     </article>
 
     <article class="run">
       <div class="run-head"><span class="run-no">05</span><h3>The permissions hold when you push on them</h3><span class="who staff">Internal Ops</span><span class="who admin">Platform Admin</span></div>
       <p class="run-sub">The strongest two minutes in the demo, and the easiest to skip. Show what people <em>can't</em> do.</p>
-      <div class="flow">
+      <div class="run-body">
+        <div class="flow">
         <div class="node"><b>Sign in as CTO</b><span>same page</span></div><span class="arrow">→</span>
         <div class="node"><b>Tabs missing</b><span>no all-events</span></div><span class="arrow">→</span>
         <div class="node"><b>Type /admin</b><span>by hand</span></div><span class="arrow">→</span>
@@ -324,6 +342,7 @@
             <tr><td class="n">4</td><td>Repeat with a fan account</td><td>The Portals menu never offered the admin console in the first place</td></tr>
           </tbody>
         </table>
+      </div>
       </div>
       <div class="beat"><b>The line worth saying</b>“The menu isn't guessing what you should see. It asks the server, and the server answers from the same permissions that guard the data.”</div>
     </article>
