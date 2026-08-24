@@ -5,6 +5,19 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**LP-14 (fan survey + End User account) and its UI-fix pass: signed off
+(2026-08-24, Sonnet session).** Nitish reviewed both live —
+`localhost:5173/survey` and the resulting `/account` page — and said
+"looks good." Screenshots show: the "Signed in as {name}" nav (his demo
+name "Joe Rogan") on both the survey and account pages, a filled survey
+recap with 12 real answers, an "Email verified" state, dark-mode select
+dropdowns rendering correctly, filled-pill radio selection, and
+unanswered-question highlighting (6 fields shown red-bordered after a
+deliberate partial-submit attempt). Covers both the original LP-14 build
+and the follow-up UI-fix pass (dropdown contrast, theme consistency, name
+capture) — **sub-slice sign-off**, same caveat as every other item this
+session; §9 Phase 1 sign-off still needs the rest of §6's exit checks.
+
 **LP-14 UI fixes: color contrast, theme consistency, name capture,
 unanswered-question highlighting — built, awaiting sign-off (2026-08-24,
 Sonnet session, same session as the initial LP-14 build below).** Nitish
@@ -699,10 +712,9 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **LP-14 (fan survey → End User account) built, awaiting sign-off** —
-   see Status. `build/MVP2_InternalOps/PHASE_2_SPEC.md` (staff RBAC/
-   dashboard console) is still spec-only, not started — Nitish's next
-   priority call once LP-14 is reviewed.
+1. **LP-14 (fan survey → End User account) signed off** — see Status.
+   `build/MVP2_InternalOps/PHASE_2_SPEC.md` (staff RBAC/dashboard
+   console) is still spec-only, not started — next priority call.
 2. **The rest of the core-ticketing backend.** Ticketing &
    Inventory + Orders & Cart backend, the Fan Web checkout UI
    (`/festival/:id`), and its real QR rendering were all built and signed
@@ -1189,3 +1201,9 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   testing the actual reported scenario) — re-ran with an explicit
   `colorScheme: 'dark'` browser context to match Nitish's real browser
   before considering the fix confirmed.
+- **2026-08-24 (Sonnet session)** — LP-14 (fan survey + End User account)
+  and its UI-fix pass signed off together after Nitish reviewed both
+  live and said "looks good." Closes step 2/3 of
+  `.claude/rules/build.md`'s protocol for both — step 1 (real
+  end-to-end test) was already closed by the Playwright/HTTP
+  verification logged earlier.

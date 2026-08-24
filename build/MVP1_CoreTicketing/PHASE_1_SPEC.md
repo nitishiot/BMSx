@@ -128,7 +128,10 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
   Playwright (landing → survey → submit → pending → dev-verify →
   verified, zero console errors) and a scripted HTTP walk (validation,
   invalid/single-use token, resend-after-verified 409, `GET /me`
-  correctness). Not yet shown to Nitish live — see `PROGRESS.md`.
+  correctness). A follow-up UI-fix pass (dark-mode select contrast, theme
+  -consistent buttons/radios, per-question unanswered-highlighting, real
+  name capture + a "Signed in as" nav) is also built — see `PROGRESS.md`.
+  **Signed off** — Nitish reviewed both live and said "looks good."
 
 **Core ticketing (PRD §10 P0, journeys J1 and J2)**
 - Event & Catalogue: Festival, Event, Artist, Venue, Zone, SeatMap (read
