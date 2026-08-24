@@ -1,6 +1,6 @@
 # TAG — Producer Portal
 
-Phase 1 slice (`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4): the
+Phase 1 slice (`build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md` §2/§4): the
 minimal Producer portal (application submission, J7) and a minimal
 Platform Admin console (approval queue + audit log, spec §4), plus
 free-tier event setup (J5) and the LP-13 roadmap-teaser pattern.

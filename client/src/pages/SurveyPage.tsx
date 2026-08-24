@@ -4,7 +4,7 @@ import { FanNav } from '../components/FanNav';
 import './SurveyPage.css';
 
 // Question set sourced verbatim from the "Festival Fan Survey Proposal"
-// doc (2026-08-24) — PHASE_1_SPEC.md LP-14. The source listed the
+// doc (2026-08-24) — PHASE_1_CT_SPEC.md LP-14. The source listed the
 // accommodation question twice under different rows; collapsed to one
 // question here (flagged in the spec, not silently dropped).
 type QuestionType = 'radio' | 'select' | 'text';
@@ -92,8 +92,9 @@ export function SurveyPage() {
   }
 
   return (
-    <div className="survey-page">
-      <FanNav />
+    <>
+      <FanNav currentKey="survey" />
+      <div className="survey-page">
       <p className="eyebrow">Help us build TAG</p>
       <h1>A 2-minute festival fan survey</h1>
       <p className="apply-sub">
@@ -148,6 +149,7 @@ export function SurveyPage() {
         {error && <p className="saved-banner error">{error}</p>}
         <button type="submit" className="submit-btn" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit survey'}</button>
       </form>
-    </div>
+      </div>
+    </>
   );
 }

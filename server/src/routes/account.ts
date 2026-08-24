@@ -40,7 +40,7 @@ accountRouter.post('/verify-email', async (req, res) => {
   res.json({ verified: true });
 });
 
-// Dev/demo convenience only (PHASE_1_SPEC.md LP-14 explicitly flags this
+// Dev/demo convenience only (PHASE_1_CT_SPEC.md LP-14 explicitly flags this
 // as not a real flow) — lets a signed-in but unverified account request a
 // fresh token without re-submitting the survey, since there's no real
 // inbox to resend to.

@@ -1,30 +1,31 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import {
   adminDecide,
   adminGetAuditLog,
   adminGetProducers,
   adminGetQueue,
-  adminLogin,
   adminReinstateProducer,
   adminSuspendProducer,
-  getAdminToken,
-  resetAdminSession,
+  getSession,
   type ActiveProducer,
   type AuditLogEntry,
   type ProducerApplication,
+  type SessionView,
 } from '../api';
+import { AppNav, AutoAppNav } from '../components/AppNav';
 import './AdminConsole.css';
 
 export function AdminConsole() {
-  const [loggedIn, setLoggedIn] = useState(!!getAdminToken());
-  const [email, setEmail] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [session, setSession] = useState<SessionView | null>(null);
+  const [checked, setChecked] = useState(false);
   const [queue, setQueue] = useState<ProducerApplication[]>([]);
   const [producers, setProducers] = useState<ActiveProducer[]>([]);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const isAdmin = !!session?.roles.includes('platform_admin');
 
   async function refresh() {
     try {
@@ -39,19 +40,12 @@ export function AdminConsole() {
   }
 
   useEffect(() => {
-    if (loggedIn) refresh();
-  }, [loggedIn]);
+    getSession().then(setSession).finally(() => setChecked(true));
+  }, []);
 
-  async function handleLogin(e: FormEvent) {
-    e.preventDefault();
-    setLoginError(null);
-    try {
-      await adminLogin(email);
-      setLoggedIn(true);
-    } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'Login failed');
-    }
-  }
+  useEffect(() => {
+    if (isAdmin) refresh();
+  }, [isAdmin]);
 
   async function handleDecision(id: string, decision: 'approved' | 'rejected') {
     const reason = reasonById[id]?.trim();
@@ -85,44 +79,42 @@ export function AdminConsole() {
     }
   }
 
-  function handleLogout() {
-    resetAdminSession();
-    setLoggedIn(false);
-  }
+  // Avoid flashing the "sign in required" screen before the session
+  // check has resolved.
+  if (!checked) return <AutoAppNav />;
 
-  if (!loggedIn) {
+  // No bespoke login form any more — /admin is a capability-gated
+  // destination behind the one shared sign-in page (PHASE_1_IO_INCREMENT
+  // _SPEC.md §4, revised). An unauthenticated or non-admin visitor is
+  // told plainly and sent to /login, rather than meeting a second,
+  // different email-only login form.
+  if (!isAdmin) {
     return (
-      <div className="admin-console">
-        <p className="eyebrow">Platform Admin</p>
-        <h1>Sign in.</h1>
-        <p className="admin-sub">
-          PRD §5 P6 / §7 J7. No real admin identity provider exists yet
-          (TBD #9/#11 — staffing/SLA) — this checks against a seeded
-          <code>platform_admin</code> role assignment only.
-        </p>
-        {loginError && <div className="admin-error">{loginError}</div>}
-        <form onSubmit={handleLogin} className="admin-login-form">
-          <input
-            type="email"
-            required
-            placeholder="admin@tag.local"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button type="submit">Sign in</button>
-        </form>
-      </div>
+      <>
+        <AutoAppNav />
+        <div className="admin-console">
+          <p className="eyebrow">Platform Admin</p>
+          <h1>{session ? 'Not authorised.' : 'Sign in required.'}</h1>
+          <p className="admin-sub">
+            {session
+              ? 'Your account does not hold the platform_admin role, so this console is not available to you.'
+              : 'Sign in with a Platform Admin account to review producer applications.'}
+          </p>
+          {!session && <a className="submit-btn" href="/login?next=/admin">Go to sign in</a>}
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="admin-console">
+    <>
+      <AppNav session={session} />
+      <div className="admin-console">
       <div className="admin-header">
         <div>
           <p className="eyebrow">Platform Admin</p>
           <h1>Approval queue.</h1>
         </div>
-        <button className="logout-link" onClick={handleLogout}>Sign out</button>
       </div>
 
       {loadError && <div className="admin-error">{loadError}</div>}
@@ -206,6 +198,7 @@ export function AdminConsole() {
           </li>
         ))}
       </ul>
-    </div>
+      </div>
+    </>
   );
 }

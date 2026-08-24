@@ -22,8 +22,7 @@
   padding: .7rem .9rem;
 }
 .admin-login-form button,
-.queue-actions button,
-.logout-link {
+.queue-actions button {
   border-radius: 100px;
   padding: .7rem 1.3rem;
   font-weight: 600;
@@ -33,7 +32,6 @@
   background: var(--accent);
   color: #fff;
 }
-.logout-link { background: transparent; color: var(--muted); border: 1px solid var(--border-md); padding: .5rem 1rem; }
 
 .admin-error {
   background: rgba(232, 25, 75, .12);

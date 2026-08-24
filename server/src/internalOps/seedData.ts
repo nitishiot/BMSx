@@ -1,6 +1,6 @@
 // Org chart data (source: "FairFare Organization Chart", provided
 // 2026-08-24; real names committed per Nitish's explicit confirmation —
-// see PHASE_2_SPEC.md's header). Listed parent-before-child so a single
+// see PHASE_1_IO_SPEC.md's header). Listed parent-before-child so a single
 // upsert pass can resolve `reportsToKey` to an already-created row.
 export interface OrgRoleSeed {
   key: string;
@@ -62,12 +62,26 @@ export const CAPABILITIES: CapabilitySeed[] = [
   { key: 'view_engineering_roster', description: "View the caller's engineering org subtree" },
   { key: 'manage_team', description: "Manage (edit) the caller's own reporting subtree" },
   { key: 'view_company_rollup', description: 'View the full company org tree and company-wide metrics panel' },
+  // PHASE_1_IO_INCREMENT_SPEC.md §2/§4 — org management + survey visibility,
+  // deliberately granted to an IC-level role (Head of Product Development)
+  // as well as the Founder, per Nitish's explicit call (not the usual
+  // capability-maps-to-job-level pattern the other four keys follow).
+  { key: 'manage_org', description: 'Create/edit OrgRoles and Capabilities, grant/revoke capability assignments' },
+  { key: 'view_survey_responses', description: 'View real fan survey responses (LP-14 SurveyResponse rows)' },
 ];
 
-// PHASE_2_SPEC.md §7 — capability grants for the three priority roles.
-// Founder & Managing Director gets every capability ("superset").
+// PHASE_1_IO_SPEC.md §7 (+ PHASE_1_IO_INCREMENT_SPEC.md §2) — capability
+// grants for the three priority roles. Founder & Managing Director gets
+// every capability ("superset").
 export const ORG_ROLE_CAPABILITIES: Record<string, string[]> = {
-  head_of_product_dev: ['view_product_roadmap'],
+  head_of_product_dev: ['view_product_roadmap', 'manage_org', 'view_survey_responses'],
   cto: ['view_engineering_roster', 'manage_team'],
-  founder_md: ['view_product_roadmap', 'view_engineering_roster', 'manage_team', 'view_company_rollup'],
+  founder_md: [
+    'view_product_roadmap',
+    'view_engineering_roster',
+    'manage_team',
+    'view_company_rollup',
+    'manage_org',
+    'view_survey_responses',
+  ],
 };

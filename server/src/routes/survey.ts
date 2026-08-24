@@ -40,7 +40,7 @@ surveyRouter.post('/responses', async (req, res) => {
   // Dev/demo-only: the stub email adapter has nowhere real to deliver the
   // verification link, so it's surfaced directly here rather than only in
   // a server log — not part of the real flow, flagged as such on the End
-  // User page too (PHASE_1_SPEC.md LP-14).
+  // User page too (PHASE_1_CT_SPEC.md LP-14).
   const verificationTokenForDemo = account.emailVerifiedAt
     ? null
     : await createAndSendVerificationEmail(account.id, email);

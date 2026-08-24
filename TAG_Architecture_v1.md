@@ -40,7 +40,7 @@ Two views from the original outline — the enumerated event-backbone catalogue 
 the Phase-1 build subset — were deliberately dropped for this revision at
 Nitish's direction. The event backbone is still *described* in view 2; what is
 missing is the publish/subscribe table. The Phase-1 subset moves into
-`build/MVP1_<name>/PHASE_1_SPEC.md` when Phase 1 is scoped.
+`build/MVP1_<name>/PHASE_1_CT_SPEC.md` when Phase 1 is scoped.
 
 ---
 
@@ -567,7 +567,7 @@ These shape or block architecture but are not architectural questions:
 
 ## What this document deliberately does not decide
 
-- **Phase 1 scope.** That belongs in `build/MVP1_CoreTicketing/PHASE_1_SPEC.md`, written and drafted since this document.
+- **Phase 1 scope.** That belongs in `build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md`, written and drafted since this document.
 - **The legacy `server/` / `client/` scaffold.** No longer applicable here — archived to `archive/legacy_boardinghouse_scaffold/` (`PROGRESS.md`); nothing here builds on it.
 - **Technology selections.** No language, framework, cloud or database product is named here. PostgreSQL and Redis are named in the phase spec instead, justified against Phase 1's actual requirements rather than against the whole platform's eventual ones.
 

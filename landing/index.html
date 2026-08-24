@@ -70,6 +70,17 @@ nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;
 .nav-links{display:flex;gap:2rem;list-style:none;}
 .nav-links a{color:rgba(237,238,248,.5);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s;}
 .nav-links a:hover{color:#EDEEF8;}
+/* "Download Free" keeps the same filled-pill treatment as the hero's
+   "Get the App — Free" (.btn-primary) — one visual language for a
+   primary action, per .claude/rules/design.md. */
+.nav-links .nav-btn{padding:.5rem 1.2rem;border-radius:100px;}
+.nav-auth{display:flex;align-items:center;gap:.9rem;}
+/* display:flex would otherwise beat the [hidden] attribute's default
+   display:none, leaving both auth states visible at once. */
+.nav-auth[hidden]{display:none;}
+.nav-link-plain{color:rgba(237,238,248,.55);text-decoration:none;font-size:.875rem;font-weight:600;transition:color .2s;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;}
+.nav-link-plain:hover{color:#EDEEF8;}
+.nav-user{font-size:.75rem;color:rgba(237,238,248,.7);border:1px solid rgba(237,238,248,.15);border-radius:100px;padding:.25rem .75rem;white-space:nowrap;}
 .nav-btn{background:#FF2D60;color:#FFF;padding:.5rem 1.2rem;border-radius:100px;font-size:.875rem;font-weight:600;text-decoration:none;letter-spacing:-.01em;transition:opacity .18s;}
 .nav-btn:hover{opacity:.88;}
 .nav-right{display:flex;align-items:center;gap:.75rem;}
@@ -78,7 +89,7 @@ nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;
 .nav-dropdown{position:relative;}
 .nav-dropdown-toggle{background:none;border:none;color:rgba(237,238,248,.5);font-family:inherit;font-size:.875rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:0;transition:color .2s;}
 .nav-dropdown-toggle:hover,.nav-dropdown-toggle[aria-expanded="true"]{color:#EDEEF8;}
-.nav-dropdown-menu{position:absolute;top:100%;left:0;margin-top:.9rem;background:#111119;border:1px solid rgba(237,238,248,.1);border-radius:10px;padding:.4rem;min-width:210px;list-style:none;box-shadow:0 16px 36px rgba(0,0,0,.45);z-index:20;}
+.nav-dropdown-menu{position:absolute;top:100%;right:0;margin-top:.9rem;background:#111119;border:1px solid rgba(237,238,248,.1);border-radius:10px;padding:.4rem;min-width:210px;list-style:none;box-shadow:0 16px 36px rgba(0,0,0,.45);z-index:20;}
 .nav-dropdown-menu[hidden]{display:none;}
 .nav-dropdown-menu a{display:block;padding:.6rem .85rem;border-radius:7px;font-size:.8125rem;color:rgba(237,238,248,.75);text-decoration:none;white-space:nowrap;}
 .nav-dropdown-menu a:hover{background:rgba(237,238,248,.07);color:#EDEEF8;}
@@ -106,15 +117,15 @@ a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3p
 /* SEARCH */
 .search-section{padding:3.5rem 2rem 2.5rem;background:var(--bg);}
 .search-inner{max-width:1800px;margin:0 auto;text-align:center;}
-.search-form{max-width:720px;margin:0 auto;}
+.search-form{max-width:860px;margin:0 auto;}
 .search-inner h2{font-size:clamp(1.5rem,2.6vw,2rem);margin-bottom:1.25rem;}
-.search-form{display:flex;gap:.6rem;flex-wrap:wrap;}
-.search-form input{flex:1;min-width:0;padding:.9rem 1.25rem;border-radius:100px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--text);font-size:.9375rem;font-family:inherit;}
+.search-form{display:flex;gap:.75rem;flex-wrap:wrap;}
+.search-form input{flex:1;min-width:0;padding:1.2rem 1.6rem;border-radius:100px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--text);font-size:1.125rem;font-family:inherit;}
 .search-form input::placeholder{color:var(--faint);}
 .search-form input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-.search-form button{background:var(--accent);color:#FFF;border:none;padding:.9rem 1.75rem;border-radius:100px;font-weight:600;font-size:.9375rem;cursor:pointer;transition:opacity .18s;}
+.search-form button{background:var(--accent);color:#FFF;border:none;padding:1.2rem 2.2rem;border-radius:100px;font-weight:600;font-size:1.0625rem;cursor:pointer;transition:opacity .18s;}
 .search-form button:hover{opacity:.9;}
-.search-results{margin-top:1.75rem;text-align:left;display:none;}
+.search-results{max-width:860px;margin:1.75rem auto 0;text-align:left;display:none;}
 .search-results.show{display:block;}
 .search-results-note{font-size:.85rem;color:var(--muted);margin-bottom:.9rem;}
 .result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem;}
@@ -125,14 +136,15 @@ a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3p
 
 /* NEAR YOU */
 .nearby-section{padding:1rem 2rem 3rem;background:var(--bg);}
-.nearby-inner{max-width:1800px;margin:0 auto;}
-.nearby-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.nearby-inner{max-width:860px;margin:0 auto;text-align:center;}
+.nearby-header{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.9rem;margin-bottom:1rem;}
 .nearby-header h3{font-size:1.1rem;}
 .nearby-btn{background:var(--bg-raised);color:var(--text);border:1px solid var(--border-md);padding:.55rem 1.1rem;border-radius:100px;font-size:.825rem;font-weight:600;cursor:pointer;}
-.nearby-fallback{display:none;gap:.6rem;align-items:center;margin-top:.75rem;flex-wrap:wrap;}
+.nearby-fallback{display:none;gap:.6rem;align-items:center;justify-content:center;margin-top:.75rem;flex-wrap:wrap;}
 .nearby-fallback.show{display:flex;}
 .nearby-fallback select{padding:.55rem .9rem;border-radius:10px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--text);font-family:inherit;font-size:.875rem;}
 .nearby-status{font-size:.8125rem;color:var(--muted);margin-top:.5rem;}
+.nearby-inner .result-grid{text-align:left;margin-top:.9rem;}
 
 /* CONSENT BANNER */
 .consent-banner{position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:400;max-width:560px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border-md);border-radius:16px;padding:1.1rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.25);display:none;gap:.75rem;flex-direction:column;}
@@ -239,9 +251,8 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   .nav-links{display:none;position:fixed;top:64px;left:0;right:0;flex-direction:column;gap:0;background:rgba(8,8,13,.97);border-bottom:1px solid rgba(237,238,248,.08);padding:.5rem 0;}
   .nav-links.open{display:flex;}
   .nav-links a{display:block;padding:.9rem 2rem;}
-  .nav-dropdown-toggle{width:100%;padding:.9rem 2rem;justify-content:space-between;}
-  .nav-dropdown-menu{position:static;margin-top:0;box-shadow:none;border:none;border-radius:0;background:rgba(237,238,248,.03);padding:0;}
-  .nav-dropdown-menu a{padding:.75rem 2.5rem;}
+  .nav-dropdown-toggle{font-size:.8rem;}
+  .nav-dropdown-menu a{padding:.75rem 1.1rem;}
   .banner{grid-template-columns:1fr;}
   .banner.flip .b-copy{order:1;}
   .banner.flip .b-visual{order:2;}
@@ -267,26 +278,35 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
     <li><a href="#banners" data-analytics="nav_features">Features</a></li>
     <li><a href="#platform" data-analytics="nav_platform">Platform</a></li>
     <li><a href="#plans" data-analytics="nav_pricing">Pricing</a></li>
-    <li class="nav-dropdown">
-      <button
-        class="nav-dropdown-toggle"
-        id="portals-toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="portals-menu"
-        data-analytics="nav_portals"
-      >Sign in / Portals <span aria-hidden="true">▾</span></button>
-      <ul class="nav-dropdown-menu" id="portals-menu" role="menu" aria-label="Sign in / Portals" hidden>
-        <li role="none"><a role="menuitem" id="nav-link-survey" href="#" data-analytics="nav_portal_survey">Fan survey</a></li>
-        <li role="none"><a role="menuitem" id="nav-link-account" href="#" data-analytics="nav_portal_account">My account</a></li>
-        <li role="none"><a role="menuitem" id="nav-link-producer" href="#" data-analytics="nav_portal_producer">Producer application</a></li>
-        <li role="none"><a role="menuitem" id="nav-link-admin" href="#" data-analytics="nav_portal_admin">Platform Admin console</a></li>
-        <li role="none"><a role="menuitem" id="nav-link-ops" href="#" data-analytics="nav_portal_ops">Internal Ops (staff)</a></li>
-      </ul>
-    </li>
+    <li><a class="nav-btn" href="#app" data-analytics="nav_download">Download Free</a></li>
   </ul>
   <div class="nav-right">
-    <a class="nav-btn" href="#app" data-analytics="nav_download">Download Free</a>
+    <!-- Signed-out state: two distinct links, Sign in and Register — not
+         one combined "Sign in / Portals" control. Shown by default and
+         hidden by JS only once a real session is confirmed, so a visitor
+         with JS still loading never sees a signed-in-looking nav. -->
+    <div class="nav-auth" id="nav-signed-out">
+      <a class="nav-link-plain" href="/login" data-analytics="nav_sign_in">Sign in</a>
+      <a class="nav-btn" href="/register" data-analytics="nav_register">Register</a>
+    </div>
+    <!-- Signed-in state: the person's name plus an RBAC-filtered Portals
+         menu, both populated from GET /api/auth/me. Same origin as the
+         app now, so the session here is the same session the app sees. -->
+    <div class="nav-auth" id="nav-signed-in" hidden>
+      <span class="nav-user" id="nav-user-name"></span>
+      <div class="nav-dropdown">
+        <button
+          class="nav-dropdown-toggle"
+          id="portals-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="portals-menu"
+          data-analytics="nav_portals"
+        >Portals <span aria-hidden="true">▾</span></button>
+        <ul class="nav-dropdown-menu" id="portals-menu" role="menu" aria-label="Portals" hidden></ul>
+      </div>
+      <button class="nav-link-plain nav-signout" id="nav-signout" type="button">Sign out</button>
+    </div>
     <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">☰</button>
   </div>
 </nav>
@@ -1077,14 +1097,24 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   });
 })();
 
-// "Sign in / Portals" nav dropdown — every non-marketing surface in one
-// place (survey, account, producer, admin, internal ops), instead of ad
-// hoc links scattered through the page. hrefs are set from CLIENT_APP_BASE
-// (defined further down, where the catalogue-fetch IIFE already lives) —
-// deferred to DOMContentLoaded so load order doesn't matter.
+// Nav auth state. Landing is now served from the SAME origin as the app
+// (client/vite.config.ts's landingAtRoot plugin), so it reads the same
+// localStorage session token and calls the same GET /api/auth/me as every
+// other page — which is what makes an anonymous-looking landing page and
+// a signed-in /account page impossible to have at the same time (they were
+// separate origins before, with separate storage; Nitish hit that twice).
+//
+// Signed out → "Sign in" + "Register" (two distinct links).
+// Signed in  → the person's name + an RBAC-filtered Portals menu + Sign
+//              out. `portals` is resolved server-side from real roles and
+//              staff capabilities — landing never decides entitlements.
 document.addEventListener('DOMContentLoaded', () => {
   const dropdownToggle = document.getElementById('portals-toggle');
   const dropdownMenu = document.getElementById('portals-menu');
+  const signedOut = document.getElementById('nav-signed-out');
+  const signedIn = document.getElementById('nav-signed-in');
+  const userName = document.getElementById('nav-user-name');
+  const signOutBtn = document.getElementById('nav-signout');
   if(!dropdownToggle || !dropdownMenu) return;
 
   function closeDropdown(){
@@ -1108,6 +1138,42 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   dropdownMenu.addEventListener('click', (e) => {
     if(e.target.tagName === 'A') closeDropdown();
+  });
+
+  function readToken(){
+    try { return localStorage.getItem('tag_session'); } catch { return null; }
+  }
+
+  function renderSignedIn(session){
+    userName.textContent = session.staff
+      ? session.account.name + ' · ' + session.staff.title
+      : session.account.name;
+    dropdownMenu.innerHTML = session.portals.map((p) =>
+      '<li role="none"><a role="menuitem" href="' + p.href + '">' + p.label + '</a></li>'
+    ).join('');
+    signedOut.hidden = true;
+    signedIn.hidden = false;
+  }
+
+  const token = readToken();
+  if(token){
+    fetch(CATALOGUE_API_BASE + '/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then((r) => r.ok ? r.json() : null)
+      .then((session) => {
+        if(session) renderSignedIn(session);
+        // A token the server rejects means the session is gone — clear it
+        // so the nav can't keep showing a stale signed-in state.
+        else { try { localStorage.removeItem('tag_session'); } catch {} }
+      })
+      .catch(() => { /* backend down — landing stays usable, signed-out (LP-4) */ });
+  }
+
+  signOutBtn.addEventListener('click', () => {
+    const t = readToken();
+    const done = () => { try { localStorage.removeItem('tag_session'); } catch {} window.location.reload(); };
+    if(!t) return done();
+    fetch(CATALOGUE_API_BASE + '/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + t } })
+      .then(done).catch(done);
   });
 });
 
@@ -1189,33 +1255,20 @@ const MOCK_FESTIVALS = [
 
 // Live catalogue: starts as the illustrative mock set, then merges in
 // real producer-created festivals from GET /api/festivals/public once
-// that resolves (§2/LP-1 real-catalogue wiring, PHASE_1_SPEC.md). Falls
+// that resolves (§2/LP-1 real-catalogue wiring, PHASE_1_CT_SPEC.md). Falls
 // back silently to mock-only if the backend isn't reachable — landing
 // stays usable as a static file on its own (LP-4).
 let CATALOGUE_FESTIVALS = MOCK_FESTIVALS.slice();
 const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin once deployed]
-// client/ (Vite app) serves every non-landing surface at one origin —
-// Fan Web (festival detail, survey, account), Producer portal (/),
-// Admin console (/admin), Internal Ops (/ops) — [TBD: prod origin, likely
-// the same domain as landing once deployed, a different port only in
-// local dev]. Renamed from FAN_WEB_BASE (2026-08-24) once it started
-// backing every portal link in the nav menu, not just festival pages.
-const CLIENT_APP_BASE = 'http://localhost:5173';
-// Portals nav-dropdown hrefs — one map, so a new portal is one line here
-// plus one <li> in the markup, not a scattered set of ad hoc links.
-(function(){
-  const PORTAL_LINKS = {
-    'nav-link-survey': '/survey',
-    'nav-link-account': '/account',
-    'nav-link-producer': '/',
-    'nav-link-admin': '/admin',
-    'nav-link-ops': '/ops',
-  };
-  for(const [id, path] of Object.entries(PORTAL_LINKS)){
-    const el = document.getElementById(id);
-    if(el) el.href = `${CLIENT_APP_BASE}${path}`;
-  }
-})();
+// Landing and the app are now served from ONE origin (this page is served
+// at "/" by client/vite.config.ts's landingAtRoot plugin), so every app
+// route is a plain same-origin path — no base URL to prepend, and the
+// session in localStorage is genuinely shared with the app.
+// The hardcoded portal-link map that used to live here is gone: the
+// Portals menu is now built from the server-resolved `portals` list in
+// GET /api/auth/me, so what a visitor is offered matches what their roles
+// actually permit rather than a static list shown to everyone.
+const CLIENT_APP_BASE = '';
 (function(){
   fetch(`${CATALOGUE_API_BASE}/festivals/public`)
     .then(r => r.ok ? r.json() : Promise.reject())
@@ -1253,7 +1306,7 @@ function resultCardHTML(f){
 }
 
 // LP-1: search — structured genre/location/date-window matching over the
-// mock catalogue. See PHASE_1_SPEC.md §5 for why this isn't a trained
+// mock catalogue. See PHASE_1_CT_SPEC.md §5 for why this isn't a trained
 // semantic/embedding model in Phase 1.
 (function(){
   const form = document.getElementById('search-form');
@@ -1371,7 +1424,7 @@ function resultCardHTML(f){
 
 // LP-13: roadmap teaser — sourced from PRD §10's P1/P2 lists, never invented
 // copy. audience 'fan' renders here; 'producer' is the same manifest reused
-// by the producer portal (build/MVP1_CoreTicketing/PHASE_1_SPEC.md §2).
+// by the producer portal (build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md §2).
 const TAG_FEATURE_MANIFEST = [
   { id: 'subs',    audience: 'fan', icon: '⭐', title: 'Subscriptions & Rewards', desc: 'Free/Basic/Premium tiers, points on every booking.', tier: 'P1' },
   { id: 'rec',     audience: 'fan', icon: '🎯', title: 'Personalised Recommendations', desc: 'Suggestions based on taste and location.', tier: 'P1' },

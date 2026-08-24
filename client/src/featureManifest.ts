@@ -1,4 +1,4 @@
-// Roadmap teaser manifest (LP-13 pattern, PHASE_1_SPEC.md §2) for the
+// Roadmap teaser manifest (LP-13 pattern, PHASE_1_CT_SPEC.md §2) for the
 // Producer portal. Copy sourced directly from TAG_PRD_v3.md §10's P1 list
 // and J5's "optional Premium" step — never invented. Fan-facing items live
 // in the separate landing/index.html manifest; this is the producer set.

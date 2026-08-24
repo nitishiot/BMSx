@@ -6,10 +6,13 @@ import { FestivalPage } from './pages/FestivalPage';
 import { SurveyPage } from './pages/SurveyPage';
 import { AccountPage } from './pages/AccountPage';
 import { InternalOpsConsole } from './pages/InternalOpsConsole';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { AuditLog } from './components/AuditLog';
 import { RoadmapTeaser } from './components/RoadmapTeaser';
+import { AutoAppNav } from './components/AppNav';
 import { PRODUCER_FEATURE_MANIFEST } from './featureManifest';
-import { getMyApplication, getProducerToken, resetProducerSession } from './api';
+import { getMyApplication, getProducerToken } from './api';
 import './theme.css';
 import './App.css';
 
@@ -34,22 +37,12 @@ function ProducerApp() {
     setAuditVersion((v) => v + 1);
   }
 
-  function handleReset() {
-    resetProducerSession();
-    window.location.reload();
-  }
 
   if (!checked) return null;
 
   return (
     <div>
-      <nav className="shell-nav">
-        <a className="shell-logo" href="/">TAG<span>.</span></a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
-          <span className="shell-tag">Producer Portal</span>
-          <button className="reset-link" onClick={handleReset}>Reset demo state</button>
-        </div>
-      </nav>
+      <AutoAppNav />
 
       {suspended ? (
         <div className="event-setup">
@@ -82,6 +75,11 @@ export default function App() {
   if (path.startsWith('/survey')) return <SurveyPage />;
   if (path.startsWith('/account')) return <AccountPage />;
   if (path.startsWith('/ops')) return <InternalOpsConsole />;
-  const isAdmin = path.startsWith('/admin');
-  return isAdmin ? <AdminConsole /> : <ProducerApp />;
+  if (path.startsWith('/login')) return <LoginPage />;
+  if (path.startsWith('/register')) return <RegisterPage />;
+  if (path.startsWith('/admin')) return <AdminConsole />;
+  // Producer portal moved off "/" (2026-08-24) — "/" is now the marketing
+  // landing page, served from this same origin by vite.config.ts's
+  // landingAtRoot plugin so the two share one session store.
+  return <ProducerApp />;
 }

@@ -22,7 +22,7 @@ function toNode(row: OrgRoleRow): OrgTreeNode {
 
 // Builds the subtree rooted at `rootId` from a flat OrgRole row list —
 // fine as plain JS recursion over ~35 rows rather than a recursive SQL
-// CTE, at this scale (PHASE_2_SPEC.md §9: ~20 staff users max).
+// CTE, at this scale (PHASE_1_IO_SPEC.md §9: ~20 staff users max).
 export function buildSubtree(rows: OrgRoleRow[], rootId: string): OrgTreeNode | null {
   const root = rows.find((r) => r.id === rootId);
   if (!root) return null;
@@ -32,7 +32,7 @@ export function buildSubtree(rows: OrgRoleRow[], rootId: string): OrgTreeNode | 
 }
 
 // Full company forest — one tree per role with no manager (the two
-// Founders, per PHASE_2_SPEC.md §5's "null only for the two Founders").
+// Founders, per PHASE_1_IO_SPEC.md §5's "null only for the two Founders").
 export function buildFullTree(rows: OrgRoleRow[]): OrgTreeNode[] {
   const roots = rows.filter((r) => r.reportsToOrgRoleId === null);
   return roots.map((r) => buildSubtree(rows, r.id)!).filter(Boolean);

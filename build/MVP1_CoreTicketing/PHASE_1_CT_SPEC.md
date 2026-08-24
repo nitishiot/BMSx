@@ -106,7 +106,7 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
   it — the same honesty pattern as `stubAdapter.ts` not pretending to be a
   real PSP. `POST /api/identity/verify-email` (token in body) marks the
   account verified. Real provider selection is
-  `[TBD: same territory as PHASE_1_SPEC.md §8's other unresolved partner
+  `[TBD: same territory as PHASE_1_CT_SPEC.md §8's other unresolved partner
   decisions — not picked in isolation]`.
 
   **End User page** (Fan Web, `/account`): shown immediately after survey

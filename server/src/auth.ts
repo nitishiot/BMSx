@@ -4,6 +4,10 @@ import { prisma } from './db';
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
+export async function invalidateSession(token: string): Promise<void> {
+  await prisma.session.deleteMany({ where: { token } });
+}
+
 export async function createSession(accountId: string): Promise<string> {
   const token = randomUUID();
   await prisma.session.create({
@@ -28,6 +32,9 @@ declare global {
   namespace Express {
     interface Request {
       account?: AuthedAccount;
+      // Set alongside req.account by requireAuth — lets a logout endpoint
+      // invalidate the exact session row without re-parsing the header.
+      sessionToken?: string;
     }
   }
 }
@@ -59,6 +66,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     name: session.account.name,
     roles: session.account.roleAssignments.filter((a) => !a.suspendedAt).map((a) => a.role.key),
   };
+  req.sessionToken = token;
   next();
 }
 

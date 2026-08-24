@@ -1,15 +1,24 @@
-// Real API client for the core-ticketing backend (server/), replacing the
-// client-side simulation that used to live in producerState.ts. Two
-// separate bearer tokens are kept in localStorage — a producer's own
-// session, and (only on the /admin route) a Platform Admin's — mirroring
-// the two distinct accounts PR-1 actually requires.
+// Real API client for the core-ticketing backend (server/). Since
+// 2026-08-24 there is ONE session for every persona (see SESSION_TOKEN_KEY
+// below) — authentication is uniform, RBAC decides what a session reaches.
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:4000/api';
 
-const PRODUCER_TOKEN_KEY = 'tag_producer_token';
-const ADMIN_TOKEN_KEY = 'tag_admin_token';
-const FAN_TOKEN_KEY = 'tag_fan_token';
-const OPS_TOKEN_KEY = 'tag_ops_token';
+// The marketing landing page is now served at "/" from this same origin
+// (see client/vite.config.ts's landingAtRoot plugin), so this is a plain
+// relative path — no cross-origin hop, and the session below is genuinely
+// shared with it.
+export const LANDING_BASE = '/';
+
+// ONE session token for every persona (2026-08-24). Replaces four
+// separate keys (producer/admin/fan/ops) that let a browser hold four
+// simultaneous, unrelated identities — which is exactly how an anonymous
+// -looking landing page could sit beside a signed-in /account page.
+// One login, one session, RBAC decides what it can reach.
+const SESSION_TOKEN_KEY = 'tag_session';
+// Read once at startup so a browser carrying pre-unification tokens
+// doesn't silently keep behaving as if signed in under the old scheme.
+const LEGACY_TOKEN_KEYS = ['tag_producer_token', 'tag_admin_token', 'tag_fan_token', 'tag_ops_token'];
 
 function safeGet(key: string): string | null {
   try {
@@ -30,6 +39,69 @@ function safeRemove(key: string) {
     localStorage.removeItem(key);
   } catch {
     /* ignore */
+  }
+}
+
+// --- Unified session (one login for every persona) ---
+
+export function getSessionToken(): string | null {
+  return safeGet(SESSION_TOKEN_KEY);
+}
+
+// A browser that still holds any pre-unification token would otherwise
+// keep acting signed-in under a scheme the server no longer issues.
+// Cleared once, at module load, before anything reads a session.
+(function clearLegacyTokens() {
+  for (const key of LEGACY_TOKEN_KEYS) safeRemove(key);
+})();
+
+export interface SessionView {
+  account: { id: string; email: string; name: string; emailVerifiedAt: string | null };
+  roles: string[];
+  staff: { orgRoleKey: string; title: string; displayName: string; capabilities: string[] } | null;
+  navLinks: { key: string; label: string }[];
+  portals: { key: string; label: string; href: string }[];
+}
+
+// The single source of truth every nav renders from. Returns null when
+// there's no valid session — an expired/invalidated token resolves to
+// signed-out rather than throwing, and is cleared so the UI can't keep
+// showing a stale identity.
+export async function getSession(): Promise<SessionView | null> {
+  const token = getSessionToken();
+  if (!token) return null;
+  try {
+    return await request<SessionView>('/auth/me', {}, token);
+  } catch {
+    safeRemove(SESSION_TOKEN_KEY);
+    return null;
+  }
+}
+
+export async function login(email: string, password: string): Promise<void> {
+  const { token } = await request<{ token: string }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  safeSet(SESSION_TOKEN_KEY, token);
+}
+
+export async function register(email: string, name: string, password: string): Promise<void> {
+  const { token } = await request<{ token: string }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, name, password }),
+  });
+  safeSet(SESSION_TOKEN_KEY, token);
+}
+
+// Invalidates the session server-side before discarding the local token —
+// discarding only the local copy would leave a replayable session row.
+export async function logout(): Promise<void> {
+  const token = getSessionToken();
+  try {
+    if (token) await request('/auth/logout', { method: 'POST' }, token);
+  } finally {
+    safeRemove(SESSION_TOKEN_KEY);
   }
 }
 
@@ -89,7 +161,7 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 // --- Producer side ---
 
 export function getProducerToken(): string | null {
-  return safeGet(PRODUCER_TOKEN_KEY);
+  return safeGet(SESSION_TOKEN_KEY);
 }
 
 export async function submitApplication(input: {
@@ -102,7 +174,7 @@ export async function submitApplication(input: {
     '/producer-applications',
     { method: 'POST', body: JSON.stringify(input) },
   );
-  safeSet(PRODUCER_TOKEN_KEY, token);
+  safeSet(SESSION_TOKEN_KEY, token);
   return application;
 }
 
@@ -198,18 +270,18 @@ export async function createZone(eventId: string, input: { name: string; capacit
 }
 
 export function resetProducerSession() {
-  safeRemove(PRODUCER_TOKEN_KEY);
+  safeRemove(SESSION_TOKEN_KEY);
 }
 
 // --- Platform Admin side ---
 
 export function getAdminToken(): string | null {
-  return safeGet(ADMIN_TOKEN_KEY);
+  return safeGet(SESSION_TOKEN_KEY);
 }
 
 export async function adminLogin(email: string): Promise<void> {
   const { token } = await request<{ token: string }>('/admin-auth/login', { method: 'POST', body: JSON.stringify({ email }) });
-  safeSet(ADMIN_TOKEN_KEY, token);
+  safeSet(SESSION_TOKEN_KEY, token);
 }
 
 export async function adminGetQueue(status?: ApplicationStatus): Promise<ProducerApplication[]> {
@@ -257,7 +329,7 @@ export async function adminReinstateProducer(accountId: string, reason: string):
 }
 
 export function resetAdminSession() {
-  safeRemove(ADMIN_TOKEN_KEY);
+  safeRemove(SESSION_TOKEN_KEY);
 }
 
 // --- Fan Web (J1: guest-to-ticket) ---
@@ -376,11 +448,11 @@ export async function removeCartItem(cartId: string, itemId: string): Promise<vo
 // session as any producer/admin login on the same machine.
 
 export function getFanToken(): string | null {
-  return safeGet(FAN_TOKEN_KEY);
+  return safeGet(SESSION_TOKEN_KEY);
 }
 
 export function resetFanSession() {
-  safeRemove(FAN_TOKEN_KEY);
+  safeRemove(SESSION_TOKEN_KEY);
 }
 
 export interface FanAccount {
@@ -406,7 +478,7 @@ export async function submitSurvey(
     '/survey/responses',
     { method: 'POST', body: JSON.stringify({ email, name, answers }) },
   );
-  safeSet(FAN_TOKEN_KEY, result.token);
+  safeSet(SESSION_TOKEN_KEY, result.token);
   return { account: result.account, verificationTokenForDemo: result.verificationTokenForDemo };
 }
 
@@ -420,7 +492,7 @@ export async function verifyEmail(token: string): Promise<void> {
   await request('/account/verify-email', { method: 'POST', body: JSON.stringify({ token }) });
 }
 
-// Dev/demo-only convenience (no real inbox to resend to) — PHASE_1_SPEC.md
+// Dev/demo-only convenience (no real inbox to resend to) — PHASE_1_CT_SPEC.md
 // LP-14 flags this explicitly as not part of the real flow.
 export async function resendVerification(): Promise<string | null> {
   const token = getFanToken();
@@ -444,34 +516,13 @@ export async function checkout(
   return result;
 }
 
-// --- Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md) ---
-// Separate token from the fan/producer/admin ones — a different account,
-// different login surface, same reasoning as those.
+// --- Internal Ops Console (build/MVP2_InternalOps/PHASE_1_IO_SPEC.md) ---
+// Login/logout/me all moved to the unified session above — staff sign in
+// the same way everyone else does. What remains here is the staff-only,
+// capability-gated data these dashboards read.
 
-export function getOpsToken(): string | null {
-  return safeGet(OPS_TOKEN_KEY);
-}
-export function resetOpsSession() {
-  safeRemove(OPS_TOKEN_KEY);
-}
-
-export async function opsLogin(email: string): Promise<void> {
-  const { token } = await request<{ token: string }>('/internal-ops/login', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-  });
-  safeSet(OPS_TOKEN_KEY, token);
-}
-
-export interface OpsMe {
-  orgRole: { key: string; title: string };
-  displayName: string;
-  capabilities: string[];
-}
-
-export async function getOpsMe(): Promise<OpsMe> {
-  const token = getOpsToken();
-  return request('/internal-ops/me', {}, token);
+function getOpsToken(): string | null {
+  return getSessionToken();
 }
 
 export interface OrgTreeNode {
@@ -491,4 +542,65 @@ export async function getOpsOrgChart(): Promise<{ scope: 'subtree' | 'company'; 
 export async function getOpsCompanyMetrics(): Promise<{ metrics: null; note: string }> {
   const token = getOpsToken();
   return request('/internal-ops/company-metrics', {}, token);
+}
+
+// --- Internal Ops org management (manage_org only) ---
+// PHASE_1_IO_INCREMENT_SPEC.md §2/§5/§6.
+
+export interface OpsCapability {
+  id: string;
+  key: string;
+  description: string;
+}
+
+export async function getOpsCapabilities(): Promise<OpsCapability[]> {
+  const token = getOpsToken();
+  const { capabilities } = await request<{ capabilities: OpsCapability[] }>('/internal-ops/capabilities', {}, token);
+  return capabilities;
+}
+
+export interface CreateOrgRoleInput {
+  key: string;
+  title: string;
+  department?: string;
+  personName?: string;
+  reportsToOrgRoleId?: string | null;
+}
+
+export async function createOpsOrgRole(input: CreateOrgRoleInput): Promise<void> {
+  const token = getOpsToken();
+  await request('/internal-ops/org-roles', { method: 'POST', body: JSON.stringify(input) }, token);
+}
+
+export async function createOpsCapability(input: { key: string; description: string }): Promise<void> {
+  const token = getOpsToken();
+  await request('/internal-ops/capabilities', { method: 'POST', body: JSON.stringify(input) }, token);
+}
+
+export async function grantOpsCapability(orgRoleId: string, capabilityId: string): Promise<void> {
+  const token = getOpsToken();
+  await request(`/internal-ops/org-roles/${orgRoleId}/capabilities`, {
+    method: 'POST',
+    body: JSON.stringify({ capabilityId }),
+  }, token);
+}
+
+export async function revokeOpsCapability(orgRoleId: string, capabilityId: string): Promise<void> {
+  const token = getOpsToken();
+  await request(`/internal-ops/org-roles/${orgRoleId}/capabilities/${capabilityId}`, { method: 'DELETE' }, token);
+}
+
+// --- Internal Ops survey-response visibility (view_survey_responses only) ---
+
+export interface OpsSurveyResponse {
+  id: string;
+  createdAt: string;
+  answers: Record<string, string>;
+  account: { id: string; name: string; email: string } | null;
+}
+
+export async function getOpsSurveyResponses(): Promise<OpsSurveyResponse[]> {
+  const token = getOpsToken();
+  const { responses } = await request<{ responses: OpsSurveyResponse[] }>('/internal-ops/survey-responses', {}, token);
+  return responses;
 }

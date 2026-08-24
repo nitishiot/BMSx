@@ -1,4 +1,4 @@
-// Per ADR-005 (one owning service per entity) and PHASE_1_SPEC.md §4's
+// Per ADR-005 (one owning service per entity) and PHASE_1_CT_SPEC.md §4's
 // "one schema per module": Identity & Access and Event & Catalogue get
 // separate Postgres schemas in this shared Phase-1 instance. No FK crosses
 // a schema boundary (ProducerApplication.accountId, Festival.producerAccountId
@@ -21,19 +21,41 @@ model Account {
   name            String
   // Null until POST /api/account/verify-email succeeds. LP-14: a survey
   // submission creates the Account in this pending state, never
-  // immediately "verified" — PHASE_1_SPEC.md's End User page reads this.
+  // immediately "verified" — PHASE_1_CT_SPEC.md's End User page reads this.
   emailVerifiedAt DateTime?
   createdAt       DateTime  @default(now())
 
   roleAssignments        RoleAssignment[]
   sessions                Session[]
   emailVerificationTokens EmailVerificationToken[]
+  credential              Credential?
+
+  @@schema("identity")
+}
+
+// PHASE_1_IO_INCREMENT_SPEC.md §4 (revised 2026-08-24) — ONE credential
+// store for every human who can sign in, whatever they are: fan, producer,
+// Platform Admin, or Internal Ops staff. Replaces the short-lived
+// internalops.StaffCredential (staff-only) built earlier the same session,
+// and the two password-less stand-ins (Platform Admin's email-only login,
+// the Producer portal's no-login-at-all) — Nitish's explicit call: one real
+// login, RBAC decides what you see afterwards. An Account may still exist
+// with no Credential (guest checkout, survey-created accounts before they
+// set a password), so this is a separate table, not a column on Account.
+model Credential {
+  id           String   @id @default(uuid())
+  accountId    String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id])
 
   @@schema("identity")
 }
 
 // LP-14 email verification — stubbed adapter (server/src/identity/
-// emailVerification.ts), no real provider chosen yet (PHASE_1_SPEC.md
+// emailVerification.ts), no real provider chosen yet (PHASE_1_CT_SPEC.md
 // §8-territory TBD). One row per verification attempt; `usedAt` makes a
 // token single-use without deleting the audit trail of attempts.
 model EmailVerificationToken {
@@ -172,7 +194,7 @@ model Venue {
 model SeatMap {
   id        String   @id @default(uuid())
   venueId   String   @unique
-  // Object storage product is [TBD: PHASE_1_SPEC.md §8] — stores a URL to
+  // Object storage product is [TBD: PHASE_1_CT_SPEC.md §8] — stores a URL to
   // wherever the asset actually lives once that's decided, not the asset
   // itself.
   imageUrl  String
@@ -319,7 +341,7 @@ model Hold {
 
 // Issued on successful checkout, one row per unit purchased. `qrCode` is a
 // unique opaque token standing in for a real scannable asset — object
-// storage/QR rendering product is [TBD: PHASE_1_SPEC.md §8].
+// storage/QR rendering product is [TBD: PHASE_1_CT_SPEC.md §8].
 model Ticket {
   id          String   @id @default(uuid())
   ticketTypeId String
@@ -444,7 +466,7 @@ model SurveyResponse {
 }
 
 // ---------------------------------------------------------------------
-// Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md) — a
+// Internal Ops Console (build/MVP2_InternalOps/PHASE_1_IO_SPEC.md) — a
 // separate system from the ticketing product (ADR-005: own schema, no FK
 // into `identity`; StaffProfile.accountId is a plain UUID). `personName`
 // is an implementation addition beyond the spec's literal model (the
@@ -510,3 +532,10 @@ model StaffProfile {
   @@index([accountId])
   @@schema("internalops")
 }
+
+// NOTE: internalops.StaffCredential was created earlier this same session
+// and removed again before it ever shipped — superseded by
+// identity.Credential (see its comment), once Nitish chose one unified
+// login for every persona rather than a staff-only password store beside
+// two password-less stand-ins. Recorded here rather than silently
+// vanishing, since its migration is still in the history.

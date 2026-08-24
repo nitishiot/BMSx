@@ -24,7 +24,7 @@ export function AccountPage() {
     load();
   }, []);
 
-  // Dev/demo-only shortcut (PHASE_1_SPEC.md LP-14 flags this explicitly):
+  // Dev/demo-only shortcut (PHASE_1_CT_SPEC.md LP-14 flags this explicitly):
   // there's no real inbox to click a link in, so this requests a fresh
   // token and immediately redeems it, standing in for "the fan clicked
   // the email link."
@@ -47,18 +47,21 @@ export function AccountPage() {
 
   if (!account) {
     return (
-      <div className="account-page">
-        <FanNav />
-        <h1>No account found</h1>
-        <p className="apply-sub">Take the fan survey to create one.</p>
-        <a className="link-btn" href="/survey">Go to the survey</a>
-      </div>
+      <>
+        <FanNav currentKey="account" />
+        <div className="account-page">
+          <h1>No account found</h1>
+          <p className="apply-sub">Take the fan survey to create one.</p>
+          <a className="link-btn" href="/survey">Go to the survey</a>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="account-page">
-      <FanNav />
+    <>
+      <FanNav currentKey="account" />
+      <div className="account-page">
       <p className="eyebrow">Your account</p>
       <h1>{account.email}</h1>
 
@@ -86,6 +89,7 @@ export function AccountPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

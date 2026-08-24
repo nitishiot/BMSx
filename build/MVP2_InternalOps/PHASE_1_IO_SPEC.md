@@ -195,7 +195,7 @@ check afterward.
 ## 9. Non-functional targets
 
 Per `.claude/rules/build.md` — measured live once built; all `[TBD]`
-until then, same discipline as `PHASE_1_SPEC.md`.
+until then, same discipline as `PHASE_1_CT_SPEC.md`.
 
 - Throughput/latency: `[TBD: internal tool, ~20 staff users max — likely
   no meaningful load concern, but not asserted without measuring]`.

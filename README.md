@@ -25,13 +25,15 @@ BMSx-synced/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails
 │       ├── build.md        ← phase-spec template, sign-off protocol, git/tag policy
-│       └── product.md      ← product register/tone, vocabulary, spec-handling rules
+│       ├── product.md      ← product register/tone, vocabulary, spec-handling rules
+│       └── design.md       ← UI rules: theme tokens, max-width per surface type, nav pattern
 ├── References/              ← read-only inputs, never edited in place
 │   ├── PLAYBOOK.md                    ← domain-agnostic ways-of-working source
 │   └── SENTINEX_WaysOfWorking_v1.html ← the process CLAUDE.md is adapted from
 ├── build/                   ← phase specs, one subfolder per MVP, written before implementation
-│   ├── MVP1_CoreTicketing/PHASE_1_SPEC.md  ← Phase 1 spec, several sub-slices signed off
-│   └── MVP2_InternalOps/PHASE_2_SPEC.md    ← Internal Ops Console spec (separate system), awaiting sign-off
+│   ├── MVP1_CoreTicketing/PHASE_1_CT_SPEC.md  ← Phase 1 spec, several sub-slices signed off
+│   └── MVP2_InternalOps/PHASE_1_IO_SPEC.md    ← Internal Ops Console spec (separate system), awaiting sign-off
+│       + PHASE_1_IO_INCREMENT_SPEC.md         ← scope addition; spec only, not built
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see below)
@@ -47,7 +49,7 @@ This tree is updated in the same commit as any top-level structure change.
 ## Producer portal + Platform Admin console (`client/`) and core-ticketing backend (`server/`)
 
 Phase 1 slice — see `client/README.md`, `server/README.md`, and
-`build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4. `client/` now calls a real
+`build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md` §2/§4. `client/` now calls a real
 backend (`server/`, Node+Express+TS+Prisma/Postgres) instead of the
 localStorage simulation the first client-only slice used — Identity &
 Access (Account/Role/RoleAssignment/AuditLogEntry), producer application →

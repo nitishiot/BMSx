@@ -1,4 +1,4 @@
-// ADR-004 port/adapter: PSP selection is [TBD: PHASE_1_SPEC.md §8, item 2].
+// ADR-004 port/adapter: PSP selection is [TBD: PHASE_1_CT_SPEC.md §8, item 2].
 // This stub stands in for a real payment sandbox so the Orders & Cart saga
 // (ADR-006) can be built and tested end to end without a PSP decision.
 // Swap this module for a real PSP adapter once one is chosen — nothing

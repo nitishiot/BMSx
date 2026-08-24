@@ -5,8 +5,248 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
-**Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md): built,
-awaiting sign-off (2026-08-24, Sonnet session).** All four exit checks
+**Unified authentication + single-origin app: built, awaiting sign-off
+(2026-08-24, Opus session).** Nitish reviewed the previous pass, found a
+login failure he thought was a bug, and asked for the full credential
+list. Diagnosis first: **not a bug** — he'd entered `founder@tag.local`
+(Internal Ops staff) into the Platform Admin console, which correctly
+rejects any account without the `platform_admin` role. But the underlying
+complaint was real: three portals had three *different* auth models
+(Internal Ops: real password; Platform Admin: email-only stand-in;
+Producer: no login at all), and four separate localStorage tokens. He
+chose (via an explicit either/or) to **unify onto one real login** and to
+**serve landing and the app from one origin**.
+
+**1. One credential store, one login, one session.** New
+`identity.Credential` (bcrypt) replaces both the password-less stand-ins
+*and* the `internalops.StaffCredential` table added earlier the same
+session — that model was created and removed before it ever shipped, since
+a staff-only password store beside two password-less portals is the
+inconsistency, not the fix. Migration `20260824070000_unified_credential`.
+New `server/src/routes/auth.ts`: `POST /register` (self-service, creates a
+*fan*; claims an existing password-less account created by a survey
+submission rather than failing), `POST /login`, `POST /logout`
+(server-side session invalidation), and `GET /auth/me` — the single
+endpoint every nav on every surface renders from, returning identity +
+product roles + staff capabilities + resolved `navLinks` and `portals` in
+one round trip. Per-portal login routes were removed from
+`internalOps.ts`; `adminAuth.ts` still exists but nothing uses it.
+Client-side, four token keys (`tag_producer_token`/`tag_admin_token`/
+`tag_fan_token`/`tag_ops_token`) collapsed to one `tag_session`, with the
+legacy keys actively cleared at module load so a browser carrying them
+can't keep acting signed-in under a scheme the server no longer issues.
+
+**2. Single origin — this is the actual fix for the landing/account
+inconsistency.** `client/vite.config.ts` gained a `landingAtRoot` plugin
+serving `landing/index.html` at `/` from the same dev server; the Producer
+portal moved off `/` to `/producer`. The landing file is read from its
+real path per request, never copied, so it stays the single source of
+truth. Two origins meant two localStorage stores, which is precisely why
+an anonymous-looking landing page could sit beside a signed-in `/account`
+page — Nitish hit this twice. `CLIENT_APP_BASE`/`LANDING_BASE` are now
+same-origin relative paths.
+
+**3. Nav consistency, RBAC-driven.** New shared
+`client/src/components/AppNav.tsx` is the nav for every `client/` surface;
+landing's own `<nav>` mirrors it. Three fixed zones everywhere: TAG logo
+(left) → the marketing menu Browse Festivals/Features/Platform/Pricing
+(centre, now on **every** page and portal, not just landing) → auth state
+(right). Signed out shows a **separate "Sign in" link and "Register"
+pill**, per Nitish's explicit ask, replacing the old combined "Sign in /
+Portals" control. Signed in shows the person's name, an RBAC-filtered
+**Portals** menu, and Sign out. Crucially the Portals list is *server*
+-resolved from real roles/capabilities — a fan is not offered the admin
+console, and the Founder (staff, but holding no `platform_admin` role) is
+not either. `PortalsMenu.tsx` was deleted, superseded by this.
+
+**4. New `/login` and `/register` pages** (`AuthPage.css`, 720px column)
+— one sign-in and one registration page for every persona. `/admin` and
+`/ops` no longer carry their own login forms: an unauthorised visitor is
+told plainly and pointed at `/login?next=…`.
+
+**5. Landing page fixes.** "Download Free" restored to the same filled
+-pill treatment as the hero's "Get the App — Free" (it had been flattened
+to a text link in an earlier pass). Org chart now breaks out of the 720px
+content column to full viewport width, scrolling inside its own container
+so the page itself never scrolls horizontally.
+
+Verified two ways against the real running server + Postgres. (1) A
+25-check scripted HTTP walk: all three seeded personas log in through the
+*same* endpoint; wrong password and unknown email return an identical
+generic 401 (no user enumeration); `/auth/me` returns correctly different
+roles/staff/portals/navLinks per persona (admin gets the admin portal but
+not Ops; Founder gets Ops but *not* the admin portal; CTO gets neither
+`org-admin` nor `survey-responses`); registration works and rejects
+duplicates and sub-8-character passwords; logout invalidates server-side
+(replay → 401); and data endpoints still enforce RBAC independently of
+nav (CTO 403s on `manage_org`, Platform Admin 403s on Internal Ops
+`/me`). (2) A 17-check Playwright run in a real browser: anonymous
+landing and anonymous `/account` now **agree** (both show Sign in +
+Register, no stale identity); registering through the UI makes the name
+appear on `/account` *and* on landing; a fan's Portals menu excludes
+admin and Ops; signing out on landing signs out `/account` too; the
+Founder reaches `/ops` through the one shared login page and is refused
+at `/admin`; CTO sees no admin tabs. Zero console errors. Two real bugs
+were caught by these checks and fixed: `.nav-auth{display:flex}` was
+overriding the `[hidden]` attribute so both auth states rendered at once,
+and the seeded staff `changeme123` passwords needed re-seeding into the
+new store. Client `tsc -b --force` + `vite build` and server
+`tsc --noEmit` all clean. **Not yet shown to Nitish live.**
+
+**Nav consistency + design-system pass (2026-08-24, Sonnet session, after
+the increment items below were built).** Nitish reviewed the built
+increment live and found three real inconsistencies across `client/`,
+fixed in order:
+
+1. **Anonymous festival-page visit showed "Signed in as Joe rogan.**"
+   Root cause understood, not silently patched: `client/` (`:5173`) is a
+   separate origin from `landing/` (`:4173`) with its own persisted
+   localStorage session from an earlier real test — landing correctly
+   showed anonymous state, `client/` correctly showed its own real
+   persisted session; the two just aren't the same session store. Left as
+   an open architecture item (see below), not papered over.
+2. **Nav wasn't consistent across pages.** Fixed for real: extracted a
+   shared `PortalsMenu` component (`client/src/components/
+   PortalsMenu.tsx`, same five-link set as landing's own dropdown) and
+   mounted it in every `client/` surface's nav — Fan Web (`FanNav`),
+   Producer portal, Admin console (which previously had **no nav bar or
+   TAG logo at all** — a real gap the fix closed), Internal Ops. The
+   session/identity slot now always renders something (previously blank
+   when a fan was signed out). While fixing this, found and fixed a
+   second real bug: every nav bar except the Producer portal's was
+   nested *inside* its page's max-width-capped content `<div>`, silently
+   narrowing the nav bar itself to 720px instead of full-bleed —
+   restructured every page (`SurveyPage`, `AccountPage`, `FestivalPage`
+   — all branches including checkout/confirmation which had been missing
+   `FanNav` entirely, `AdminConsole`, `InternalOpsConsole`) so nav is
+   always a sibling of the capped content div, never nested in it.
+3. **TAG logo didn't return to the actual landing page.** It linked to
+   `client/`'s own `/` (the Producer portal's root) — a routing
+   coincidence, not the marketing page. Fixed with a new `LANDING_BASE`
+   constant in `client/src/api.ts` (mirrors landing's existing
+   `CLIENT_APP_BASE`), used by every "TAG" logo link across `client/`.
+
+Also: standardised the three different content-column widths found in
+use (560/640/720px across `Apply`/`EventSetup`/`AuditLog` vs
+`Survey`/`Account`/`Festival` vs `AdminConsole`/`InternalOpsConsole`,
+with no functional reason for the split) to 720px everywhere. Redesigned
+the Internal Ops org-chart widget from a plain indented list into a real
+top-down connector-line diagram (parent-to-children bars, tier-coloured
+avatar circles cycling the theme's four accent tokens, collapse/expand)
+after Nitish shared a reference org-chart image and asked for something
+"creative" but theme-compliant — deliberately did **not** add a
+fabricated "Board of Directors" layer the reference had, since the real
+org chart has two Founder roots with no board above them (see
+`OrgTree.tsx`'s header comment).
+
+Wrote all of this down as a standing rule, not just a one-off fix:
+**new `.claude/rules/design.md`**, wired into `CLAUDE.md`'s auto-loaded
+imports alongside harness/build/product — theme tokens, the three named
+content-column widths and which surface type gets which, the
+nav-is-always-a-sibling-never-nested rule, the PortalsMenu-on-every
+-surface rule, RBAC-driven (server-resolved, never client-guessed) nav
+content. Exists so the next new page follows a decided pattern instead of
+picking new numbers.
+
+**Left open, flagged to Nitish, not resolved:** whether landing and
+`client/` should become one single web app under one domain/port, or stay
+separate with path-based routing under one domain once a hosting target
+is chosen (the latter recommended — preserves landing's deliberate static
+-file performance rationale and would also resolve the cross-origin
+session gap in #1 for free). Captured as open item 5 in
+`PHASE_1_IO_INCREMENT_SPEC.md` §10 — a hosting/deploy decision this repo
+has deferred before (no cloud/deploy target chosen yet), not something to
+assume.
+
+Verified live with Playwright across every surface (Festival page in a
+fresh/anonymous browser context, Producer portal, Admin console
+logged-out and logged-in, Internal Ops logged-out and logged-in): every
+nav bar's rendered width now equals the full viewport width (was capped
+to 720px before the fix on four of five surfaces), `PortalsMenu` present
+and functional on all of them, TAG logo resolves to `localhost:4173`, zero
+console errors throughout. Client `tsc -b` + `vite build` both clean.
+**Not yet shown to Nitish live** for this specific pass (he reviewed and
+flagged the issues live via screenshots; the fixes themselves haven't
+been demoed back yet).
+
+**Internal Ops Console increment (build/MVP2_InternalOps/
+PHASE_1_IO_INCREMENT_SPEC.md): built, awaiting sign-off (2026-08-24,
+Sonnet session).** All five in-scope items from the increment spec are
+built and verified against the real server + Postgres — not mocks:
+
+1. **RBAC-aware page-level nav.** `GET /internal-ops/me` now returns a
+   server-resolved `navLinks` array (`internalOps/auth.ts`'s
+   `resolveNavLinks`); the client renders tabs from that data, not a
+   client-side capability→link guess. Scoped to Internal Ops itself —
+   the other portals (Survey/Account/Festival/Producer/Admin) were
+   checked and don't cross-link to each other today, so there was no
+   actual per-page RBAC gap there to close; noted rather than silently
+   assumed.
+2. **Org management for `manage_org` holders.** New `manage_org`
+   capability granted to Founder & Managing Director and Head of Product
+   Development (seedData.ts). New endpoints: `POST/PATCH /org-roles`,
+   `POST /capabilities`, `POST`/`DELETE .../capabilities/:id` — an "Org
+   roles admin" console tab (visible only via the resolved `navLinks`)
+   creates roles/capabilities and grants/revokes them through the real
+   API, not seed-data edits.
+3. **Org-chart tree visualisation.** `OrgTree.tsx` rewritten: connector
+   lines, per-node avatar-initial chips, collapse/expand toggles, themed
+   with the existing `--bg-raised`/`--border-md`/`--accent` tokens — same
+   component still serves both the Founder's full-company view and the
+   CTO's subtree, server-scoped as before.
+4. **Survey-response visibility.** New `view_survey_responses`
+   capability (same two roles); `GET /internal-ops/survey-responses`
+   joins `survey.SurveyResponse` to `identity.Account` in application
+   code (plain UUID, no FK — ADR-005) and a new "Survey responses" tab
+   lists real submissions with expandable answers.
+5. **Real password login + explicit logout.** New `StaffCredential`
+   model (bcrypt via `bcryptjs`) and Postgres migration
+   `20260824053926_staff_credential`; `POST /login` now verifies a
+   password with a generic "invalid email or password" error on every
+   failure mode (unknown email, no profile, no credential yet, wrong
+   password — no user enumeration); new `POST /logout` deletes the
+   session row server-side (`auth.ts`'s `invalidateSession`), confirmed
+   with a real replay-after-logout test returning 401. The three seeded
+   staff accounts got one-time `StaffCredential` rows per the spec's §8
+   migration note (default password `changeme123`, env-overridable,
+   explicitly a demo placeholder).
+
+Verified two ways: (1) a scripted HTTP walk — wrong/unknown-email login
+both 401 with the same generic error, correct login issues a session,
+`navLinks` differ correctly between Head of Product Development (has
+`org-admin`/`survey-responses`) and CTO (has neither), CTO gets 403 on
+every `manage_org`-gated endpoint and on `/survey-responses`, a real
+role+capability created/granted/revoked through the API round-trips
+through `/org-chart`, logout invalidates the session (replay → 401);
+(2) a Playwright run driving the actual `/ops` UI — login, all three tabs
+(Dashboard/Org roles admin/Survey responses) render correctly for Head of
+Product Development, CTO's login shows zero tabs (matching its empty
+`navLinks`), the org tree renders the full 35-role hierarchy with working
+collapse toggles, survey responses list and expand correctly — zero
+console errors throughout. Test-only role/capability rows created during
+the HTTP walk were deleted after the run, not left in seed data. Client
+(`tsc -b` + `vite build`) and server (`tsc --noEmit`) both clean.
+**Not yet shown to Nitish live.**
+
+**Landing-page search/near-you layout fix (2026-08-24, Sonnet session,
+same session — filed under the Internal Ops increment spec §11/§12 at
+Nitish's explicit request despite belonging structurally to
+`MVP1_CoreTicketing`).** The 2026-08-23 width pass that widened
+`.search-inner`/`.nearby-inner` to 1800px (to match the Platform/Plans/
+Roadmap sections) left the search bar under-weighted and Events Near You
+reading as two elements stranded in opposite corners of a near-empty wide
+row — Nitish flagged both live. Fixed: `.search-form` widened to 860px
+with larger input/button padding and font-size for real visual
+prominence (not just a wider container); `.nearby-inner` recentred to
+860px with `justify-content:center` on its header/fallback rows and
+`text-align:left` restored on the result-card grid specifically (so
+centring the section doesn't centre card body text). No backend change —
+CSS/layout only. Verified visually with a headless Chromium screenshot at
+1600px width. **Not yet shown to Nitish live.**
+
+**Internal Ops Console (build/MVP2_InternalOps/PHASE_1_IO_SPEC.md — renamed
+2026-08-24, see decisions log): built, awaiting sign-off (2026-08-24,
+Sonnet session).** All four exit checks
 met — see the spec's §8 for detail. New `internalops` Postgres schema
 (`OrgRole`, `Capability`, `OrgRoleCapability`, `StaffProfile`, ADR-005 —
 no FK into `identity`); `OrgRole` also carries an implementation-added
@@ -787,6 +1027,14 @@ current branch, and `origin/main` were identical at session start (`0 0`).
    and every other portal. Remaining ~17 org-chart roles are still
    deferred (same `OrgRole`/`Capability` pattern, per spec §4) — next
    priority call once this is reviewed.
+1a. **`build/MVP2_InternalOps/PHASE_1_IO_INCREMENT_SPEC.md`: built,
+   awaiting sign-off** — see Status for the full verification detail.
+   RBAC-gated nav tabs, `manage_org` console UI, org-chart tree diagram,
+   survey-response visibility, real password login/logout are all live
+   at `localhost:5173/ops`. Deliberately deferred, per the spec's own
+   §3/§10: Producer/Admin real login, password reset, the landing page's
+   cross-origin signed-in state (needs a deployment-topology decision
+   first). Needs a live demo + Nitish's sign-off next.
 2. **The rest of the core-ticketing backend.** Ticketing &
    Inventory + Orders & Cart backend, the Fan Web checkout UI
    (`/festival/:id`), and its real QR rendering were all built and signed
@@ -1312,3 +1560,152 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   backs five different portals (festival pages, survey, account,
   producer, admin, ops), not just Fan Web — a name that stopped matching
   what the constant actually does.
+- **2026-08-24 (Sonnet session)** — Moved the landing page's "Sign in /
+  Portals" dropdown from the centre nav-links row into the top-right
+  corner (`.nav-right`) per Nitish's request, and moved "Download Free"
+  into the nav-links row in its place — restyled from a filled pill to a
+  plain accent-coloured text link there (Nitish flagged the pill as
+  visually inconsistent once it sat among plain nav links rather than
+  being the lone top-right CTA). Dropdown menu anchor flipped from
+  `left:0` to `right:0` so it doesn't run off the viewport edge from its
+  new position. Verified with headless Chromium screenshots at desktop
+  (1440px) and mobile (390px) widths. Noted but not built: the landing
+  page's own top-right slot still reads "Sign in / Portals" even for a
+  signed-in fan, since landing (`localhost:4173`) and `client/`
+  (`localhost:5173`) are separate origins with no shared session today —
+  flagged to Nitish as needing a deployment-topology decision, now
+  captured as an explicit open item in the new increment spec (see below).
+- **2026-08-24 (Sonnet session)** — Nitish requested a substantial set of
+  Internal Ops gaps be addressed: RBAC-aware navigation on every page
+  (not just dashboard widgets), org-role/capability management from the
+  console for Founder + Head of Product Development (`manage_org`,
+  confirmed as a deliberate IC-level exception to the usual capability
+  -maps-to-job-level pattern), a real hierarchy diagram for the Founder's
+  org-chart view (themed, not a plain list), survey responses surfaced to
+  Founder + Head of Product Development from the real `SurveyResponse`
+  data already persisted since LP-14, and a genuine username/password
+  login + explicit logout for Internal Ops (replacing the email-only
+  stand-in). Given the size (new data model, new endpoints, new UI
+  surfaces, RBAC changes touching every portal's nav) and this repo's
+  "plan first for multi-file work" rule, presented a short outline before
+  starting and got explicit go-ahead before any renames or drafting.
+- **2026-08-24 (Sonnet session)** — As part of the same request, renamed
+  the phase-spec filename convention: `build/MVP1_CoreTicketing/
+  PHASE_1_SPEC.md` → `PHASE_1_CT_SPEC.md`, `build/MVP2_InternalOps/
+  PHASE_2_SPEC.md` → `PHASE_1_IO_SPEC.md` (both via `git mv`, history
+  preserved). Reason: "Phase 2" for Internal Ops wrongly implied it was
+  the second phase of the ticketing product's own numbering, when it's
+  documented (in that very spec's header) as a separate system — the new
+  `PHASE_<n>_<CODE>_SPEC.md` convention (`<CODE>` = a short per-track code,
+  `CT`/`IO` so far; `<n>` numbered within its own track, not globally) is
+  now the standing rule in `.claude/rules/build.md` and `build/README.md`,
+  to be followed for every future `MVP<N>_<name>/` track. Updated every
+  cross-reference across the repo (code comments, README.md, CLAUDE.md,
+  the architecture doc) via a mechanical find/replace — left historical
+  narrative in this decisions log referencing the old filenames untouched
+  deliberately, same precedent as the BMSx→TAG rename (a log entry
+  describes what was true when it was written, not the current state).
+  Drafted `build/MVP2_InternalOps/PHASE_1_IO_INCREMENT_SPEC.md` capturing
+  the five items above as a scope addition to (not a replacement of) the
+  already-built `PHASE_1_IO_SPEC.md`, per the same naming rule's
+  `_INCREMENT` suffix. **Spec only — none of it is built yet**, per spec
+  -before-code; awaiting Nitish's review.
+- **2026-08-24 (Sonnet session)** — Mid-review, Nitish asked for one more
+  item filed into the same increment spec: the landing page's own
+  top-right corner should read "Signed in as X" for a signed-in fan
+  instead of always "Sign in / Portals." Added as an explicit open item
+  (§10) rather than built, since it needs a deployment-topology decision
+  first — landing (`localhost:4173`) and `client/` (`localhost:5173`) are
+  separate origins with no shared session today.
+- **2026-08-24 (Sonnet session)** — Nitish reviewed the drafted increment
+  spec and said "looks good, go ahead," approving the build. Mid-build, he
+  also flagged the search bar/Events Near You layout live (screenshot: the
+  1800px-wide section from the 2026-08-23 width pass left the search bar
+  under-weighted and Events Near You's heading/button/cards stranded in
+  opposite corners) and asked for it filed into the same increment spec
+  even though it's structurally a `MVP1_CoreTicketing` item — added as
+  §11 with an explicit scope-mismatch note at the top of the file rather
+  than silently miscategorised, per his direct instruction to bundle it
+  there rather than open a separate `MVP1_CoreTicketing` increment file.
+  Built both: the landing-page CSS fix (§11) immediately, since it was
+  small and contained; the five Internal Ops items (§2) per the full
+  build documented in Status above. Both verified live and awaiting
+  Nitish's sign-off.
+- **2026-08-24 (Sonnet session, same session)** — Nitish reviewed the
+  Internal Ops increment live via screenshots and found three real
+  issues: an anonymous festival-page visit showed a stale "Signed in as
+  Joe rogan" (root cause: `client/`/landing are separate origins/sessions,
+  not a bug in either alone); nav placement/content wasn't consistent
+  across pages (Admin console had no nav bar at all; every other surface
+  only showed nav content when a session existed); the TAG logo didn't
+  return to the actual landing page. Fixed the second and third
+  immediately; the first stays an explicitly flagged open architecture
+  item (single-origin question) rather than a quick patch, since papering
+  over it (e.g. clearing localStorage on load) would have destroyed real,
+  intended session persistence. Extracted `PortalsMenu`
+  (`client/src/components/PortalsMenu.tsx`) and mounted it on every
+  `client/` surface; found and fixed a second bug while doing this (every
+  nav bar except Producer portal's was nested inside its page's
+  max-width-capped div, silently narrowing the nav itself). Wrote the
+  resulting rules into a new `.claude/rules/design.md`, wired into
+  `CLAUDE.md`'s auto-loaded imports — Nitish asked explicitly for the UI
+  rules to be documented "somewhere," not just fixed in code, so future
+  pages follow a decided pattern. A verification script caught one real
+  regression from the `PortalsMenu` extraction (it defaulted to label
+  "Portals," losing FanNav's "Sign in / Portals" wording for anonymous
+  fans) — fixed before considering this done, not shipped with the bug.
+  Also, mid-review, Nitish asked for an org-chart redesign matching a
+  reference image he shared (top-down connector lines, tier-coloured
+  avatar circles) — rebuilt `OrgTree.tsx` accordingly, deliberately
+  choosing not to fabricate the reference's "Board of Directors" layer
+  since the real org chart doesn't have one (two Founder roots, no board
+  above them) — visual language adopted, data not invented to match it
+  more closely. All changes verified live with Playwright (fresh/
+  anonymous browser contexts, full login flows per surface) — zero
+  console errors, `tsc -b` and `vite build` both clean.
+- **2026-08-24 (Opus session)** — Nitish reported a failed login at
+  `/admin` and asked for every credential. Diagnosed rather than
+  "fixed": he had entered `founder@tag.local` (Internal Ops staff) into
+  the Platform Admin console, which correctly requires the
+  `platform_admin` role — working as designed. The real problem it
+  exposed was that three portals had three different authentication
+  models and four separate session tokens. Asked him to choose
+  explicitly rather than assuming: he picked **one unified real
+  username+password login for every persona**, and **serving landing
+  inside the app on one origin**. Both were the recommended options and
+  both were needed — the cross-origin split was the root cause of the
+  landing-vs-`/account` inconsistency he had now reported twice, and no
+  amount of UI work could have fixed it while the two pages had separate
+  localStorage.
+- **2026-08-24 (Opus session)** — Removed `internalops.StaffCredential`
+  (created earlier the *same day*) in favour of `identity.Credential`.
+  Deliberate reversal, not churn: a staff-only password store sitting
+  beside an email-only admin login and a no-login producer portal is the
+  inconsistency itself. Recorded the removal in `schema.prisma` where the
+  model used to be, since its migration remains in history. While
+  generating the migration, `prisma migrate diff --from-migrations`
+  against a fresh shadow DB produced a script that would have **dropped
+  and recreated every table** — caught before running it and switched to
+  `--from-schema-datasource` (diffing the live DB), which produced the
+  correct two-statement delta. A generated migration is not automatically
+  a safe one; read it before applying.
+- **2026-08-24 (Opus session)** — Nitish asked for "Sign in" and
+  "Register" as *separate* links, not the combined "Sign in / Portals"
+  control built earlier, and for the top-centre marketing menu to appear
+  on every page and portal (RBAC-aware). Built one `AppNav` component
+  used by every `client/` surface, with landing's own nav mirroring it.
+  Portal entitlements are resolved server-side in `GET /auth/me` and
+  rendered verbatim by the client — deliberately *not* a client-side
+  list, which is what let the old menu offer every visitor the Platform
+  Admin console regardless of role. Deleted `PortalsMenu.tsx`, superseded
+  after roughly an hour; the `AutoAppNav` wrapper and a thin `FanNav`
+  alias keep existing pages working without a second edit pass.
+- **2026-08-24 (Opus session)** — Verification caught two real bugs the
+  build itself did not: `.nav-auth{display:flex}` silently overrode the
+  `[hidden]` attribute (both signed-in and signed-out nav states rendered
+  simultaneously), and the seeded staff passwords needed re-seeding into
+  the new credential store. Also caught two *test* bugs and fixed those
+  in the test rather than the product — a nav assertion racing the async
+  `/auth/me` fetch, and a landing-page element ID used against a React
+  page. Worth keeping the distinction visible: not every red check is a
+  product defect.

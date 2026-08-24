@@ -120,7 +120,7 @@
 <tr><td>5 · Cross-cutting concerns</td><td>Payments isolation, GDPR/DPDP, EU AI Act, observability, NFRs</td></tr>
 <tr><td>6 · Decisions &amp; open items</td><td>What has been decided, what is deliberately deferred</td></tr>
 </table></div>
-<p>Two views from the original outline — the enumerated event-backbone catalogue and the Phase-1 build subset — were deliberately dropped for this revision. The event backbone is still <i>described</i> in view 2; what is missing is the publish/subscribe table. The Phase-1 subset moves into <code>build/MVP1_&lt;name&gt;/PHASE_1_SPEC.md</code> when Phase 1 is scoped.</p>
+<p>Two views from the original outline — the enumerated event-backbone catalogue and the Phase-1 build subset — were deliberately dropped for this revision. The event backbone is still <i>described</i> in view 2; what is missing is the publish/subscribe table. The Phase-1 subset moves into <code>build/MVP1_&lt;name&gt;/PHASE_1_CT_SPEC.md</code> when Phase 1 is scoped.</p>
 
 <h2 id="principles">Architecture principles</h2>
 <p>Carried forward from PRD §8, restated with the consequence each one imposes.</p>
@@ -566,7 +566,7 @@ flowchart LR
 
 <h3>What this document deliberately does not decide</h3>
 <ul>
-<li><b>Phase 1 scope.</b> That belongs in <code>build/MVP1_&lt;name&gt;/PHASE_1_SPEC.md</code>, written next.</li>
+<li><b>Phase 1 scope.</b> That belongs in <code>build/MVP1_&lt;name&gt;/PHASE_1_CT_SPEC.md</code>, written next.</li>
 <li><b>The legacy <code>server/</code> / <code>client/</code> scaffold.</b> Still an open decision (<code>PROGRESS.md</code>); nothing here builds on it.</li>
 <li><b>Technology selections.</b> No language, framework, cloud or database product is named. Those belong in the phase spec, where they can be justified against Phase 1's actual requirements rather than the whole platform's eventual ones.</li>
 </ul>

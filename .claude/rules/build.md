@@ -9,7 +9,7 @@ below are placeholders until a first phase defines real ones).
 ## Spec before code
 
 Every phase/increment gets its own spec, written **before** implementation,
-under `build/MVP<N>_<name>/PHASE_<id>_SPEC.md`:
+under `build/MVP<N>_<name>/PHASE_<n>_<CODE>_SPEC.md` (see naming rule below):
 
 1. Objective (one paragraph, plain language)
 2. In scope / explicitly out of scope
@@ -67,10 +67,38 @@ on every change.
 ```
 build/
 ├── README.md                    ← this convention, restated briefly
-└── MVP<N>_<name>/                ← one folder per MVP
-    ├── PHASE_<id>_SPEC.md         ← written before implementation
+└── MVP<N>_<name>/                ← one folder per MVP/track
+    ├── PHASE_<n>_<CODE>_SPEC.md   ← written before implementation
     └── ...                        ← phase-scoped working files
 ```
 
-No `MVP1_...` folder exists yet — created when the first phase is actually
-scoped against the PRD, not preemptively.
+## Spec filename convention (decided 2026-08-24)
+
+`PHASE_<n>_<CODE>_SPEC.md`, where:
+
+- **`<CODE>`** is a short (2–4 letter) uppercase code for the *track/system*
+  the spec belongs to — e.g. `CT` = Core Ticketing (`MVP1_CoreTicketing`),
+  `IO` = Internal Ops (`MVP2_InternalOps`). Pick a new code, once, when a
+  new `MVP<N>_<name>` track is created — record it in that track's spec
+  header and in `build/README.md`'s track list.
+- **`<n>`** numbers phases **within that track only**, starting at 1 — it
+  does *not* share a counter with other tracks. Internal Ops's first spec
+  is `PHASE_1_IO_SPEC.md`, not `PHASE_2_...`, even though it's the second
+  track in this repo overall — a global counter wrongly implied Internal
+  Ops was "phase 2 of the ticketing product," which it isn't (it's a
+  separate system — see that spec's own scope-decision note).
+- A **scope addition to an already-specced phase** (new requirements
+  layered onto work already underway or signed off, not a fresh phase) is
+  its own file with an `_INCREMENT` suffix before `_SPEC`:
+  `PHASE_<n>_<CODE>_INCREMENT_SPEC.md`. It still goes through spec-before
+  -code and sign-off like any other spec; it's additive to, not a
+  replacement of, the phase spec it increments — don't fold its scope back
+  into the original (frozen, if already signed off) file.
+- This convention applies to every future `MVP<N>_<name>/` folder — pick
+  the track's `<CODE>` when the folder is created, keep `<n>` local to
+  that track, use `_INCREMENT` for later scope additions rather than
+  editing a signed-off spec or silently expanding one still in flight.
+
+No `MVP1_...` folder existed until the first phase was actually scoped
+against the PRD — new MVP folders are still created only when a track is
+actually being specced, not preemptively.

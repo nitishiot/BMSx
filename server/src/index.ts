@@ -11,6 +11,7 @@ import { ordersRouter } from './routes/orders';
 import { surveyRouter } from './routes/survey';
 import { accountRouter } from './routes/account';
 import { internalOpsRouter } from './routes/internalOps';
+import { authRouter } from './routes/auth';
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/survey', surveyRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/internal-ops', internalOpsRouter);
+app.use('/api/auth', authRouter);
 
 const port = Number(process.env.PORT) || 4000;
 app.listen(port, () => {

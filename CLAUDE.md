@@ -11,6 +11,7 @@ these into context at session start — no manual "please read X" needed):
 @.claude/rules/harness.md
 @.claude/rules/build.md
 @.claude/rules/product.md
+@.claude/rules/design.md
 
 Even so, this is context, not a hook — nothing here forces the first tool
 call to actually be `git fetch origin main`. Treat the imports as removing
@@ -46,7 +47,7 @@ that v2/v3 draw their market and revenue data from — read v3 for scope, not v1
 
 **Phase 1 implementation underway.** `TAG_PRD_v3.md` and
 `TAG_Architecture_v1.md` are drafts (not yet signed off), but Phase 1
-itself (`build/MVP1_CoreTicketing/PHASE_1_SPEC.md`) is being built slice
+itself (`build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md`) is being built slice
 by slice per its own sign-off protocol. Landing page slice: signed off.
 Producer portal slice: signed off. Core-ticketing backend (first sub-slice
 — Identity & Access + producer application/approval/event-create, real
@@ -79,16 +80,18 @@ BMSx-synced/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails
 │       ├── build.md        ← phase-spec template, sign-off protocol, git/tag policy
-│       └── product.md      ← product register/tone, vocabulary, spec-handling rules
+│       ├── product.md      ← product register/tone, vocabulary, spec-handling rules
+│       └── design.md       ← UI rules: theme tokens, max-width per surface type, nav pattern
 ├── References/              ← read-only inputs, never edited in place
 │   ├── PLAYBOOK.md                    ← domain-agnostic ways-of-working source
 │   └── SENTINEX_WaysOfWorking_v1.html ← the process this file is adapted from
 ├── build/                   ← phase specs, one subfolder per MVP, written before implementation
 │   ├── README.md            ← the phase-spec convention
 │   ├── MVP1_CoreTicketing/
-│   │   └── PHASE_1_SPEC.md  ← Phase 1 spec, several sub-slices signed off (see PROGRESS.md)
+│   │   └── PHASE_1_CT_SPEC.md  ← Phase 1 spec, several sub-slices signed off (see PROGRESS.md)
 │   └── MVP2_InternalOps/
-│       └── PHASE_2_SPEC.md  ← Internal Ops Console spec (separate system, not a PRD phase — see its header), awaiting sign-off
+│       ├── PHASE_1_IO_SPEC.md  ← Internal Ops Console spec (separate system, not a PRD phase — see its header), awaiting sign-off
+│       └── PHASE_1_IO_INCREMENT_SPEC.md  ← scope addition (RBAC nav, org mgmt, real login); spec only, not built
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── README.md
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md; kept as the source of market/revenue data

@@ -1,19 +1,39 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import {
-  getOpsToken,
-  getOpsMe,
   getOpsOrgChart,
   getOpsCompanyMetrics,
-  opsLogin,
-  resetOpsSession,
-  type OpsMe,
+  getOpsCapabilities,
+  getOpsSurveyResponses,
+  createOpsOrgRole,
+  createOpsCapability,
+  grantOpsCapability,
+  revokeOpsCapability,
+  getSession,
+  type SessionView,
   type OrgTreeNode,
+  type OpsCapability,
+  type OpsSurveyResponse,
 } from '../api';
 import { PRODUCER_FEATURE_MANIFEST } from '../featureManifest';
-import { OrgTree } from '../components/OrgTree';
+import { OrgTree, OrgForest } from '../components/OrgTree';
+import { AppNav, AutoAppNav } from '../components/AppNav';
 import './InternalOpsConsole.css';
 
-// build/MVP2_InternalOps/PHASE_2_SPEC.md — capability-driven dashboard:
+// Flattens a company tree/subtree into a plain list — the org-admin
+// screen needs a flat "pick a role" dropdown, the tree widget doesn't.
+function flattenTree(tree: OrgTreeNode | OrgTreeNode[] | null): OrgTreeNode[] {
+  if (!tree) return [];
+  const roots = Array.isArray(tree) ? tree : [tree];
+  const out: OrgTreeNode[] = [];
+  function walk(node: OrgTreeNode) {
+    out.push(node);
+    node.children.forEach(walk);
+  }
+  roots.forEach(walk);
+  return out;
+}
+
+// build/MVP2_InternalOps/PHASE_1_IO_SPEC.md — capability-driven dashboard:
 // each widget below is gated purely on whether `me.capabilities` includes
 // its key, never on the caller's specific role. Adding a role that grants
 // an existing capability renders the matching widget automatically (spec
@@ -64,7 +84,7 @@ function OrgTreeWidget({ title, note }: { title: string; note: string }) {
       <p className="ops-widget-note">{note}</p>
       {error && <p className="saved-banner error">{error}</p>}
       {!tree && !error && <p className="ops-widget-note">Loading…</p>}
-      {tree && (Array.isArray(tree) ? tree.map((n) => <OrgTree key={n.id} node={n} />) : <OrgTree node={tree} />)}
+      {tree && (Array.isArray(tree) ? <OrgForest nodes={tree} /> : <OrgTree node={tree} />)}
     </div>
   );
 }
@@ -112,80 +132,258 @@ function DashboardWidgets({ capabilities }: { capabilities: string[] }) {
   );
 }
 
-export function InternalOpsConsole() {
-  const [loggedIn, setLoggedIn] = useState(!!getOpsToken());
-  const [email, setEmail] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [me, setMe] = useState<OpsMe | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+// PHASE_1_IO_INCREMENT_SPEC.md §2/§6 — org management, only reachable via
+// nav for manage_org holders (server-resolved into me.navLinks, not a
+// client-side guess — the page itself still calls the real
+// manage_org-gated endpoints, so this is defence in depth, not the only
+// gate).
+function OrgRolesAdmin() {
+  const [tree, setTree] = useState<OrgTreeNode | OrgTreeNode[] | null>(null);
+  const [capabilities, setCapabilities] = useState<OpsCapability[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loggedIn) return;
-    getOpsMe()
-      .then(setMe)
-      .catch((err) => setLoadError(err instanceof Error ? err.message : 'Could not load your profile'));
-  }, [loggedIn]);
+  const [roleKey, setRoleKey] = useState('');
+  const [roleTitle, setRoleTitle] = useState('');
+  const [roleDept, setRoleDept] = useState('');
+  const [reportsTo, setReportsTo] = useState('');
 
-  async function handleLogin(e: FormEvent) {
+  const [capKey, setCapKey] = useState('');
+  const [capDesc, setCapDesc] = useState('');
+
+  const [grantRoleId, setGrantRoleId] = useState('');
+  const [grantCapId, setGrantCapId] = useState('');
+
+  function reload() {
+    Promise.all([getOpsOrgChart(), getOpsCapabilities()])
+      .then(([chart, caps]) => {
+        setTree(chart.tree);
+        setCapabilities(caps);
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load org admin data'));
+  }
+
+  useEffect(reload, []);
+
+  const roles = flattenTree(tree);
+
+  async function handleCreateRole(e: FormEvent) {
     e.preventDefault();
-    setLoginError(null);
+    setStatus(null);
     try {
-      await opsLogin(email);
-      setLoggedIn(true);
+      await createOpsOrgRole({
+        key: roleKey.trim(),
+        title: roleTitle.trim(),
+        department: roleDept.trim() || undefined,
+        reportsToOrgRoleId: reportsTo || null,
+      });
+      setRoleKey(''); setRoleTitle(''); setRoleDept(''); setReportsTo('');
+      setStatus(`Created role "${roleTitle}".`);
+      reload();
     } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'Login failed');
+      setStatus(err instanceof Error ? err.message : 'Could not create role');
     }
   }
 
-  function handleLogout() {
-    resetOpsSession();
-    setLoggedIn(false);
-    setMe(null);
+  async function handleCreateCapability(e: FormEvent) {
+    e.preventDefault();
+    setStatus(null);
+    try {
+      await createOpsCapability({ key: capKey.trim(), description: capDesc.trim() });
+      setCapKey(''); setCapDesc('');
+      setStatus(`Created capability "${capKey}".`);
+      reload();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not create capability');
+    }
   }
 
-  if (!loggedIn) {
-    return (
-      <div className="ops-console">
-        <p className="eyebrow">TAG Internal Ops</p>
-        <h1>Staff sign-in.</h1>
-        <p className="apply-sub">
-          build/MVP2_InternalOps/PHASE_2_SPEC.md §4 — no real staff identity provider exists yet;
-          this checks against a seeded StaffProfile only, same stand-in pattern as the Platform
-          Admin login.
-        </p>
-        {loginError && <p className="saved-banner error">{loginError}</p>}
-        <form onSubmit={handleLogin}>
-          <input type="email" required placeholder="you@tag.local" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <button type="submit" className="submit-btn">Sign in</button>
-        </form>
-      </div>
-    );
+  async function handleGrant(e: FormEvent) {
+    e.preventDefault();
+    setStatus(null);
+    try {
+      await grantOpsCapability(grantRoleId, grantCapId);
+      setStatus('Capability granted.');
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not grant capability');
+    }
   }
 
-  if (loadError) {
-    return (
-      <div className="ops-console">
-        <p className="saved-banner error">{loadError}</p>
-        <button className="submit-btn" onClick={handleLogout}>Sign out</button>
-      </div>
-    );
+  async function handleRevoke() {
+    setStatus(null);
+    try {
+      await revokeOpsCapability(grantRoleId, grantCapId);
+      setStatus('Capability revoked (if it was granted).');
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not revoke capability');
+    }
   }
-
-  if (!me) return null;
 
   return (
-    <div className="ops-console">
-      <nav className="shell-nav">
-        <a className="shell-logo" href="/">TAG<span>.</span></a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
-          <span className="shell-tag">{me.displayName} · {me.orgRole.title}</span>
-          <button className="reset-link" onClick={handleLogout}>Sign out</button>
-        </div>
-      </nav>
-      <p className="eyebrow">Internal Ops</p>
-      <h1>Welcome, {me.displayName}.</h1>
+    <div className="ops-widget">
+      <h2>Org roles admin</h2>
+      <p className="ops-widget-note">
+        Create/edit OrgRoles and Capabilities, and grant/revoke capability assignments — the
+        console-driven alternative to editing seed data (PHASE_1_IO_INCREMENT_SPEC.md §2).
+      </p>
+      {error && <p className="saved-banner error">{error}</p>}
+      {status && <p className="ops-widget-note ops-status">{status}</p>}
 
-      <DashboardWidgets capabilities={me.capabilities} />
+      <form className="ops-form" onSubmit={handleCreateRole}>
+        <h3>Create org role</h3>
+        <input placeholder="key (e.g. data_analyst)" value={roleKey} onChange={(e) => setRoleKey(e.target.value)} required />
+        <input placeholder="title" value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} required />
+        <input placeholder="department (optional)" value={roleDept} onChange={(e) => setRoleDept(e.target.value)} />
+        <select value={reportsTo} onChange={(e) => setReportsTo(e.target.value)}>
+          <option value="">Reports to… (optional, top-level if blank)</option>
+          {roles.map((r) => <option key={r.id} value={r.id}>{r.title}{r.personName ? ` — ${r.personName}` : ''}</option>)}
+        </select>
+        <button type="submit" className="submit-btn">Create role</button>
+      </form>
+
+      <form className="ops-form" onSubmit={handleCreateCapability}>
+        <h3>Create capability</h3>
+        <input placeholder="key (e.g. view_finance_dashboard)" value={capKey} onChange={(e) => setCapKey(e.target.value)} required />
+        <input placeholder="description" value={capDesc} onChange={(e) => setCapDesc(e.target.value)} required />
+        <button type="submit" className="submit-btn">Create capability</button>
+      </form>
+
+      <form className="ops-form" onSubmit={handleGrant}>
+        <h3>Grant / revoke capability</h3>
+        <select value={grantRoleId} onChange={(e) => setGrantRoleId(e.target.value)} required>
+          <option value="">Choose a role…</option>
+          {roles.map((r) => <option key={r.id} value={r.id}>{r.title}{r.personName ? ` — ${r.personName}` : ''}</option>)}
+        </select>
+        <select value={grantCapId} onChange={(e) => setGrantCapId(e.target.value)} required>
+          <option value="">Choose a capability…</option>
+          {capabilities.map((c) => <option key={c.id} value={c.id}>{c.key}</option>)}
+        </select>
+        <div className="ops-form-actions">
+          <button type="submit" className="submit-btn">Grant</button>
+          <button type="button" className="submit-btn secondary" onClick={handleRevoke} disabled={!grantRoleId || !grantCapId}>Revoke</button>
+        </div>
+      </form>
+
+      <h3 className="ops-subheading">Current org chart</h3>
+      {!tree && !error && <p className="ops-widget-note">Loading…</p>}
+      {tree && (Array.isArray(tree) ? <OrgForest nodes={tree} /> : <OrgTree node={tree} />)}
     </div>
+  );
+}
+
+// PHASE_1_IO_INCREMENT_SPEC.md §2/§6 — real SurveyResponse rows (persisted
+// since LP-14), only reachable for view_survey_responses holders.
+function SurveyResponsesWidget() {
+  const [responses, setResponses] = useState<OpsSurveyResponse[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getOpsSurveyResponses()
+      .then(setResponses)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load survey responses'));
+  }, []);
+
+  return (
+    <div className="ops-widget">
+      <h2>Survey responses</h2>
+      <p className="ops-widget-note">
+        Real fan survey submissions from the LP-14 flow — {responses ? responses.length : '…'} on record.
+      </p>
+      {error && <p className="saved-banner error">{error}</p>}
+      {!responses && !error && <p className="ops-widget-note">Loading…</p>}
+      {responses && responses.length === 0 && <p className="ops-widget-note">No survey responses yet.</p>}
+      {responses?.map((r) => (
+        <div key={r.id} className="survey-response-row">
+          <button type="button" className="survey-response-summary" onClick={() => setOpenId(openId === r.id ? null : r.id)}>
+            <span>{r.account?.name ?? 'Unknown'} · {r.account?.email ?? 'no email'}</span>
+            <span className="org-tree-dept">{new Date(r.createdAt).toLocaleDateString()}</span>
+          </button>
+          {openId === r.id && (
+            <dl className="survey-response-answers">
+              {Object.entries(r.answers).map(([q, a]) => (
+                <div key={q}>
+                  <dt>{q}</dt>
+                  <dd>{a}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// PHASE_1_IO_INCREMENT_SPEC.md §2/§6 — page-level nav resolved from
+// me.navLinks (server-computed from actual capabilities), not a
+// client-side guess: a Founder/Head of Product sees "Org roles admin" and
+// "Survey responses" tabs, a CTO sees neither, without any client code
+// change when a new role is granted an existing capability (same
+// genericity contract as the dashboard widgets).
+type OpsView = 'dashboard' | 'org-admin' | 'survey-responses';
+
+export function InternalOpsConsole() {
+  const [session, setSession] = useState<SessionView | null>(null);
+  const [checked, setChecked] = useState(false);
+  const [view, setView] = useState<OpsView>('dashboard');
+
+  useEffect(() => {
+    getSession().then(setSession).finally(() => setChecked(true));
+  }, []);
+
+  const staff = session?.staff ?? null;
+
+  if (!checked) return <AutoAppNav />;
+
+  // The staff-only login form is gone — /ops is a destination behind the
+  // one shared sign-in page now (PHASE_1_IO_INCREMENT_SPEC.md §4,
+  // revised). A signed-in account with no StaffProfile is told plainly
+  // rather than being offered a second, staff-specific login form.
+  if (!staff) {
+    return (
+      <>
+        <AppNav session={session} />
+        <div className="ops-console">
+          <p className="eyebrow">TAG Internal Ops</p>
+          <h1>{session ? 'Not authorised.' : 'Sign in required.'}</h1>
+          <p className="apply-sub">
+            {session
+              ? 'This console is for TAG staff. Your account has no Internal Ops staff profile, so there is nothing here for you.'
+              : 'Sign in with a TAG staff account to reach the Internal Ops console.'}
+          </p>
+          {!session && <a className="submit-btn" href="/login?next=/ops">Go to sign in</a>}
+        </div>
+      </>
+    );
+  }
+
+  const hasOrgAdmin = session!.navLinks.some((l) => l.key === 'org-admin');
+  const hasSurveyResponses = session!.navLinks.some((l) => l.key === 'survey-responses');
+
+  return (
+    <>
+      <AppNav session={session} />
+      <div className="ops-console">
+      <p className="eyebrow">Internal Ops</p>
+      <h1>Welcome, {staff.displayName}.</h1>
+
+      {(hasOrgAdmin || hasSurveyResponses) && (
+        <div className="ops-tabs" role="tablist" aria-label="Internal Ops sections">
+          <button type="button" role="tab" aria-selected={view === 'dashboard'} className={view === 'dashboard' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('dashboard')}>Dashboard</button>
+          {hasOrgAdmin && (
+            <button type="button" role="tab" aria-selected={view === 'org-admin'} className={view === 'org-admin' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('org-admin')}>Org roles admin</button>
+          )}
+          {hasSurveyResponses && (
+            <button type="button" role="tab" aria-selected={view === 'survey-responses'} className={view === 'survey-responses' ? 'ops-tab active' : 'ops-tab'} onClick={() => setView('survey-responses')}>Survey responses</button>
+          )}
+        </div>
+      )}
+
+      {view === 'dashboard' && <DashboardWidgets capabilities={staff.capabilities} />}
+      {view === 'org-admin' && hasOrgAdmin && <OrgRolesAdmin />}
+      {view === 'survey-responses' && hasSurveyResponses && <SurveyResponsesWidget />}
+      </div>
+    </>
   );
 }

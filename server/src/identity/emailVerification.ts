@@ -1,5 +1,5 @@
 // ADR-004 port/adapter, same honesty pattern as payments/stubAdapter.ts:
-// no real transactional email provider is chosen yet (PHASE_1_SPEC.md §8
+// no real transactional email provider is chosen yet (PHASE_1_CT_SPEC.md §8
 // territory). This stub creates a real, single-use verification token and
 // logs the link that would have been emailed — swap this module for a
 // real provider adapter once one is selected; nothing outside this file

@@ -156,21 +156,29 @@ export function FestivalPage({ festivalId }: Props) {
 
   if (loadError) {
     return (
-      <div className="festival-page">
-        <p className="saved-banner error">{loadError}</p>
-        <a className="shell-logo" href="/">Back to TAG<span>.</span></a>
-      </div>
+      <>
+        <FanNav />
+        <div className="festival-page">
+          <p className="saved-banner error">{loadError}</p>
+        </div>
+      </>
     );
   }
 
   if (!festival) {
-    return <div className="festival-page">Loading festival…</div>;
+    return (
+      <>
+        <FanNav />
+        <div className="festival-page">Loading festival…</div>
+      </>
+    );
   }
 
   if (step === 'confirmation' && confirmation) {
     return (
+      <>
+      <FanNav />
       <div className="festival-page">
-        <FanNav />
         <p className="eyebrow">Order confirmed</p>
         <h1>You're going to {festival.name}.</h1>
         <p className="apply-sub">
@@ -194,13 +202,15 @@ export function FestivalPage({ festivalId }: Props) {
             );
           })}
         </div>
-        <a className="shell-logo" href="/">Back to TAG<span>.</span></a>
       </div>
+      </>
     );
   }
 
   if (step === 'checkout' && cart) {
     return (
+      <>
+      <FanNav />
       <div className="festival-page">
         <p className="eyebrow">Guest checkout</p>
         <h1>Confirm your order</h1>
@@ -234,12 +244,14 @@ export function FestivalPage({ festivalId }: Props) {
           <button type="button" className="link-btn" onClick={() => setStep('browse')}>Back</button>
         </form>
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    <FanNav />
     <div className="festival-page">
-      <FanNav />
       <p className="eyebrow">Festival</p>
       <h1>{festival.name}</h1>
       <p className="apply-sub">{festival.venue} · {new Date(festival.startDate).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
@@ -299,5 +311,6 @@ export function FestivalPage({ festivalId }: Props) {
         </div>
       )}
     </div>
+    </>
   );
 }

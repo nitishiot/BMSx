@@ -69,29 +69,208 @@
 }
 .roadmap-desc { color: var(--muted); font-size: .8125rem; margin: .2rem 0 0; }
 
-.org-tree-node { margin-bottom: .3rem; }
-.org-tree-row {
+/* Top-down org chart — classic connector-line technique (parent centred
+   above a horizontal bar spanning its children, a vertical drop into
+   each). Reference: a shared org-chart image (board/CEO/managers/staff,
+   tier-coloured photo circles) — see OrgTree.tsx's header comment for
+   what was and wasn't carried over from it. */
+/* The chart is far wider than the 720px content column, and the page had
+   large empty margins beside it. Break out of the column to the full
+   viewport width (design.md allows a wide widget its own container as
+   long as the *page* never scrolls horizontally — hence overflow-x here,
+   not on body). */
+.org-chart-scroll {
+  overflow-x: auto;
+  padding: .5rem 0 1rem;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.org-chart, .org-chart ul {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.org-chart { width: max-content; margin: 0 auto; }
+.org-chart-forest { gap: 2.5rem; }
+.org-chart li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 28px .6rem 0;
+}
+.org-chart > li { padding-top: 0; }
+/* Horizontal bar over a row of siblings, and the vertical stub each
+   sibling drops down from it — the standard before/after connector pair. */
+.org-chart li li::before,
+.org-chart li li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 28px;
+  border-top: 2px solid var(--border-md);
+}
+.org-chart li li::after { right: auto; left: 50%; border-left: 2px solid var(--border-md); }
+.org-chart li li:only-child::before,
+.org-chart li li:only-child::after { display: none; }
+.org-chart li li:only-child { padding-top: 0; }
+.org-chart li li:first-child::before { border: none; }
+.org-chart li li:last-child::after { border: none; }
+.org-chart li li:last-child::before { border-right: 2px solid var(--border-md); border-radius: 0 8px 0 0; }
+.org-chart li li:first-child::after { border-radius: 8px 0 0 0; }
+/* Vertical stub from a parent card down into its own children's bar. */
+.org-chart ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 28px;
+  border-left: 2px solid var(--border-md);
+}
+.org-chart-forest > li::before,
+.org-chart-forest > li::after { display: none; }
+
+.org-chart-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+  width: 132px;
+  padding: .8rem .6rem .65rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-md);
+  border-radius: 12px;
+  font-size: .75rem;
+  text-align: center;
+}
+.org-chart-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 100px;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: .6rem;
-  padding: .5rem .7rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: .8125rem;
+  justify-content: center;
+  margin-bottom: .3rem;
 }
-.org-tree-title { font-weight: 700; }
-.org-tree-person { color: var(--muted); }
-.org-tree-dept {
-  margin-left: auto;
-  font-size: .7rem;
+/* Cycles the theme's four accent tokens by depth — no colour outside
+   theme.css's existing palette. */
+.org-chart-card.tier-0 { border-color: var(--accent); }
+.org-chart-card.tier-0 .org-chart-avatar { background: var(--accent); }
+.org-chart-card.tier-1 .org-chart-avatar { background: var(--cool); }
+.org-chart-card.tier-2 .org-chart-avatar { background: var(--warm); }
+.org-chart-card.tier-3 .org-chart-avatar { background: var(--good); }
+.org-chart-title { font-weight: 700; line-height: 1.2; }
+.org-chart-person { color: var(--muted); font-size: .68rem; }
+.org-chart-dept {
+  margin-top: .25rem;
+  font-size: .625rem;
   color: var(--muted);
   border: 1px solid var(--border-md);
   border-radius: 100px;
-  padding: .1rem .6rem;
+  padding: .05rem .5rem;
+  white-space: nowrap;
 }
-.org-tree-children {
-  margin-top: .3rem;
-  padding-left: .8rem;
-  border-left: 1px solid var(--border);
+.org-chart-toggle {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 20px;
+  border-radius: 100px;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--muted);
+  font-size: .625rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.org-chart-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+.ops-tabs {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+}
+.ops-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .6rem .3rem;
+  cursor: pointer;
+}
+.ops-tab:hover { color: var(--text); }
+.ops-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.ops-form {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-md);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.ops-form h3 { font-size: .9375rem; margin: 0; }
+.ops-form input, .ops-form select {
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 10px;
+  padding: .6rem .8rem;
+  font-family: inherit;
+  font-size: .875rem;
+}
+.ops-form-actions { display: flex; gap: .6rem; }
+.submit-btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border-md); }
+.ops-status { color: var(--accent); font-weight: 600; }
+.ops-subheading { margin-top: 1.75rem; font-size: 1rem; }
+
+.survey-response-row {
+  border-bottom: 1px solid var(--border);
+  padding: .5rem 0;
+}
+.survey-response-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  padding: .4rem 0;
+}
+.survey-response-answers { margin: .5rem 0 0; padding: .75rem .9rem; background: var(--bg-raised); border-radius: 10px; }
+.survey-response-answers dt { font-size: .7rem; color: var(--muted); margin-top: .5rem; }
+.survey-response-answers dt:first-child { margin-top: 0; }
+.survey-response-answers dd { margin: .1rem 0 0; font-size: .8125rem; }

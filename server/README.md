@@ -1,6 +1,6 @@
 # TAG — Core-ticketing backend (Phase 1 slice)
 
-First backend slice against `build/MVP1_CoreTicketing/PHASE_1_SPEC.md` §2/§4:
+First backend slice against `build/MVP1_CoreTicketing/PHASE_1_CT_SPEC.md` §2/§4:
 **Identity & Access** (Account, Role, RoleAssignment, Session, AuditLogEntry)
 and the **Producer application → Platform Admin approval → free-tier event
 setup** path (J7, PR-1). Node.js + Express + TypeScript + Prisma against
@@ -54,4 +54,4 @@ npm run dev                           # http://localhost:4000
 
 Event & Catalogue (beyond Festival), Virtual Queue, Ticketing & Inventory,
 Orders & Cart, Payments & Fees, Ancillary Bookings, Consent & Privacy,
-Notifications — see `PHASE_1_SPEC.md` §2 for the full Phase 1 scope.
+Notifications — see `PHASE_1_CT_SPEC.md` §2 for the full Phase 1 scope.

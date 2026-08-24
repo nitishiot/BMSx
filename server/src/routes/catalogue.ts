@@ -44,7 +44,7 @@ catalogueRouter.get('/venues/:venueId', async (req, res) => {
 const seatMapSchema = z.object({ imageUrl: z.string().min(1) });
 
 // Upsert — one seat map per venue. Stores a URL only; object storage
-// product is [TBD: PHASE_1_SPEC.md §8].
+// product is [TBD: PHASE_1_CT_SPEC.md §8].
 catalogueRouter.post('/venues/:venueId/seat-map', requireAuth, requireRole('producer'), async (req, res) => {
   const parsed = seatMapSchema.safeParse(req.body);
   if (!parsed.success) {

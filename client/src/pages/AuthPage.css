@@ -1,0 +1,46 @@
+/* Shared by /login and /register. 720px app content column per
+   .claude/rules/design.md; the form itself is narrower for readable
+   field widths, same reasoning as landing's search box. */
+.auth-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+.auth-page h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: .5rem 0 .5rem; }
+.auth-page .eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .7rem;
+  font-weight: 700;
+  margin: 0;
+}
+.auth-sub {
+  color: var(--muted);
+  font-size: .9375rem;
+  line-height: 1.65;
+  margin-bottom: 2rem;
+  max-width: 46ch;
+}
+.auth-page form { max-width: 420px; }
+.auth-page .field { margin-bottom: 1.1rem; }
+.auth-page .field label {
+  display: block;
+  font-size: .8125rem;
+  font-weight: 600;
+  margin-bottom: .35rem;
+}
+.auth-page .field input {
+  width: 100%;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  font-family: inherit;
+  font-size: .9375rem;
+}
+.auth-page .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.field-hint { color: var(--muted); font-size: .75rem; margin: .35rem 0 0; }
+.auth-alt { color: var(--muted); font-size: .875rem; margin-top: 1.5rem; }
+.auth-alt a { color: var(--accent); font-weight: 600; }

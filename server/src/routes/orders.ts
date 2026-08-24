@@ -109,7 +109,7 @@ const checkoutSchema = z.object({
 });
 
 // ADR-006 saga, stub payment leg (ADR-004 port/adapter — real PSP is
-// [TBD: PHASE_1_SPEC.md §8]). On decline the cart's holds are left active
+// [TBD: PHASE_1_CT_SPEC.md §8]). On decline the cart's holds are left active
 // (they'll lapse via reclaimExpired like any abandoned cart) rather than
 // released immediately, so a fan can retry checkout on the same cart
 // without losing their reservation mid-attempt.
