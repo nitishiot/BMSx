@@ -1125,10 +1125,39 @@ const MOCK_FESTIVALS = [
   { id: 'dfm',  name: 'Dublin Folk & Meadow',  genre: 'folk',        city: 'Dublin',    country: 'Ireland', countryCode: 'IE', date: '2027-05-22', lat: 53.35, lon: -6.26 },
 ];
 
+// Live catalogue: starts as the illustrative mock set, then merges in
+// real producer-created festivals from GET /api/festivals/public once
+// that resolves (§2/LP-1 real-catalogue wiring, PHASE_1_SPEC.md). Falls
+// back silently to mock-only if the backend isn't reachable — landing
+// stays usable as a static file on its own (LP-4).
+let CATALOGUE_FESTIVALS = MOCK_FESTIVALS.slice();
+const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin once deployed]
+(function(){
+  fetch(`${CATALOGUE_API_BASE}/festivals/public`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(({ festivals }) => {
+      const real = festivals.map(f => ({
+        id: f.id,
+        name: f.name,
+        genre: f.genre,
+        city: f.city || f.venue,
+        country: f.country || '',
+        countryCode: null,
+        date: f.date,
+        lat: null,
+        lon: null,
+      }));
+      CATALOGUE_FESTIVALS = real.concat(MOCK_FESTIVALS);
+    })
+    .catch(() => { /* backend not reachable — mock-only is an acceptable degraded mode */ });
+})();
+
 function resultCardHTML(f){
+  const genreLabel = f.genre ? `${f.genre.replace(/\b\w/g, c => c.toUpperCase())} · ` : '';
+  const locationLabel = f.country ? `${f.city}, ${f.country}` : f.city;
   return `<div class="result-card">
     <h4>${f.name}</h4>
-    <p>${f.genre.replace(/\b\w/g, c => c.toUpperCase())} · ${f.city}, ${f.country}</p>
+    <p>${genreLabel}${locationLabel}</p>
     <p>${new Date(f.date).toLocaleDateString('en-IE', { day:'numeric', month:'short', year:'numeric' })}</p>
     <a href="#app" data-analytics="result_view_${f.id}">View festival</a>
   </div>`;
@@ -1144,40 +1173,42 @@ function resultCardHTML(f){
   const note = document.getElementById('search-results-note');
   const grid = document.getElementById('search-result-grid');
 
-  const KNOWN_GENRES = [...new Set(MOCK_FESTIVALS.map(f => f.genre))]; // ['indie rock','electronic','metal','folk']
-  const KNOWN_LOCATIONS = [...new Set(MOCK_FESTIVALS.flatMap(f => [f.city, f.country]))].map(s => s.toLowerCase());
+  // Recomputed per search (not cached at closure-creation time) since
+  // CATALOGUE_FESTIVALS can grow after the /festivals/public fetch resolves.
+  function knownGenres(){ return [...new Set(CATALOGUE_FESTIVALS.map(f => f.genre).filter(Boolean))]; }
+  function knownLocations(){ return [...new Set(CATALOGUE_FESTIVALS.flatMap(f => [f.city, f.country]).filter(Boolean))].map(s => s.toLowerCase()); }
 
   // LP-1 acceptance criterion: filter to matching genre AND location (date
   // window once real dated inventory exists). Structured extraction over the
   // free-text query, not a trained model — see spec §5.
   function parseQuery(q){
     const lower = q.toLowerCase();
-    const genre = KNOWN_GENRES.find(g => lower.includes(g)) ||
+    const genre = knownGenres().find(g => lower.includes(g)) ||
       (lower.includes('rock') ? 'indie rock' : null);
-    const location = KNOWN_LOCATIONS.find(loc => lower.includes(loc));
+    const location = knownLocations().find(loc => lower.includes(loc));
     return { lower, genre, location };
   }
   function runSearch(q){
     if(!q.trim()){ results.classList.remove('show'); return; }
     const parsed = parseQuery(q);
-    let matches = MOCK_FESTIVALS.filter(f => {
+    let matches = CATALOGUE_FESTIVALS.filter(f => {
       const genreOk = !parsed.genre || f.genre === parsed.genre;
       const locOk = !parsed.location ||
-        f.city.toLowerCase() === parsed.location || f.country.toLowerCase() === parsed.location;
+        (f.city && f.city.toLowerCase() === parsed.location) || (f.country && f.country.toLowerCase() === parsed.location);
       return genreOk && locOk;
     });
     // No structured genre/location extracted at all — fall back to a loose
     // keyword match rather than returning the whole catalogue.
     if(!parsed.genre && !parsed.location){
-      matches = MOCK_FESTIVALS.filter(f =>
-        `${f.name} ${f.genre} ${f.city} ${f.country}`.toLowerCase().includes(parsed.lower));
+      matches = CATALOGUE_FESTIVALS.filter(f =>
+        `${f.name} ${f.genre || ''} ${f.city || ''} ${f.country || ''}`.toLowerCase().includes(parsed.lower));
     }
 
     let fallback = false;
     if(matches.length === 0){
       // Zero-result queries show nearest alternatives, never a dead end (LP-1).
       fallback = true;
-      matches = MOCK_FESTIVALS.slice(0, 3);
+      matches = CATALOGUE_FESTIVALS.slice(0, 3);
     }
     note.textContent = fallback
       ? `No exact match for "${q}" — here's what's close:`

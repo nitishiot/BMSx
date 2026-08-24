@@ -50,11 +50,14 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return;
   }
 
+  // A suspended RoleAssignment is kept for history but excluded here — a
+  // suspended producer's session immediately loses producer-scoped access,
+  // no re-login required.
   req.account = {
     id: session.account.id,
     email: session.account.email,
     name: session.account.name,
-    roles: session.account.roleAssignments.map((a) => a.role.key),
+    roles: session.account.roleAssignments.filter((a) => !a.suspendedAt).map((a) => a.role.key),
   };
   next();
 }

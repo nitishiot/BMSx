@@ -37,11 +37,17 @@ model Role {
 }
 
 model RoleAssignment {
-  id        String   @id @default(uuid())
-  accountId String
-  roleId    String
-  grantedAt DateTime @default(now())
-  grantedBy String?
+  id          String    @id @default(uuid())
+  accountId   String
+  roleId      String
+  grantedAt   DateTime  @default(now())
+  grantedBy   String?
+  // A suspended assignment is kept (not deleted) so grant history survives
+  // a suspend/reinstate cycle — requireAuth excludes it from the account's
+  // active roles while suspendedAt is set. PR-1's "approve/reject/suspend"
+  // triad (spec §2).
+  suspendedAt DateTime?
+  suspendedBy String?
 
   account Account @relation(fields: [accountId], references: [id])
   role    Role    @relation(fields: [roleId], references: [id])
@@ -115,6 +121,102 @@ model Festival {
   description       String?
   createdAt         DateTime  @default(now())
 
+  events Event[]
+
   @@index([producerAccountId])
+  @@schema("catalogue")
+}
+
+// Event & Catalogue beyond Festival (spec §2) — read path only for Phase 1:
+// producer/admin-entered, not synced from an external feed. Event is a
+// dated session within a Festival (e.g. one day / one stage); Venue, Zone,
+// Artist and SeatMap are the supporting catalogue entities Ticketing &
+// Inventory will read from in a later sub-slice.
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  city      String
+  country   String
+  capacity  Int
+  createdAt DateTime @default(now())
+
+  events   Event[]
+  seatMap  SeatMap?
+
+  @@schema("catalogue")
+}
+
+model SeatMap {
+  id        String   @id @default(uuid())
+  venueId   String   @unique
+  // Object storage product is [TBD: PHASE_1_SPEC.md §8] — stores a URL to
+  // wherever the asset actually lives once that's decided, not the asset
+  // itself.
+  imageUrl  String
+  createdAt DateTime @default(now())
+
+  venue Venue @relation(fields: [venueId], references: [id])
+
+  @@schema("catalogue")
+}
+
+model Artist {
+  id        String   @id @default(uuid())
+  name      String
+  genre     String?
+  createdAt DateTime @default(now())
+
+  lineups EventArtist[]
+
+  @@schema("catalogue")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  festivalId  String
+  venueId     String
+  name        String
+  startsAt    DateTime
+  endsAt      DateTime
+  description String?
+  createdAt   DateTime @default(now())
+
+  festival Festival      @relation(fields: [festivalId], references: [id])
+  venue    Venue         @relation(fields: [venueId], references: [id])
+  zones    Zone[]
+  lineup   EventArtist[]
+
+  @@index([festivalId])
+  @@index([venueId])
+  @@schema("catalogue")
+}
+
+model EventArtist {
+  id       String @id @default(uuid())
+  eventId  String
+  artistId String
+
+  event  Event  @relation(fields: [eventId], references: [id])
+  artist Artist @relation(fields: [artistId], references: [id])
+
+  @@unique([eventId, artistId])
+  @@schema("catalogue")
+}
+
+// Zone is Event & Catalogue's read model of a ticketing zone (e.g. GA,
+// VIP) — capacity and price tier only. TicketType/Allocation/Hold (the
+// actual sellable inventory) belong to the Ticketing & Inventory module,
+// a later sub-slice; Zone just gives it something to reference.
+model Zone {
+  id        String   @id @default(uuid())
+  eventId   String
+  name      String
+  capacity  Int
+  priceTier String
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@index([eventId])
   @@schema("catalogue")
 }

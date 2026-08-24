@@ -72,3 +72,90 @@ adminRouter.get('/audit-log', async (_req, res) => {
   const entries = await prisma.auditLogEntry.findMany({ orderBy: { createdAt: 'desc' }, take: 200 });
   res.json({ entries });
 });
+
+// --- Producer suspend/reinstate (PR-1's "approve/reject/suspend" triad) ---
+
+// Approved producers, each with their current RoleAssignment suspension
+// state — the admin console's "Active producers" list.
+adminRouter.get('/producers', async (_req, res) => {
+  const applications = await prisma.producerApplication.findMany({
+    where: { status: 'approved' },
+    orderBy: { decidedAt: 'desc' },
+  });
+  const producerRole = await prisma.role.findUniqueOrThrow({ where: { key: 'producer' } });
+  const assignments = await prisma.roleAssignment.findMany({
+    where: { roleId: producerRole.id, accountId: { in: applications.map((a) => a.accountId) } },
+  });
+  const suspendedByAccountId = new Map(assignments.map((a) => [a.accountId, !!a.suspendedAt]));
+  const producers = applications.map((app) => ({
+    application: app,
+    suspended: suspendedByAccountId.get(app.accountId) ?? false,
+  }));
+  res.json({ producers });
+});
+
+const suspendSchema = z.object({ reason: z.string().min(1) });
+
+adminRouter.post('/accounts/:accountId/suspend', async (req, res) => {
+  const parsed = suspendSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  const { accountId } = req.params;
+  const producerRole = await prisma.role.findUniqueOrThrow({ where: { key: 'producer' } });
+  const assignment = await prisma.roleAssignment.findUnique({
+    where: { accountId_roleId: { accountId, roleId: producerRole.id } },
+  });
+  if (!assignment || assignment.suspendedAt) {
+    res.status(404).json({ error: 'No active producer role assignment for this account' });
+    return;
+  }
+
+  await prisma.roleAssignment.update({
+    where: { id: assignment.id },
+    data: { suspendedAt: new Date(), suspendedBy: req.account!.email },
+  });
+  await prisma.auditLogEntry.create({
+    data: {
+      actorLabel: req.account!.email,
+      action: 'producer_suspended',
+      targetType: 'Account',
+      targetId: accountId,
+      reason: parsed.data.reason,
+    },
+  });
+  res.json({ ok: true });
+});
+
+adminRouter.post('/accounts/:accountId/reinstate', async (req, res) => {
+  const parsed = suspendSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  const { accountId } = req.params;
+  const producerRole = await prisma.role.findUniqueOrThrow({ where: { key: 'producer' } });
+  const assignment = await prisma.roleAssignment.findUnique({
+    where: { accountId_roleId: { accountId, roleId: producerRole.id } },
+  });
+  if (!assignment || !assignment.suspendedAt) {
+    res.status(404).json({ error: 'No suspended producer role assignment for this account' });
+    return;
+  }
+
+  await prisma.roleAssignment.update({
+    where: { id: assignment.id },
+    data: { suspendedAt: null, suspendedBy: null },
+  });
+  await prisma.auditLogEntry.create({
+    data: {
+      actorLabel: req.account!.email,
+      action: 'producer_reinstated',
+      targetType: 'Account',
+      targetId: accountId,
+      reason: parsed.data.reason,
+    },
+  });
+  res.json({ ok: true });
+});

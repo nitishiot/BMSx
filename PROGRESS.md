@@ -5,6 +5,153 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Three sub-slices signed off together (2026-08-24, Sonnet session): Event
+& Catalogue, RBAC suspend/reinstate, and the landing-page catalogue
+wiring.** Nitish reviewed the landing search live at `localhost:4173`
+(screenshot: searching "summer" correctly returns his real "Summer with
+Linkin" festival with its real London/UK/30 Aug 2026 data) and said
+"consider this a sign off." He also flagged that clicking "View festival"
+doesn't go anywhere — expected and pre-existing, not a regression: that
+link has always been a placeholder (`href="#app"`) since the original
+landing-page slice, since a real festival detail page needs Orders & Cart
+(J1's search → festival page → seat/zone selection → cart flow, spec §2),
+which isn't built yet. Logged as a known follow-on, not fixed here.
+
+**Slice sign-off, not Phase 1 sign-off** — same caveat as every prior
+slice; Phase 1 sign-off per spec §9 still needs all of §6's exit checks,
+which need Virtual Queue, Ticketing & Inventory, Orders & Cart, and
+Payments (none built yet). No `phase-1` tag — `.claude/rules/build.md`
+reserves that for the whole-phase sign-off, not individual sub-slices.
+
+**Landing page LP-1 wired to the real Event & Catalogue API (2026-08-24,
+Sonnet session).** Nitish reviewed the Event & Catalogue sub-slice live,
+created a real festival ("Summer with Linkin" at "Wembley, London"), and
+found it didn't show up in the landing page's search — expected, since
+LP-1/LP-3 still read the hardcoded `MOCK_FESTIVALS` array from the
+original landing-page slice, with no connection to the backend built
+since. Added as an explicit spec item (`PHASE_1_SPEC.md` §2, "LP-1
+real-catalogue wiring") rather than just fixed silently, so it stays
+tracked as built scope.
+
+New public endpoint `GET /api/festivals/public` (`server/src/routes/
+festivals.ts`) — unauthenticated, returns every Festival with its
+earliest linked Event's Venue city/country and first lineup artist's
+genre (all nullable — most demo festivals created so far have no Event
+attached yet). `landing/index.html` now fetches this on load and merges
+the results with the illustrative `MOCK_FESTIVALS` set (real data added,
+not replacing the curated demo entries) into a `CATALOGUE_FESTIVALS`
+array; search and the zero-result fallback now run against that merged
+set, with `resultCardHTML` and the genre/location matchers guarding for
+the null fields real data can have. Fetch failures (backend not running)
+are swallowed silently — landing stays usable as a static file on its own
+per LP-4.
+
+**Known, documented gap — not fixed here:** LP-3 "Use my location" still
+only ranks the six mock festivals, because nothing in the Producer portal
+collects venue lat/lon yet; real festivals stay fully findable via LP-1
+text search, just not via geolocation-based nearby ranking. Flagged in
+the spec addition, not silently left out.
+
+Verified live with Playwright against the actual static file (served at
+`localhost:4173`, the same server Nitish reviewed on) + the real running
+backend: searching "Linkin" surfaces the real "Summer with Linkin"
+festival with its real city/country/date; the existing mock-data search
+("indie rock in dublin") still returns correctly, confirming no
+regression to the already-signed-off landing-page slice. Zero console
+errors.
+
+**Core-ticketing backend, RBAC suspend/reinstate: built, awaiting sign-off
+(2026-08-24, Sonnet session, same session as Event & Catalogue above).**
+Closes a gap in the existing PR-1 implementation: spec §2 says "every
+approve/reject/**suspend** action writes an `AuditLogEntry`," but
+`admin.ts` only ever implemented approve/reject — there was no way to
+revoke an already-approved producer's access. Nitish confirmed this scope
+over the alternative (opening vendor/affiliate onboarding, which spec §3
+explicitly marks out of Phase 1 — not done).
+
+Schema: `RoleAssignment` gets `suspendedAt`/`suspendedBy` (migration
+`20260824013611_role_suspension`) — a suspended assignment is kept, not
+deleted, so grant history survives a suspend/reinstate cycle.
+`requireAuth` (`server/src/auth.ts`) now excludes suspended assignments
+when computing `req.account.roles`, so a suspended producer loses
+producer-scoped access immediately, no re-login required.
+
+API: `POST /admin/accounts/:accountId/suspend` and `.../reinstate`
+(reason required, writes `AuditLogEntry` with `targetType: 'Account'`),
+`GET /admin/producers` (approved producers + current suspension state for
+the admin console's list). `GET /producer-applications/me` now also
+returns `suspended: boolean` so the Producer portal can show a clear
+"access suspended" message instead of a raw 403 from every downstream
+call; `GET /producer-applications/me/audit-log` now includes
+`Account`-targeted entries (the suspend/reinstate ones) alongside the
+existing `ProducerApplication`-targeted ones.
+
+Client: Admin console gets an "Active producers" list (mirrors the
+approval queue's UI pattern — required reason, Suspend/Reinstate button).
+Producer portal (`App.tsx`) renders a dedicated "Access suspended" screen
+instead of falling through to the approval-status card, which would have
+misleadingly still shown "Approved" with no indication access was pulled.
+
+Verified two ways against the real running `server/` + Postgres: (1) a
+scripted HTTP walk (approve → suspend → confirm `/me` reports suspended
+and the `producer` role is gone → confirm a suspended producer's `POST
+/festivals` is blocked with 403 → confirm the admin producers list and the
+producer's own audit log both reflect it → reinstate → confirm access and
+role return) — all checks passed; (2) a Playwright run driving both the
+Producer portal and Admin console UIs through the same flow — passed with
+zero console errors on either page. **Not yet shown to Nitish live** —
+same protocol as Event & Catalogue above; he's chosen to sign off both
+sub-slices together in one session once both are demoed.
+
+**Core-ticketing backend, Event & Catalogue sub-slice: built, awaiting
+sign-off (2026-08-24, Sonnet session).** Second sub-slice of the
+core-ticketing backend (spec §2/§4), scoped to Event & Catalogue beyond
+Festival — Venue, Artist, Event, EventArtist (lineup), Zone, SeatMap — all
+added to the existing `catalogue` Postgres schema (migration
+`20260824011227_event_catalogue`), read-path-only/producer-entered per
+spec §2. `Festival` (built in the first sub-slice) is unchanged.
+
+API: `server/src/routes/catalogue.ts`, mounted at `/api/catalogue`. Same
+RBAC pattern as `festivals.ts` — producer-scoped writes check ownership
+through `Festival.producerAccountId` (for Events) or through the owning
+Event's Festival (for Zones and lineup entries), never a request
+parameter; public unauthenticated GETs exist for the eventual landing-page
+wiring. Venues and Artists are shared catalogue data (any producer can
+create them), matching how they'll actually be used once more than one
+festival exists.
+
+Client: `EventSetup.tsx` (Producer portal) extended with a "Sessions &
+zones" section — after a Festival is saved, the producer can add a
+venue + dated session (Event) + ticketing zone in one submit, and see
+previously-added sessions listed with their zone tags.
+
+Verified two ways, both against the real running `server/` + Postgres —
+not mocks: (1) a scripted HTTP client walking the full API (submit →
+approve → create festival → venue → event → zone → artist → lineup →
+public read → RBAC negative test: a second, separately-approved producer
+gets a 404 trying to create an event under the first producer's festival)
+— all checks passed; (2) a Playwright run driving the actual Producer
+portal and Admin console UIs end to end (application → approval in a
+separate browser context → event setup → add session — venue/event/zone
+created and rendered) — passed with zero console errors on either page.
+
+The Playwright UI run caught a real bug the HTTP-level script didn't: the
+event-creation route doesn't return `venue` in its response (no `include`
+on that `create` call), but the client was optimistically appending the
+just-created event to its list assuming `event.venue.name` existed,
+throwing on render. Fixed by refetching the event list from the server
+after a successful add instead of constructing an incomplete object
+client-side — cheap and correct, since Event & Catalogue is a read-heavy,
+low-frequency-write module (no need for an optimistic-update
+micro-optimisation here).
+
+**Not yet shown to Nitish live** — per `.claude/rules/build.md`, status
+stays "built, awaiting sign-off" until he reviews it running (both dev
+servers are up: client `localhost:5173`/`:5173/admin`, server
+`localhost:4000`) and approves. Landing page's `MOCK_FESTIVALS` search
+still isn't wired to this — that's a deliberately separate follow-on (see
+Next steps), not part of this sub-slice's scope.
+
 **Core-ticketing backend, first sub-slice: signed off (2026-08-23, Sonnet
 session).** Nitish reviewed live at `localhost:5173`/`localhost:5173/admin`
 (his own screenshot shows the admin queue and a growing audit log — his
@@ -220,8 +367,20 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   Access + producer application/approval/event-create, Node+Express+TS+
   Prisma/Postgres 16 in Docker) and `client/` rewired off its former
   localStorage simulation onto that real backend, plus a genuine Platform
-  Admin console at `/admin`. Built, Playwright-verified, awaiting sign-off
-  — see Status.
+  Admin console at `/admin`. Signed off.
+- **Core-ticketing backend, Event & Catalogue sub-slice** — Venue, Artist,
+  Event, EventArtist, Zone, SeatMap added to the `catalogue` schema;
+  `server/src/routes/catalogue.ts`; Producer portal's `EventSetup.tsx`
+  extended to author sessions/zones. Signed off.
+- **Core-ticketing backend, RBAC suspend/reinstate** — `RoleAssignment`
+  suspension state, `/admin/accounts/:id/suspend`+`/reinstate`,
+  `/admin/producers`, Admin console "Active producers" list, Producer
+  portal suspended-access screen. Signed off.
+- **Landing page ↔ real catalogue wiring** — `GET /api/festivals/public`;
+  `landing/index.html`'s LP-1 search and zero-result fallback now run
+  against real + mock festivals merged. Signed off. LP-3 near-you stays
+  mock-only (documented gap — no venue geocoding yet); "View festival"
+  stays a placeholder link pending Orders & Cart (pre-existing, not new).
 
 ## What's blocked / open
 
@@ -238,19 +397,21 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Active: the rest of the core-ticketing backend** — Event & Catalogue
-   beyond Festival, Virtual Queue, Ticketing & Inventory, Orders & Cart,
-   Payments, Ancillary Bookings, Consent & Privacy, Notifications (spec
-   §2/§4). All three Phase 1 slices built so far (landing page, Producer
-   portal, Identity & Access/producer-approval backend) are now signed off.
-   The landing page's search/near-you still read `MOCK_FESTIVALS` — that
-   seam stays stubbed until Event & Catalogue is built out.
-2. The three open items (object storage, PSP/travel partner, launch
+1. **Active: the rest of the core-ticketing backend** — Virtual Queue,
+   Ticketing & Inventory, Orders & Cart, Payments, Ancillary Bookings,
+   Consent & Privacy, Notifications (spec §2/§4). Orders & Cart in
+   particular unblocks a real festival detail page — "View festival" is
+   currently a placeholder link (§6.1/J1).
+2. LP-3 "Use my location" nearby search still only ranks the six mock
+   festivals — needs venue lat/lon collection (not built anywhere yet)
+   before real festivals can be ranked geographically, not just found via
+   text search.
+3. The three open items (object storage, PSP/travel partner, launch
    festival) still need resolving before the exit checks that depend on
    them (spec §6, checks 3–4) — not before further backend build starts.
-3. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+4. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
    touches it — several sessions have now edited the `.md` only.
-4. Open, not blocking: repo-surface classification (founder names, financial
+5. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -527,3 +688,81 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   (`/admin` route, its own login, its own bearer token) instead, so the
   approval step in the demo is a different account approving a different
   account's application, matching what PR-1 actually requires.
+- **2026-08-24 (Sonnet session)** — Budget gate answered: session and
+  weekly usage both under 10%. Model tier: Sonnet, per the standing plan
+  for well-specified build work following an already-written spec — RBAC
+  extension work Nitish flagged as next is judged the same tier for now
+  since PR-1's RBAC shape is already decided (spec §2/§10), it's applying
+  an existing pattern to more roles/routes, not fresh design; revisit if
+  that turns out wrong once the actual scope is seen.
+- **2026-08-24 (Sonnet session)** — Scoped **Event & Catalogue** as its own
+  sub-slice of the core-ticketing backend rather than folding it into a
+  bigger pass, continuing the same incremental sub-slice pattern as
+  Identity & Access. Data model choice: `Event` is a dated session within
+  a `Festival` (e.g. one day / one stage) — `Festival`'s existing
+  `name`/`startDate`/`endDate`/`venue` fields (frozen, signed off in the
+  first sub-slice) were left untouched rather than reshaped around the new
+  entities, so `Festival.venue` stays a plain string while the new `Venue`
+  model is the real catalogue entity `Event` points to — a known, harmless
+  duplication rather than a breaking change to already-signed-off scope.
+  `Venue`/`Artist` modelled as shared catalogue data (any producer can
+  create them) rather than producer-owned, since that's how they'll
+  actually be used once more than one festival exists on the platform.
+- **2026-08-24 (Sonnet session)** — A Playwright run driving the actual
+  Producer portal UI (not just an HTTP-level script) caught a real bug an
+  HTTP-only check had missed: `EventSetup.tsx` crashed on render after
+  adding a session because the event-creation API response doesn't
+  include `venue`, but the client was optimistically appending an
+  incomplete object assuming `event.venue.name` existed. Confirms the
+  standing pattern from earlier slices — UI-level Playwright verification
+  catches integration bugs that pass at the API-contract level alone; kept
+  doing both checks rather than treating the scripted API walk as
+  sufficient on its own.
+- **2026-08-24 (Sonnet session)** — Asked Nitish to disambiguate "RBAC" as
+  the next task before building, since one reading (vendor/affiliate
+  onboarding) is explicitly out of Phase 1 scope per spec §3, and would
+  need a deliberate spec change first rather than a silent extension. He
+  confirmed the other reading: producer suspend/revoke, closing the gap
+  between spec §2's "approve/reject/suspend" language and `admin.ts`'s
+  actual (approve/reject-only) implementation. Design choice: suspension
+  is state on `RoleAssignment` (`suspendedAt`/`suspendedBy`), not a status
+  on `ProducerApplication` — keeps the application's approval record as
+  history (they *were* approved) while access control lives where
+  `requireAuth` already looks. Added a `reinstate` endpoint alongside
+  suspend, even though the spec only names the triad up to "suspend" — a
+  suspend with no way back would have made the feature nearly impossible
+  to demo or test sanely, and reinstating is just clearing the same two
+  columns, not new design.
+- **2026-08-24 (Sonnet session)** — Nitish asked to sign off the Event &
+  Catalogue and RBAC suspend/reinstate sub-slices together rather than one
+  at a time. Both stay "built, awaiting sign-off" until that joint review
+  happens — Next steps updated accordingly, no separate sign-off attempted
+  for either individually.
+- **2026-08-24 (Sonnet session)** — While reviewing Event & Catalogue live,
+  Nitish found his newly-created festival didn't appear in landing search
+  — the landing page still read `MOCK_FESTIVALS`, never connected to the
+  backend. Asked whether to wire it now or queue it; he chose now, and
+  separately asked for it to be recorded in `PHASE_1_SPEC.md` itself (not
+  just `PROGRESS.md`) so what's built stays tracked at the spec level —
+  added as "LP-1 real-catalogue wiring," same pattern as LP-13. Added a
+  new public `GET /festivals/public` endpoint rather than reusing any
+  producer-scoped route; merged real data into the existing
+  `MOCK_FESTIVALS` array (renamed in-use variable to `CATALOGUE_FESTIVALS`)
+  instead of replacing it, so the already-signed-off landing-page slice's
+  demo search behaviour doesn't regress. Left LP-3 near-you on mock data
+  only and said so explicitly in the spec, rather than quietly shipping a
+  "near you" feature that can't actually rank real festivals (no venue
+  lat/lon is collected anywhere yet) — flagging a known gap beats a
+  feature that looks like it works but silently doesn't for real data.
+- **2026-08-24 (Sonnet session)** — Nitish reviewed the landing search
+  live at `localhost:4173` (his own screenshot: searching "summer" returns
+  his real "Summer with Linkin" festival) and signed off all three
+  sub-slices from this session together — Event & Catalogue, RBAC
+  suspend/reinstate, landing-catalogue wiring. He flagged "View festival"
+  not going anywhere; confirmed as pre-existing/expected (placeholder link
+  since the original landing-page slice, needs Orders & Cart), not a
+  regression — logged as a next-steps item rather than fixed inline, since
+  fixing it means building a real festival detail page, out of scope for
+  a sign-off review. No `phase-1` tag — these are sub-slice sign-offs, per
+  `.claude/rules/build.md`'s reservation of that tag for whole-phase
+  sign-off.

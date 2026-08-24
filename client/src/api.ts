@@ -104,7 +104,7 @@ export async function submitApplication(input: {
   return application;
 }
 
-export async function getMyApplication(): Promise<{ application: ProducerApplication | null; roles: string[] } | null> {
+export async function getMyApplication(): Promise<{ application: ProducerApplication | null; roles: string[]; suspended: boolean } | null> {
   const token = getProducerToken();
   if (!token) return null;
   return request('/producer-applications/me', {}, token);
@@ -134,6 +134,65 @@ export async function getMyFestivals(): Promise<Festival[]> {
   if (!token) return [];
   const { festivals } = await request<{ festivals: Festival[] }>('/festivals/mine', {}, token);
   return festivals;
+}
+
+export interface Venue {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  capacity: number;
+}
+
+export interface Zone {
+  id: string;
+  eventId: string;
+  name: string;
+  capacity: number;
+  priceTier: string;
+}
+
+export interface CatalogueEvent {
+  id: string;
+  festivalId: string;
+  venueId: string;
+  name: string;
+  startsAt: string;
+  endsAt: string;
+  description: string | null;
+  venue: Venue;
+  zones: Zone[];
+}
+
+export async function createVenue(input: { name: string; city: string; country: string; capacity: number }): Promise<Venue> {
+  const token = getProducerToken();
+  const { venue } = await request<{ venue: Venue }>('/catalogue/venues', { method: 'POST', body: JSON.stringify(input) }, token);
+  return venue;
+}
+
+export async function createEvent(
+  festivalId: string,
+  input: { venueId: string; name: string; startsAt: string; endsAt: string; description?: string },
+): Promise<CatalogueEvent> {
+  const token = getProducerToken();
+  const { event } = await request<{ event: CatalogueEvent }>(
+    `/catalogue/festivals/${festivalId}/events`,
+    { method: 'POST', body: JSON.stringify(input) },
+    token,
+  );
+  return event;
+}
+
+export async function getMyEvents(festivalId: string): Promise<CatalogueEvent[]> {
+  const token = getProducerToken();
+  const { events } = await request<{ events: CatalogueEvent[] }>(`/catalogue/festivals/${festivalId}/events/mine`, {}, token);
+  return events;
+}
+
+export async function createZone(eventId: string, input: { name: string; capacity: number; priceTier: string }): Promise<Zone> {
+  const token = getProducerToken();
+  const { zone } = await request<{ zone: Zone }>(`/catalogue/events/${eventId}/zones`, { method: 'POST', body: JSON.stringify(input) }, token);
+  return zone;
 }
 
 export function resetProducerSession() {
@@ -172,6 +231,27 @@ export async function adminGetAuditLog(): Promise<AuditLogEntry[]> {
   const token = getAdminToken();
   const { entries } = await request<{ entries: AuditLogEntry[] }>('/admin/audit-log', {}, token);
   return entries;
+}
+
+export interface ActiveProducer {
+  application: ProducerApplication;
+  suspended: boolean;
+}
+
+export async function adminGetProducers(): Promise<ActiveProducer[]> {
+  const token = getAdminToken();
+  const { producers } = await request<{ producers: ActiveProducer[] }>('/admin/producers', {}, token);
+  return producers;
+}
+
+export async function adminSuspendProducer(accountId: string, reason: string): Promise<void> {
+  const token = getAdminToken();
+  await request(`/admin/accounts/${accountId}/suspend`, { method: 'POST', body: JSON.stringify({ reason }) }, token);
+}
+
+export async function adminReinstateProducer(accountId: string, reason: string): Promise<void> {
+  const token = getAdminToken();
+  await request(`/admin/accounts/${accountId}/reinstate`, { method: 'POST', body: JSON.stringify({ reason }) }, token);
 }
 
 export function resetAdminSession() {

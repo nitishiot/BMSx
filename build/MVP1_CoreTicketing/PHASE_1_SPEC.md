@@ -35,6 +35,22 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
 - LP-5 mobile-responsive layout, 360px minimum.
 - LP-6 one primary CTA per module, click-through tracked.
 - LP-7 analytics instrumentation, consent-gated per GDPR.
+- **LP-1 real-catalogue wiring (added 2026-08-24, implementation-level, not
+  a PRD scope change).** Once Event & Catalogue's public read API existed
+  (§2 below), LP-1's search and LP-3's "Events Near You" were wired to it
+  — `landing/index.html` fetches `GET /api/festivals/public` (a new public
+  endpoint returning each Festival with its earliest Event's Venue
+  city/country and first lineup artist's genre, when those exist) and
+  merges the results with the illustrative `MOCK_FESTIVALS` demo set
+  rather than replacing it, so both the six curated demo festivals and any
+  producer-created festival are searchable. Falls back silently to
+  mock-only data if the backend isn't reachable (landing stays usable as a
+  static file on its own, consistent with LP-4's performance budget).
+  Known gap, not fixed here: "Use my location" ranks by venue lat/lon,
+  which nothing in the Producer portal collects yet — real festivals
+  without coordinates simply won't surface via geolocation-based nearby
+  search until that's added; they remain fully searchable via LP-1's text
+  search.
 - **LP-13 (added 2026-08-23, implementation-level, not a PRD scope change)
   — roadmap teaser.** Landing page and Producer portal both show tiles/nav
   entries for P1/P2 features (§10) as visibly present but locked/greyed,

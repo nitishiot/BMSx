@@ -72,6 +72,16 @@
 .queue-actions button.reject { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 .queue-actions button:disabled { opacity: .45; cursor: not-allowed; }
 
+.status-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: .1rem .55rem;
+  font-size: .75rem;
+  font-weight: 600;
+}
+.status-pill.approved { background: rgba(31, 162, 90, .15); color: var(--good); }
+.status-pill.rejected { background: rgba(232, 25, 75, .12); color: var(--bad); }
+
 .audit-heading { font-size: 1.1rem; margin-bottom: .75rem; }
 .audit-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; font-size: .825rem; color: var(--muted); }
 .audit-list .actor { color: var(--text); font-weight: 600; }

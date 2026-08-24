@@ -2,10 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import {
   adminDecide,
   adminGetAuditLog,
+  adminGetProducers,
   adminGetQueue,
   adminLogin,
+  adminReinstateProducer,
+  adminSuspendProducer,
   getAdminToken,
   resetAdminSession,
+  type ActiveProducer,
   type AuditLogEntry,
   type ProducerApplication,
 } from '../api';
@@ -16,6 +20,7 @@ export function AdminConsole() {
   const [email, setEmail] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [queue, setQueue] = useState<ProducerApplication[]>([]);
+  const [producers, setProducers] = useState<ActiveProducer[]>([]);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -23,8 +28,9 @@ export function AdminConsole() {
 
   async function refresh() {
     try {
-      const [q, log] = await Promise.all([adminGetQueue('pending'), adminGetAuditLog()]);
+      const [q, p, log] = await Promise.all([adminGetQueue('pending'), adminGetProducers(), adminGetAuditLog()]);
       setQueue(q);
+      setProducers(p);
       setAuditLog(log);
       setLoadError(null);
     } catch (err) {
@@ -56,6 +62,24 @@ export function AdminConsole() {
       await refresh();
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Decision failed');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleSuspendToggle(accountId: string, currentlySuspended: boolean) {
+    const reason = reasonById[accountId]?.trim();
+    if (!reason) return;
+    setBusyId(accountId);
+    try {
+      if (currentlySuspended) {
+        await adminReinstateProducer(accountId, reason);
+      } else {
+        await adminSuspendProducer(accountId, reason);
+      }
+      await refresh();
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Suspend/reinstate failed');
     } finally {
       setBusyId(null);
     }
@@ -134,6 +158,39 @@ export function AdminConsole() {
                 onClick={() => handleDecision(app.id, 'rejected')}
               >
                 Reject
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="audit-heading">Active producers</h2>
+      {producers.length === 0 && <p className="admin-empty">No approved producers yet.</p>}
+      <ul className="queue-list">
+        {producers.map(({ application: app, suspended }) => (
+          <li key={app.accountId} className="queue-item">
+            <div className="queue-item-head">
+              <strong>{app.festivalName}</strong>
+              <span className="queue-item-meta">
+                {app.producerName} · {app.organisation} · {app.email} ·{' '}
+                <span className={suspended ? 'status-pill rejected' : 'status-pill approved'}>
+                  {suspended ? 'Suspended' : 'Active'}
+                </span>
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder={`Reason (required, becomes the AuditLogEntry.reason for ${suspended ? 'reinstating' : 'suspending'})`}
+              value={reasonById[app.accountId] ?? ''}
+              onChange={(e) => setReasonById((r) => ({ ...r, [app.accountId]: e.target.value }))}
+            />
+            <div className="queue-actions">
+              <button
+                className={suspended ? 'approve' : 'reject'}
+                disabled={busyId === app.accountId || !reasonById[app.accountId]?.trim()}
+                onClick={() => handleSuspendToggle(app.accountId, suspended)}
+              >
+                {suspended ? 'Reinstate' : 'Suspend'}
               </button>
             </div>
           </li>

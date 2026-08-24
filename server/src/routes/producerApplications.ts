@@ -46,7 +46,11 @@ producerApplicationsRouter.get('/me', requireAuth, async (req, res) => {
     where: { accountId: req.account!.id },
     orderBy: { submittedAt: 'desc' },
   });
-  res.json({ application, roles: req.account!.roles });
+  // Approved by decision, but the RoleAssignment behind it has since been
+  // suspended — requireAuth already excludes it from req.account.roles, so
+  // this just gives the client a reason to show instead of a raw 403.
+  const suspended = application?.status === 'approved' && !req.account!.roles.includes('producer');
+  res.json({ application, roles: req.account!.roles, suspended });
 });
 
 // Scoped audit trail for the Producer portal's own demo of PR-1 — only
@@ -58,11 +62,14 @@ producerApplicationsRouter.get('/me/audit-log', requireAuth, async (req, res) =>
     select: { id: true },
   });
   const applicationIds = applications.map((a) => a.id);
-  const entries = applicationIds.length
-    ? await prisma.auditLogEntry.findMany({
-        where: { targetType: 'ProducerApplication', targetId: { in: applicationIds } },
-        orderBy: { createdAt: 'desc' },
-      })
-    : [];
+  const entries = await prisma.auditLogEntry.findMany({
+    where: {
+      OR: [
+        ...(applicationIds.length ? [{ targetType: 'ProducerApplication', targetId: { in: applicationIds } }] : []),
+        { targetType: 'Account', targetId: req.account!.id },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+  });
   res.json({ entries });
 });

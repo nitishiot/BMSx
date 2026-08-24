@@ -11,13 +11,17 @@ import './App.css';
 
 function ProducerApp() {
   const [approved, setApproved] = useState(false);
+  const [suspended, setSuspended] = useState(false);
   const [checked, setChecked] = useState(!getProducerToken());
   const [auditVersion, setAuditVersion] = useState(0);
 
   useEffect(() => {
     if (!getProducerToken()) return;
     getMyApplication()
-      .then((res) => setApproved(res?.application?.status === 'approved'))
+      .then((res) => {
+        setApproved(res?.application?.status === 'approved' && res.roles.includes('producer'));
+        setSuspended(res?.suspended ?? false);
+      })
       .finally(() => setChecked(true));
   }, []);
 
@@ -43,7 +47,22 @@ function ProducerApp() {
         </div>
       </nav>
 
-      {approved ? <EventSetup /> : <Apply onApproved={handleApproved} />}
+      {suspended ? (
+        <div className="event-setup">
+          <p className="eyebrow">Producer Application</p>
+          <h1>Access suspended.</h1>
+          <p className="apply-sub">
+            A Platform Admin has suspended your producer access. Your
+            existing festival and event data is unchanged, but you can't
+            create or edit anything until it's reinstated. Contact TAG
+            support if you believe this is a mistake.
+          </p>
+        </div>
+      ) : approved ? (
+        <EventSetup />
+      ) : (
+        <Apply onApproved={handleApproved} />
+      )}
 
       <AuditLog key={auditVersion} />
 
