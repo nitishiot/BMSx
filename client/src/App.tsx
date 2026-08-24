@@ -5,6 +5,7 @@ import { AdminConsole } from './pages/AdminConsole';
 import { FestivalPage } from './pages/FestivalPage';
 import { SurveyPage } from './pages/SurveyPage';
 import { AccountPage } from './pages/AccountPage';
+import { InternalOpsConsole } from './pages/InternalOpsConsole';
 import { AuditLog } from './components/AuditLog';
 import { RoadmapTeaser } from './components/RoadmapTeaser';
 import { PRODUCER_FEATURE_MANIFEST } from './featureManifest';
@@ -80,6 +81,7 @@ export default function App() {
   if (festivalMatch) return <FestivalPage festivalId={festivalMatch[1]} />;
   if (path.startsWith('/survey')) return <SurveyPage />;
   if (path.startsWith('/account')) return <AccountPage />;
+  if (path.startsWith('/ops')) return <InternalOpsConsole />;
   const isAdmin = path.startsWith('/admin');
   return isAdmin ? <AdminConsole /> : <ProducerApp />;
 }

@@ -74,6 +74,14 @@ nav{position:fixed;inset:0 0 auto 0;z-index:200;display:flex;align-items:center;
 .nav-btn:hover{opacity:.88;}
 .nav-right{display:flex;align-items:center;gap:.75rem;}
 .nav-toggle{display:none;background:none;border:1px solid rgba(237,238,248,.15);border-radius:8px;color:#EDEEF8;font-size:1.1rem;line-height:1;padding:.45rem .6rem;cursor:pointer;}
+
+.nav-dropdown{position:relative;}
+.nav-dropdown-toggle{background:none;border:none;color:rgba(237,238,248,.5);font-family:inherit;font-size:.875rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:0;transition:color .2s;}
+.nav-dropdown-toggle:hover,.nav-dropdown-toggle[aria-expanded="true"]{color:#EDEEF8;}
+.nav-dropdown-menu{position:absolute;top:100%;left:0;margin-top:.9rem;background:#111119;border:1px solid rgba(237,238,248,.1);border-radius:10px;padding:.4rem;min-width:210px;list-style:none;box-shadow:0 16px 36px rgba(0,0,0,.45);z-index:20;}
+.nav-dropdown-menu[hidden]{display:none;}
+.nav-dropdown-menu a{display:block;padding:.6rem .85rem;border-radius:7px;font-size:.8125rem;color:rgba(237,238,248,.75);text-decoration:none;white-space:nowrap;}
+.nav-dropdown-menu a:hover{background:rgba(237,238,248,.07);color:#EDEEF8;}
 .skip-link{position:absolute;left:-9999px;z-index:300;background:#FF2D60;color:#FFF;padding:.6rem 1rem;border-radius:0 0 8px 0;text-decoration:none;font-weight:600;}
 .skip-link:focus{left:0;top:0;}
 a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3px;border-radius:4px;}
@@ -106,8 +114,6 @@ a:focus-visible,button:focus-visible{outline:2px solid #FF2D60;outline-offset:3p
 .search-form input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .search-form button{background:var(--accent);color:#FFF;border:none;padding:.9rem 1.75rem;border-radius:100px;font-weight:600;font-size:.9375rem;cursor:pointer;transition:opacity .18s;}
 .search-form button:hover{opacity:.9;}
-.survey-cta{margin-top:1.5rem;font-size:.875rem;}
-.survey-cta a{color:var(--accent);text-decoration:underline;}
 .search-results{margin-top:1.75rem;text-align:left;display:none;}
 .search-results.show{display:block;}
 .search-results-note{font-size:.85rem;color:var(--muted);margin-bottom:.9rem;}
@@ -233,6 +239,9 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   .nav-links{display:none;position:fixed;top:64px;left:0;right:0;flex-direction:column;gap:0;background:rgba(8,8,13,.97);border-bottom:1px solid rgba(237,238,248,.08);padding:.5rem 0;}
   .nav-links.open{display:flex;}
   .nav-links a{display:block;padding:.9rem 2rem;}
+  .nav-dropdown-toggle{width:100%;padding:.9rem 2rem;justify-content:space-between;}
+  .nav-dropdown-menu{position:static;margin-top:0;box-shadow:none;border:none;border-radius:0;background:rgba(237,238,248,.03);padding:0;}
+  .nav-dropdown-menu a{padding:.75rem 2.5rem;}
   .banner{grid-template-columns:1fr;}
   .banner.flip .b-copy{order:1;}
   .banner.flip .b-visual{order:2;}
@@ -254,10 +263,27 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
 <nav aria-label="Main navigation">
   <a class="logo" href="#top">TAG<span class="logo-dot">.</span></a>
   <ul class="nav-links" id="nav-links">
+    <li><a href="#search" data-analytics="nav_browse">Browse Festivals</a></li>
     <li><a href="#banners" data-analytics="nav_features">Features</a></li>
     <li><a href="#platform" data-analytics="nav_platform">Platform</a></li>
     <li><a href="#plans" data-analytics="nav_pricing">Pricing</a></li>
-    <li><a href="#app" data-analytics="nav_app">Get the App</a></li>
+    <li class="nav-dropdown">
+      <button
+        class="nav-dropdown-toggle"
+        id="portals-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="portals-menu"
+        data-analytics="nav_portals"
+      >Sign in / Portals <span aria-hidden="true">▾</span></button>
+      <ul class="nav-dropdown-menu" id="portals-menu" role="menu" aria-label="Sign in / Portals" hidden>
+        <li role="none"><a role="menuitem" id="nav-link-survey" href="#" data-analytics="nav_portal_survey">Fan survey</a></li>
+        <li role="none"><a role="menuitem" id="nav-link-account" href="#" data-analytics="nav_portal_account">My account</a></li>
+        <li role="none"><a role="menuitem" id="nav-link-producer" href="#" data-analytics="nav_portal_producer">Producer application</a></li>
+        <li role="none"><a role="menuitem" id="nav-link-admin" href="#" data-analytics="nav_portal_admin">Platform Admin console</a></li>
+        <li role="none"><a role="menuitem" id="nav-link-ops" href="#" data-analytics="nav_portal_ops">Internal Ops (staff)</a></li>
+      </ul>
+    </li>
   </ul>
   <div class="nav-right">
     <a class="nav-btn" href="#app" data-analytics="nav_download">Download Free</a>
@@ -296,7 +322,6 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
       <p class="search-results-note" id="search-results-note"></p>
       <div class="result-grid" id="search-result-grid"></div>
     </div>
-    <p class="survey-cta"><a id="survey-link" href="#" data-analytics="survey_cta">Help us build TAG — take our 2-minute fan survey</a></p>
   </div>
 </section>
 
@@ -1052,6 +1077,40 @@ footer{background:#08080D;border-top:1px solid rgba(237,238,248,.05);padding:1.7
   });
 })();
 
+// "Sign in / Portals" nav dropdown — every non-marketing surface in one
+// place (survey, account, producer, admin, internal ops), instead of ad
+// hoc links scattered through the page. hrefs are set from CLIENT_APP_BASE
+// (defined further down, where the catalogue-fetch IIFE already lives) —
+// deferred to DOMContentLoaded so load order doesn't matter.
+document.addEventListener('DOMContentLoaded', () => {
+  const dropdownToggle = document.getElementById('portals-toggle');
+  const dropdownMenu = document.getElementById('portals-menu');
+  if(!dropdownToggle || !dropdownMenu) return;
+
+  function closeDropdown(){
+    dropdownMenu.hidden = true;
+    dropdownToggle.setAttribute('aria-expanded', 'false');
+  }
+  function openDropdown(){
+    dropdownMenu.hidden = false;
+    dropdownToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  dropdownToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdownMenu.hidden ? openDropdown() : closeDropdown();
+  });
+  document.addEventListener('click', (e) => {
+    if(!dropdownMenu.hidden && !dropdownMenu.contains(e.target) && e.target !== dropdownToggle) closeDropdown();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeDropdown();
+  });
+  dropdownMenu.addEventListener('click', (e) => {
+    if(e.target.tagName === 'A') closeDropdown();
+  });
+});
+
 // Analytics — consent-gated per GDPR (LP-7). No event fires, module-impression
 // or click, until the visitor accepts. This is the module wiring; the actual
 // analytics SDK/backend is a later Phase-1 build step (spec §7, event schema TBD).
@@ -1135,14 +1194,27 @@ const MOCK_FESTIVALS = [
 // stays usable as a static file on its own (LP-4).
 let CATALOGUE_FESTIVALS = MOCK_FESTIVALS.slice();
 const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin once deployed]
-// Fan Web (festival detail / checkout) lives in client/, a separate Vite
-// app from this static landing page — [TBD: prod Fan Web origin, likely
-// the same domain once deployed, a different port only in local dev].
-const FAN_WEB_BASE = 'http://localhost:5173';
-// LP-14: survey CTA link, same Fan Web origin as festival detail pages.
+// client/ (Vite app) serves every non-landing surface at one origin —
+// Fan Web (festival detail, survey, account), Producer portal (/),
+// Admin console (/admin), Internal Ops (/ops) — [TBD: prod origin, likely
+// the same domain as landing once deployed, a different port only in
+// local dev]. Renamed from FAN_WEB_BASE (2026-08-24) once it started
+// backing every portal link in the nav menu, not just festival pages.
+const CLIENT_APP_BASE = 'http://localhost:5173';
+// Portals nav-dropdown hrefs — one map, so a new portal is one line here
+// plus one <li> in the markup, not a scattered set of ad hoc links.
 (function(){
-  const surveyLink = document.getElementById('survey-link');
-  if (surveyLink) surveyLink.href = `${FAN_WEB_BASE}/survey`;
+  const PORTAL_LINKS = {
+    'nav-link-survey': '/survey',
+    'nav-link-account': '/account',
+    'nav-link-producer': '/',
+    'nav-link-admin': '/admin',
+    'nav-link-ops': '/ops',
+  };
+  for(const [id, path] of Object.entries(PORTAL_LINKS)){
+    const el = document.getElementById(id);
+    if(el) el.href = `${CLIENT_APP_BASE}${path}`;
+  }
 })();
 (function(){
   fetch(`${CATALOGUE_API_BASE}/festivals/public`)
@@ -1171,7 +1243,7 @@ function resultCardHTML(f){
   // Only a real, producer-created festival (backend id) has anything to
   // check out against — the six illustrative mock festivals still link to
   // the "#app" placeholder, same as before.
-  const viewHref = f.isReal ? `${FAN_WEB_BASE}/festival/${f.id}` : '#app';
+  const viewHref = f.isReal ? `${CLIENT_APP_BASE}/festival/${f.id}` : '#app';
   return `<div class="result-card">
     <h4>${f.name}</h4>
     <p>${genreLabel}${locationLabel}</p>

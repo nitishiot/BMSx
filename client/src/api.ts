@@ -9,6 +9,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:4000/api';
 const PRODUCER_TOKEN_KEY = 'tag_producer_token';
 const ADMIN_TOKEN_KEY = 'tag_admin_token';
 const FAN_TOKEN_KEY = 'tag_fan_token';
+const OPS_TOKEN_KEY = 'tag_ops_token';
 
 function safeGet(key: string): string | null {
   try {
@@ -441,4 +442,53 @@ export async function checkout(
   );
   clearCartId();
   return result;
+}
+
+// --- Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md) ---
+// Separate token from the fan/producer/admin ones — a different account,
+// different login surface, same reasoning as those.
+
+export function getOpsToken(): string | null {
+  return safeGet(OPS_TOKEN_KEY);
+}
+export function resetOpsSession() {
+  safeRemove(OPS_TOKEN_KEY);
+}
+
+export async function opsLogin(email: string): Promise<void> {
+  const { token } = await request<{ token: string }>('/internal-ops/login', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+  safeSet(OPS_TOKEN_KEY, token);
+}
+
+export interface OpsMe {
+  orgRole: { key: string; title: string };
+  displayName: string;
+  capabilities: string[];
+}
+
+export async function getOpsMe(): Promise<OpsMe> {
+  const token = getOpsToken();
+  return request('/internal-ops/me', {}, token);
+}
+
+export interface OrgTreeNode {
+  id: string;
+  key: string;
+  title: string;
+  department: string | null;
+  personName: string | null;
+  children: OrgTreeNode[];
+}
+
+export async function getOpsOrgChart(): Promise<{ scope: 'subtree' | 'company'; tree: OrgTreeNode | OrgTreeNode[] }> {
+  const token = getOpsToken();
+  return request('/internal-ops/org-chart', {}, token);
+}
+
+export async function getOpsCompanyMetrics(): Promise<{ metrics: null; note: string }> {
+  const token = getOpsToken();
+  return request('/internal-ops/company-metrics', {}, token);
 }

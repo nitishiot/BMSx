@@ -1,0 +1,97 @@
+.ops-console {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+.ops-console h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: .5rem 0 1.5rem; }
+.ops-console .apply-sub { color: var(--muted); font-size: .9375rem; line-height: 1.65; margin-bottom: 1.5rem; }
+.ops-console form { display: flex; gap: .6rem; flex-wrap: wrap; }
+.ops-console form input {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  font-family: inherit;
+  font-size: .9375rem;
+}
+
+.submit-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: .7rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: .875rem;
+  cursor: pointer;
+}
+.submit-btn:hover { opacity: .9; }
+
+.saved-banner.error {
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  background: rgba(232, 25, 75, .12);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+}
+
+.ops-widget {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.ops-widget h2 { font-size: 1.15rem; margin: 0 0 .4rem; }
+.ops-widget-note { color: var(--muted); font-size: .8125rem; line-height: 1.6; margin-bottom: 1rem; }
+
+.roadmap-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  padding: .7rem 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.roadmap-row input { margin-top: .3rem; }
+.roadmap-icon { font-size: 1.1rem; }
+.roadmap-title { font-weight: 700; font-size: .9rem; }
+.roadmap-tier {
+  margin-left: .5rem;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.roadmap-desc { color: var(--muted); font-size: .8125rem; margin: .2rem 0 0; }
+
+.org-tree-node { margin-bottom: .3rem; }
+.org-tree-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .8125rem;
+}
+.org-tree-title { font-weight: 700; }
+.org-tree-person { color: var(--muted); }
+.org-tree-dept {
+  margin-left: auto;
+  font-size: .7rem;
+  color: var(--muted);
+  border: 1px solid var(--border-md);
+  border-radius: 100px;
+  padding: .1rem .6rem;
+}
+.org-tree-children {
+  margin-top: .3rem;
+  padding-left: .8rem;
+  border-left: 1px solid var(--border);
+}

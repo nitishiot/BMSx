@@ -1,9 +1,10 @@
 # Phase 2 Spec — Internal Ops Console
 
-**Status:** spec drafted, not implemented, not signed off. Per
-`.claude/rules/build.md`: not "built" until an implementation exists, not
-"done" until the three-step sign-off protocol (real test, shown live,
-approved) is met.
+**Status:** built (2026-08-24), awaiting sign-off. Per
+`.claude/rules/build.md`: not "done" until the three-step sign-off
+protocol (real test, shown live, approved) is met — steps 1 (real
+end-to-end test) is closed, see §8; step 2/3 (shown live, approved) not
+yet done — see `PROGRESS.md`.
 **Author:** drafted with Claude (Sonnet/Opus), 24 August 2026. Promoted
 into `build/` (from a root-level `TAG_InternalOps_v1.md`) on 2026-08-24
 to follow the same phase-spec convention as `MVP1_CoreTicketing/`, per
@@ -161,19 +162,35 @@ schema level).
 
 ## 8. Exit checks
 
-1. A seeded `head_of_product_dev` account logs in and sees the roadmap
-   widget; does not see the CTO's team-roster widget or the Founder's
-   rollup.
-2. A seeded `cto` account sees its subtree (Head of Product Development +
-   VP of Tech's branch) correctly, matching §2's chart.
-3. RBAC negative test: any of the three accounts hitting another role's
-   dashboard data via direct API call gets a response scoped to *their
-   own* capabilities, never the other role's data — verified with real
-   concurrent-account requests, not asserted from the design.
-4. Adding a 4th `OrgRole` + capability grants via seed data produces a
-   working (if widget-sparse) dashboard with no frontend code change —
-   this is the actual proof the framework is generic, not just three
-   special cases in a trenchcoat.
+1. **Met.** A seeded `head_of_product_dev` account logs in and sees the
+   roadmap widget; does not see the CTO's team-roster widget or the
+   Founder's rollup. Verified live with Playwright.
+2. **Met.** A seeded `cto` account sees its subtree (Head of Product
+   Development + VP of Tech's branch, matching §2's chart) — verified via
+   both a scripted HTTP walk and Playwright.
+3. **Met.** RBAC negative test: Head of Product Development's account
+   hitting `/org-chart` directly (no capability for it) gets a 403, not
+   another role's data; unauthenticated requests get 401. Verified with
+   real HTTP requests against seeded accounts, not asserted from the
+   design.
+4. **Met.** A synthetic 4th `OrgRole` + brand-new `Capability` (key never
+   referenced anywhere in server/client code) was inserted via Prisma
+   directly (equivalent to a seed-data addition) and logged in through
+   the real API with zero backend code changes — `/me` correctly
+   reflected the new role/capability, and the new node appeared in the
+   CTO's subtree correctly. Verified with a script, then cleaned up
+   (test-only rows removed after the run, not left in seed data).
+
+**Bug found and fixed during exit-check-4 verification:** the client's
+first widget-rendering pass mapped capabilities to widgets via a naive
+per-capability loop, which double-rendered the org-tree widget (as both
+"Your team" and "Company org chart") for any role holding both
+`view_engineering_roster` and `view_company_rollup` — the Founder, by
+design (§7's "superset"). Fixed by resolving tree/metrics visibility
+once by priority (`view_company_rollup` wins) rather than iterating
+capabilities blindly; still capability-driven, not role-driven, so exit
+check 4's genericity claim still holds — confirmed by re-running that
+check afterward.
 
 ## 9. Non-functional targets
 

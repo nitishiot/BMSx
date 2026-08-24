@@ -12,7 +12,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["identity", "catalogue", "inventory", "orders", "survey"]
+  schemas  = ["identity", "catalogue", "inventory", "orders", "survey", "internalops"]
 }
 
 model Account {
@@ -441,4 +441,72 @@ model SurveyResponse {
 
   @@index([accountId])
   @@schema("survey")
+}
+
+// ---------------------------------------------------------------------
+// Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md) — a
+// separate system from the ticketing product (ADR-005: own schema, no FK
+// into `identity`; StaffProfile.accountId is a plain UUID). `personName`
+// is an implementation addition beyond the spec's literal model (the
+// spec's §2 lists names per role in prose) — captured as data so the
+// Founder rollup/CTO roster widgets can render real names, per Nitish's
+// 2026-08-24 confirmation that real names may be committed to this repo.
+// ---------------------------------------------------------------------
+
+model OrgRole {
+  id                String   @id @default(uuid())
+  key               String   @unique
+  title             String
+  department        String?
+  personName        String?
+  reportsToOrgRoleId String?
+  createdAt         DateTime @default(now())
+
+  reportsTo OrgRole?  @relation("OrgRoleReports", fields: [reportsToOrgRoleId], references: [id])
+  reports   OrgRole[] @relation("OrgRoleReports")
+
+  capabilities  OrgRoleCapability[]
+  staffProfiles StaffProfile[]
+
+  @@index([reportsToOrgRoleId])
+  @@schema("internalops")
+}
+
+model Capability {
+  id          String @id @default(uuid())
+  key         String @unique
+  description String
+
+  orgRoles OrgRoleCapability[]
+
+  @@schema("internalops")
+}
+
+model OrgRoleCapability {
+  id           String @id @default(uuid())
+  orgRoleId    String
+  capabilityId String
+
+  orgRole    OrgRole    @relation(fields: [orgRoleId], references: [id])
+  capability Capability @relation(fields: [capabilityId], references: [id])
+
+  @@unique([orgRoleId, capabilityId])
+  @@schema("internalops")
+}
+
+// One row per staff login — links an identity.Account (plain UUID, no
+// FK) to an OrgRole. Deliberately not identity.RoleAssignment: that's
+// the product's fan/producer/platform_admin RBAC axis, a different
+// concern (spec §5).
+model StaffProfile {
+  id          String   @id @default(uuid())
+  accountId   String   @unique
+  orgRoleId   String
+  displayName String
+  createdAt   DateTime @default(now())
+
+  orgRole OrgRole @relation(fields: [orgRoleId], references: [id])
+
+  @@index([accountId])
+  @@schema("internalops")
 }

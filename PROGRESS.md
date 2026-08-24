@@ -5,6 +5,76 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Internal Ops Console (build/MVP2_InternalOps/PHASE_2_SPEC.md): built,
+awaiting sign-off (2026-08-24, Sonnet session).** All four exit checks
+met — see the spec's §8 for detail. New `internalops` Postgres schema
+(`OrgRole`, `Capability`, `OrgRoleCapability`, `StaffProfile`, ADR-005 —
+no FK into `identity`); `OrgRole` also carries an implementation-added
+`personName` field (beyond the spec's literal model, captured so the
+roster/rollup widgets can show real names) and department. Seeded via
+`server/src/internalOps/seedData.ts` + `seed.ts`: all 35 org-chart roles
+(both founder branches, real names, the new Head of Product Development
+under CTO) as structural data, 4 capabilities, and 3 staff logins
+(`nitish@tag.local`, `cto@tag.local`, `founder@tag.local`, all
+env-overridable).
+
+API (`server/src/routes/internalOps.ts`): `POST /login` (same stand-in
+pattern as `adminAuthRouter` — any account with a seeded `StaffProfile`
+can mint a session), `GET /me` (role + capabilities), `GET /org-chart`
+(capability-gated: subtree for `view_engineering_roster`/`manage_team`,
+full company forest for `view_company_rollup`), `GET /company-metrics`
+(gated, returns an explicit `null` + TBD note — no real data invented).
+**Deliberate deviation from the spec's 4-endpoint sketch:** no separate
+`GET /dashboard` — the `view_product_roadmap` widget reuses
+`client/src/featureManifest.ts`'s already-real data directly client-side
+(nothing to serve, duplicating it server-side would be exactly the
+invented-content risk the spec warns against); `/me` + `/org-chart`
+cover everything else. Noted here, not silently dropped.
+
+Client: `client/src/pages/InternalOpsConsole.tsx` at `/ops` (a fourth
+pathname-routed surface in the same Vite app). Widget visibility is
+capability-driven — **a real bug was caught and fixed** during exit-check
+-4 verification: a first pass mapped capabilities to widgets via a naive
+per-capability loop, which double-rendered the org-tree widget for the
+Founder (who holds both `view_engineering_roster` and
+`view_company_rollup` — the DOM had 70 org-tree nodes instead of 35).
+Fixed by resolving tree/metrics visibility once by priority
+(`view_company_rollup` wins) instead of iterating blindly — still
+capability-driven, not role-driven, re-verified after the fix.
+
+Verified two ways against the real running `server/` + Postgres: (1) a
+scripted HTTP walk — all 3 logins, `/me` correctness per role, RBAC
+negative test (Head of Product Development 403s on `/org-chart`,
+unauthenticated 401s), CTO's subtree matches the chart exactly, Founder's
+full tree has all 35 nodes across both founder roots, metrics endpoint
+gated and honest; (2) a Playwright run per role in isolated browser
+contexts (shared-localStorage cross-contamination between logins was
+caught and fixed in the test itself, not the product) confirming the
+right widgets show/hide per role and the fixed duplication bug stays
+fixed (exactly 35 nodes, one heading). Zero console errors throughout.
+Typecheck and production build clean on `client/`; server typecheck
+clean. **Not yet shown to Nitish live.**
+
+**Landing-page navigation menu (2026-08-24, Sonnet session, same
+session).** Nitish asked for proper navigation to every portal (survey,
+accounts, event listing), not ad hoc links scattered around the page —
+he'd flagged this after the earlier single "Help us build TAG" link
+under the search results. Replaced that with a "Sign in / Portals"
+dropdown in the main nav (accessible disclosure pattern — click to
+open/close, closes on outside click or Escape, `aria-expanded`/`hidden`
+wired properly) linking to Fan survey, My account, Producer application,
+Platform Admin console, and Internal Ops — one `CLIENT_APP_BASE` origin
+map, so adding a future portal is one line, not a new ad hoc link.
+Renamed the JS constant this replaced (`FAN_WEB_BASE` → `CLIENT_APP_BASE`)
+since it now backs every portal, not just festival pages. Also added a
+"Browse Festivals" top-level nav item (`#search` anchor) — the "event
+listing" part of the request; no separate page existed to link to, and
+the existing search section already is that surface. Verified with
+Playwright: dropdown open/close/outside-click/Escape all work, every
+portal href resolves correctly, the old ad hoc link is gone, and a
+regression check confirmed the real-festival "View festival" link (which
+depends on the renamed constant) still works. Zero console errors.
+
 **LP-14 (fan survey + End User account) and its UI-fix pass: signed off
 (2026-08-24, Sonnet session).** Nitish reviewed both live —
 `localhost:5173/survey` and the resulting `/account` page — and said
@@ -712,9 +782,11 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **LP-14 (fan survey → End User account) signed off** — see Status.
-   `build/MVP2_InternalOps/PHASE_2_SPEC.md` (staff RBAC/dashboard
-   console) is still spec-only, not started — next priority call.
+1. **Internal Ops Console built, awaiting sign-off** — see Status. Live
+   at `localhost:5173/ops`; nav dropdown on the landing page links to it
+   and every other portal. Remaining ~17 org-chart roles are still
+   deferred (same `OrgRole`/`Capability` pattern, per spec §4) — next
+   priority call once this is reviewed.
 2. **The rest of the core-ticketing backend.** Ticketing &
    Inventory + Orders & Cart backend, the Fan Web checkout UI
    (`/festival/:id`), and its real QR rendering were all built and signed
@@ -1207,3 +1279,36 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   `.claude/rules/build.md`'s protocol for both — step 1 (real
   end-to-end test) was already closed by the Playwright/HTTP
   verification logged earlier.
+- **2026-08-24 (Sonnet session)** — Implemented the Internal Ops Console
+  per its already-written spec. Reused `identity.Account`/`Session` for
+  staff login rather than building a parallel auth table, per the spec's
+  own reasoning (ADR-005's one-owner rule at the "which system owns this
+  fact" level, not just schema). Added `OrgRole.personName`/`department`
+  beyond the spec's literal data model — the spec's prose already listed
+  names per role, so capturing them as data (rather than only in the
+  markdown) is what actually lets the roster/rollup widgets render real
+  names, and Nitish had already confirmed real names are fine to commit.
+  Deliberately dropped the spec's sketched `GET /dashboard` endpoint:
+  the roadmap widget's data already lives client-side in
+  `featureManifest.ts` (real, PRD-sourced content) — serving it through
+  the API too would mean maintaining two copies of the same real data,
+  the exact kind of duplication risk worth avoiding, not adding.
+  Exit-check-4 verification (adding a role+capability the server has
+  never heard of) caught a genuine client bug: the dashboard's naive
+  per-capability widget loop double-rendered the org tree for any role
+  holding both `view_engineering_roster` and `view_company_rollup` (the
+  Founder, by design). Fixed by resolving org-tree/metrics visibility
+  once via priority rather than iterating every capability independently
+  — kept it capability-driven, not role-driven, so the genericity the
+  exit check was proving still holds; re-ran the check after the fix to
+  confirm.
+- **2026-08-24 (Sonnet session)** — Built a proper "Sign in / Portals"
+  nav dropdown on the landing page after Nitish flagged the single ad hoc
+  survey link he'd asked for earlier as not good enough — he wanted real
+  navigation to every portal (surveys, accounts, event listing), not
+  links placed wherever a feature happened to land. Removed the old
+  ad hoc link entirely rather than leaving both. Renamed the
+  `FAN_WEB_BASE` JS constant to `CLIENT_APP_BASE` since by this point it
+  backs five different portals (festival pages, survey, account,
+  producer, admin, ops), not just Fan Web — a name that stopped matching
+  what the constant actually does.
