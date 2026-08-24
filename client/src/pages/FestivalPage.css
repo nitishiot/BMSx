@@ -65,3 +65,16 @@
 .ticket-qr-image { width: 140px; height: 140px; border-radius: 8px; background: #fff; padding: 8px; margin-bottom: .6rem; }
 .ticket-qr { font-family: monospace; font-size: .7rem; word-break: break-all; margin: 0; color: var(--muted); }
 .ticket-qr-note { color: var(--muted); font-size: .7rem; margin: .4rem 0 0; }
+
+.submit-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: .7rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: .875rem;
+  cursor: pointer;
+}
+.submit-btn:hover { opacity: .9; }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; }

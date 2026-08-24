@@ -12,6 +12,12 @@
   --bad:       #E8194B;
   --border:    rgba(13,12,26,0.09);
   --border-md: rgba(13,12,26,0.15);
+  /* Tells the browser which palette to use for native controls (select
+     dropdowns, scrollbars, etc.) — without this, a select's inherited
+     light text renders inside a browser-default white popup, producing
+     near-invisible low-contrast options. Kept in sync with the token
+     blocks below, not left to the OS default. */
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -28,6 +34,7 @@
     --bad:       #FF4070;
     --border:    rgba(237,238,248,0.08);
     --border-md: rgba(237,238,248,0.14);
+    color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
@@ -44,6 +51,7 @@
   --bad:       #FF4070;
   --border:    rgba(237,238,248,0.08);
   --border-md: rgba(237,238,248,0.14);
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; }

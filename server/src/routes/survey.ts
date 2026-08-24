@@ -8,18 +8,11 @@ export const surveyRouter = Router();
 
 const submitSchema = z.object({
   email: z.string().email(),
+  name: z.string().min(1),
   answers: z.record(z.string(), z.string()).refine((a) => Object.keys(a).length > 0, {
     message: 'At least one answer is required',
   }),
 });
-
-// LP-14: guest submits the fan survey with an email, no other profile
-// fields (per PHASE_1_SPEC.md's LP-14). `name` has no real value to draw
-// on yet, so it's a placeholder derived from the email's local part —
-// the End User page never shows it as if it were a real name.
-function placeholderNameFromEmail(email: string): string {
-  return email.split('@')[0];
-}
 
 surveyRouter.post('/responses', async (req, res) => {
   const parsed = submitSchema.safeParse(req.body);
@@ -27,12 +20,17 @@ surveyRouter.post('/responses', async (req, res) => {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
-  const { email, answers } = parsed.data;
+  const { email, name, answers } = parsed.data;
 
+  // `identity.Account` is shared across the producer/admin/fan flows (one
+  // account per email, PR-1's model) — updating `name` on an existing
+  // account (e.g. a producer who also fills out the survey under the same
+  // email) intentionally keeps the most recently given name, same as any
+  // profile-edit would.
   const account = await prisma.account.upsert({
     where: { email },
-    update: {},
-    create: { email, name: placeholderNameFromEmail(email) },
+    update: { name },
+    create: { email, name },
   });
 
   await prisma.surveyResponse.create({ data: { accountId: account.id, answers } });
@@ -49,7 +47,7 @@ surveyRouter.post('/responses', async (req, res) => {
 
   res.status(201).json({
     token,
-    account: { id: account.id, email: account.email, emailVerifiedAt: account.emailVerifiedAt },
+    account: { id: account.id, email: account.email, name: account.name, emailVerifiedAt: account.emailVerifiedAt },
     verificationTokenForDemo,
   });
 });

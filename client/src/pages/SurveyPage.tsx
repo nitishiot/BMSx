@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { submitSurvey } from '../api';
+import { FanNav } from '../components/FanNav';
 import './SurveyPage.css';
 
 // Question set sourced verbatim from the "Festival Fan Survey Proposal"
@@ -57,26 +58,32 @@ export const QUESTIONS: Question[] = [
 
 export function SurveyPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set only after a failed submit attempt, so unanswered questions are
+  // never highlighted before the fan has actually tried to submit.
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   function setAnswer(key: string, value: string) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   }
 
-  const answeredCount = Object.keys(answers).length;
+  const missingKeys = QUESTIONS.filter((q) => !answers[q.key]).map((q) => q.key);
+  const missingCount = missingKeys.length + (name ? 0 : 1) + (email ? 0 : 1);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (answeredCount < QUESTIONS.length) {
-      setError('Please answer every question before submitting.');
+    if (missingCount > 0) {
+      setAttemptedSubmit(true);
+      setError(`Please answer the ${missingCount} highlighted question${missingCount > 1 ? 's' : ''} below.`);
       return;
     }
     setError(null);
     setSubmitting(true);
     try {
-      await submitSurvey(email, answers);
+      await submitSurvey(email, name, answers);
       window.location.href = '/account';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit the survey. Please try again.');
@@ -86,7 +93,7 @@ export function SurveyPage() {
 
   return (
     <div className="survey-page">
-      <a className="shell-logo" href="/">TAG<span>.</span></a>
+      <FanNav />
       <p className="eyebrow">Help us build TAG</p>
       <h1>A 2-minute festival fan survey</h1>
       <p className="apply-sub">
@@ -96,7 +103,7 @@ export function SurveyPage() {
 
       <form onSubmit={handleSubmit}>
         {QUESTIONS.map((q) => (
-          <div className="survey-question" key={q.key}>
+          <div className={`survey-question${attemptedSubmit && !answers[q.key] ? ' unanswered' : ''}`} key={q.key}>
             <label>{q.label}</label>
             {q.type === 'text' && (
               <textarea value={answers[q.key] ?? ''} onChange={(e) => setAnswer(q.key, e.target.value)} rows={2} />
@@ -128,13 +135,18 @@ export function SurveyPage() {
           </div>
         ))}
 
-        <div className="survey-question">
+        <div className={`survey-question${attemptedSubmit && !name ? ' unanswered' : ''}`}>
+          <label>Your name</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
+        </div>
+
+        <div className={`survey-question${attemptedSubmit && !email ? ' unanswered' : ''}`}>
           <label>Your email</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
         </div>
 
         {error && <p className="saved-banner error">{error}</p>}
-        <button type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit survey'}</button>
+        <button type="submit" className="submit-btn" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit survey'}</button>
       </form>
     </div>
   );

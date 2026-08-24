@@ -398,11 +398,12 @@ export interface SurveyResponseRecord {
 
 export async function submitSurvey(
   email: string,
+  name: string,
   answers: Record<string, string>,
 ): Promise<{ account: FanAccount; verificationTokenForDemo: string | null }> {
   const result = await request<{ token: string; account: FanAccount; verificationTokenForDemo: string | null }>(
     '/survey/responses',
-    { method: 'POST', body: JSON.stringify({ email, answers }) },
+    { method: 'POST', body: JSON.stringify({ email, name, answers }) },
   );
   safeSet(FAN_TOKEN_KEY, result.token);
   return { account: result.account, verificationTokenForDemo: result.verificationTokenForDemo };

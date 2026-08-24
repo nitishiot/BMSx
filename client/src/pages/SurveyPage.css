@@ -4,33 +4,96 @@
   padding: 2rem 1.5rem 4rem;
 }
 .survey-page h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: .5rem 0 .5rem; }
-.survey-page .eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; margin: 0; }
-.survey-page .apply-sub { color: var(--muted); font-size: .9375rem; line-height: 1.6; margin-bottom: 2rem; }
+.survey-page .apply-sub { color: var(--muted); font-size: .9375rem; line-height: 1.65; margin-bottom: 2rem; }
 
-.survey-question { margin-bottom: 1.4rem; }
-.survey-question label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .5rem; }
+.survey-question { margin-bottom: 1.4rem; padding: .6rem .7rem; border-radius: 12px; border: 1px solid transparent; transition: border-color .18s, background .18s; }
+.survey-question label { display: block; font-size: .825rem; font-weight: 600; color: var(--text); margin-bottom: .5rem; }
+
+/* Matches Apply.css's .field input/textarea, the established form-control
+   convention already used by the Producer portal — kept consistent
+   rather than inventing a new look for this page. */
 .survey-question select,
 .survey-question textarea,
-.survey-question input[type="email"] {
+.survey-question input[type="email"],
+.survey-question input[type="text"] {
   width: 100%;
-  padding: .7rem .9rem;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text);
   border-radius: 10px;
-  border: 1px solid var(--border, #2a2a33);
-  background: var(--panel, rgba(255, 255, 255, .04));
-  color: inherit;
+  padding: .7rem .9rem;
   font-family: inherit;
-  font-size: .875rem;
+  font-size: .9375rem;
 }
+.survey-question textarea { resize: vertical; min-height: 70px; }
+
 .survey-radio-group { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+/* Native radio input is visually hidden (not display:none, so it stays
+   keyboard/screen-reader accessible) — the whole pill is the control,
+   matching the pill-button language used everywhere else in TAG (landing
+   .btn-primary/.plan-btn, Apply.css .submit-btn). */
 .survey-radio-option {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: .4rem;
-  font-size: .8125rem;
-  font-weight: 400;
-  background: var(--panel, rgba(255, 255, 255, .04));
-  border: 1px solid var(--border, #2a2a33);
-  border-radius: 999px;
-  padding: .4rem .9rem;
+  font-size: .875rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  border-radius: 100px;
+  padding: .55rem 1.1rem;
   cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.survey-radio-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.survey-radio-option:has(input:checked) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.survey-radio-option:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Unanswered-on-submit highlight (only set after a failed submit
+   attempt, per SurveyPage.tsx) — a warm border + tinted background makes
+   the specific gaps obvious, instead of one generic error banner. */
+.survey-question.unanswered {
+  border-color: var(--bad);
+  background: rgba(232, 25, 75, .06);
+}
+.survey-question.unanswered label { color: var(--bad); }
+
+.submit-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: .85rem 1.75rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: .9375rem;
+  cursor: pointer;
+  margin-top: .5rem;
+}
+.submit-btn:hover { opacity: .9; }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.saved-banner {
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+.saved-banner.error {
+  background: rgba(232, 25, 75, .12);
+  border: 1px solid var(--bad);
+  color: var(--bad);
 }

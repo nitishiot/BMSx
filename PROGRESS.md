@@ -5,6 +5,71 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**LP-14 UI fixes: color contrast, theme consistency, name capture,
+unanswered-question highlighting — built, awaiting sign-off (2026-08-24,
+Sonnet session, same session as the initial LP-14 build below).** Nitish
+reviewed the survey page live and flagged three issues, addressed in
+order:
+
+1. **Select dropdown text unreadable** — the native dropdown popup
+   rendered light text on a white background. Root cause: no CSS
+   `color-scheme` was set anywhere in `client/`, so browsers defaulted
+   native-control rendering to light regardless of the page's actual
+   (dark) theme. Fixed globally in `theme.css` — `color-scheme: light`
+   on the base `:root`, `color-scheme: dark` in both the
+   `prefers-color-scheme: dark` and `[data-theme="dark"]` blocks, kept in
+   sync with the existing token blocks rather than hardcoded once.
+2. **Inconsistent look vs. the rest of the app** — the survey's submit
+   button and radio inputs had no styling applied at all (plain browser
+   defaults), and `SurveyPage.css` referenced a `--panel` CSS variable
+   that doesn't exist anywhere in `theme.css` (silently falling back to a
+   hardcoded, non-theme colour). Fixed by reusing the `.submit-btn`
+   pattern already established in `Apply.css` (pill, `--accent`
+   background, white text — same as landing's `.btn-primary`) across
+   `SurveyPage`, `AccountPage`, and `FestivalPage`'s previously-unstyled
+   buttons (Pay/Add to cart/Checkout — a pre-existing gap in those pages
+   from earlier this session, not new); switched `--panel`/hardcoded
+   fallbacks to the real `--bg-raised`/`--border-md` tokens; radio inputs
+   are now visually hidden (not `display:none`, stays keyboard/
+   screen-reader accessible) with the whole pill filling `--accent` on
+   `:checked` via `:has()`, matching the pill-button visual language used
+   everywhere else in TAG rather than a bare native radio dot.
+3. **Highlight unanswered questions** — previously one generic error
+   banner. Now every unanswered question (including name/email) gets a
+   `--bad`-coloured border + tinted background after a failed submit
+   attempt, and the error banner states the count. Along the way, found
+   and removed the native HTML5 `required` attribute on the name/email
+   inputs — it was silently blocking form submission (and thus the
+   custom validation/highlighting) before `handleSubmit` ever ran,
+   whenever those two fields were empty; validation is now unified
+   entirely through the custom JS path so all 14 fields get the same
+   treatment.
+
+Also, per a separate request: the survey now collects a **name** field
+(previously only email — `Account.name` was a placeholder derived from
+the email's local part). A new shared `FanNav` component
+(`client/src/components/FanNav.tsx`) shows "Signed in as {name}" top
+-right, reusing the `.shell-nav`/`.shell-tag` pattern already used by the
+Producer portal/Admin console — wired into `SurveyPage`, `AccountPage`,
+and `FestivalPage`. Backend: `survey.ts`'s schema requires `name`; the
+account `upsert` sets/updates it (documented cross-concern: `Account` is
+shared with producer/admin identity, so the most recently given name
+wins on re-submission under the same email).
+
+Verified with Playwright (dark-mode context, matching Nitish's actual
+browser — an earlier check had run in light mode by Playwright's
+default and hadn't caught the dropdown issue for that reason): computed
+`color-scheme: dark` confirmed on the select; submit button confirmed
+pill-shaped with a real background colour; submitting with everything
+empty highlights all 14 fields with an accurate count in the error text;
+answering one field drops the highlighted count correctly; full
+submission shows "Signed in as {name}" in the nav afterward; zero
+console errors. Re-ran the original survey-flow, edge-case, and
+FestivalPage checkout Playwright/HTTP scripts from the initial LP-14
+build to confirm no regressions — all still pass. Typecheck and
+production build clean on `client/`; server typecheck clean.
+**Not yet shown to Nitish live for a final look.**
+
 **LP-14 fan survey + End User account flow: built, awaiting sign-off
 (2026-08-24, Sonnet session).** Implements the spec drafted earlier this
 session. New Postgres: `identity.EmailVerificationToken` +
@@ -1105,3 +1170,22 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   clearly labelled in both the UI copy and the code comments as not part
   of the real flow, matching the spec's own instruction not to let a
   stand-in pass as real functionality.
+- **2026-08-24 (Sonnet session)** — Fixed three UI issues Nitish flagged
+  live on the survey page (dropdown contrast, theme consistency, missing
+  per-question validation feedback) plus a fourth request (name capture +
+  a persistent "Signed in as" nav). Root-caused the dropdown bug properly
+  rather than patching around it: no `color-scheme` CSS property existed
+  anywhere in `client/`, so native controls always rendered with the
+  browser's light-mode default irrespective of the page's actual dark
+  theme — fixed at the token-block level in `theme.css`, not just on the
+  one `<select>` that was reported. While fixing the highlighting request,
+  found the native `required` attribute on two inputs was silently
+  short-circuiting the custom submit handler (and thus the highlighting)
+  whenever those specific fields were the empty ones — removed it in
+  favour of one unified validation path, rather than leaving two
+  different validation systems fighting each other. First verification
+  pass of the dropdown fix ran in Playwright's default light-mode context
+  and reported false-negative-adjacent results (looked fine, but wasn't
+  testing the actual reported scenario) — re-ran with an explicit
+  `colorScheme: 'dark'` browser context to match Nitish's real browser
+  before considering the fix confirmed.

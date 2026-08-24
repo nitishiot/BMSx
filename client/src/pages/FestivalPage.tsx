@@ -16,6 +16,7 @@ import {
   type Ticket,
   type TicketType,
 } from '../api';
+import { FanNav } from '../components/FanNav';
 import './FestivalPage.css';
 
 function formatMoney(minorUnits: number, currency: string): string {
@@ -169,6 +170,7 @@ export function FestivalPage({ festivalId }: Props) {
   if (step === 'confirmation' && confirmation) {
     return (
       <div className="festival-page">
+        <FanNav />
         <p className="eyebrow">Order confirmed</p>
         <h1>You're going to {festival.name}.</h1>
         <p className="apply-sub">
@@ -228,7 +230,7 @@ export function FestivalPage({ festivalId }: Props) {
           <p className="fee-note">
             Payment goes through a stub sandbox adapter — no real PSP is connected yet (spec §8).
           </p>
-          <button type="submit" disabled={checkingOut}>{checkingOut ? 'Processing…' : `Pay ${formatMoney(cart.totalMinorUnits, 'EUR')}`}</button>
+          <button type="submit" className="submit-btn" disabled={checkingOut}>{checkingOut ? 'Processing…' : `Pay ${formatMoney(cart.totalMinorUnits, 'EUR')}`}</button>
           <button type="button" className="link-btn" onClick={() => setStep('browse')}>Back</button>
         </form>
       </div>
@@ -237,7 +239,7 @@ export function FestivalPage({ festivalId }: Props) {
 
   return (
     <div className="festival-page">
-      <a className="shell-logo" href="/">TAG<span>.</span></a>
+      <FanNav />
       <p className="eyebrow">Festival</p>
       <h1>{festival.name}</h1>
       <p className="apply-sub">{festival.venue} · {new Date(festival.startDate).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
@@ -261,6 +263,7 @@ export function FestivalPage({ festivalId }: Props) {
                       <p className="tt-price">{formatMoney(tt.priceMinorUnits, tt.currency)} · {remaining > 0 ? `${remaining} left` : 'Sold out'}</p>
                     </div>
                     <button
+                      className="submit-btn"
                       disabled={remaining <= 0 || busyZoneId === zone.id}
                       onClick={() => handleAddToCart(tt)}
                     >
@@ -292,7 +295,7 @@ export function FestivalPage({ festivalId }: Props) {
           <p>Subtotal: {formatMoney(cart.subtotalMinorUnits, 'EUR')}</p>
           <p>Fees: {formatMoney(cart.feeMinorUnits, 'EUR')}</p>
           <p className="cart-total">Total: {formatMoney(cart.totalMinorUnits, 'EUR')}</p>
-          <button onClick={() => setStep('checkout')}>Checkout</button>
+          <button className="submit-btn" onClick={() => setStep('checkout')}>Checkout</button>
         </div>
       )}
     </div>

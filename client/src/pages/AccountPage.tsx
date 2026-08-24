@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getMyAccount, resendVerification, verifyEmail, resetFanSession, type FanAccount, type SurveyResponseRecord } from '../api';
+import { getMyAccount, resendVerification, verifyEmail, type FanAccount, type SurveyResponseRecord } from '../api';
 import { QUESTIONS } from './SurveyPage';
+import { FanNav } from '../components/FanNav';
 import './AccountPage.css';
 
 // LP-14 End User page. States: no account (never took the survey) ->
@@ -47,7 +48,7 @@ export function AccountPage() {
   if (!account) {
     return (
       <div className="account-page">
-        <a className="shell-logo" href="/">TAG<span>.</span></a>
+        <FanNav />
         <h1>No account found</h1>
         <p className="apply-sub">Take the fan survey to create one.</p>
         <a className="link-btn" href="/survey">Go to the survey</a>
@@ -57,10 +58,7 @@ export function AccountPage() {
 
   return (
     <div className="account-page">
-      <nav className="shell-nav">
-        <a className="shell-logo" href="/">TAG<span>.</span></a>
-        <button className="reset-link" onClick={() => { resetFanSession(); window.location.reload(); }}>Reset demo state</button>
-      </nav>
+      <FanNav />
       <p className="eyebrow">Your account</p>
       <h1>{account.email}</h1>
 
@@ -68,7 +66,7 @@ export function AccountPage() {
         <div className="verify-banner">
           <p><strong>Email verification pending.</strong> We've "sent" a verification link — check the
           server log for it (no real email provider is connected in Phase 1, see spec §8).</p>
-          <button onClick={handleDemoVerify} disabled={verifying}>
+          <button className="submit-btn" onClick={handleDemoVerify} disabled={verifying}>
             {verifying ? 'Verifying…' : 'Dev demo: verify now'}
           </button>
           {verifyError && <p className="saved-banner error">{verifyError}</p>}
