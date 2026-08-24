@@ -5,6 +5,52 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Two new specs drafted, not built (2026-08-24, Sonnet session): TAG
+Internal Ops Console v1, and LP-14 (fan survey → End User account) in
+`PHASE_1_SPEC.md`.** Nitish shared a "Festival Fan Survey Proposal" doc
+and a "FairFare Organization Chart" (marked CONFIDENTIAL, ~20 real
+names), asking for RBAC + a dashboard per org-chart role, plus the survey
+→ signup flow, plus a new "Head of Product Development" role for himself
+under CTO. Before writing anything, raised three points given the repo is
+public: (1) real names in a public repo — he confirmed committing them is
+fine; (2) the org-chart roles (CFO/HR/Marketing/Engineering) are internal
+staff tooling, a different axis from the product's existing personas
+(Festival Goers/Clients/Platform Admin) — he confirmed this should be a
+**separate system spec**, not a PRD revision; (3) ~20 roles × a bespoke
+dashboard each is large — he confirmed scoping a generic framework fully
+specced for 3 priority roles first, the rest deferred to the same
+pattern later.
+
+`TAG_InternalOps_v1.md` (new top-level doc, same convention as
+`TAG_Architecture_v1.md`) specs: an `OrgRole`/`Capability`/
+`OrgRoleCapability`/`StaffProfile` data model in a new `internalops`
+schema (reuses `identity.Account`/`Session` for login, doesn't reuse
+`identity.Role`/`RoleAssignment` — that's the product's fan/producer/
+platform_admin RBAC axis, a deliberately separate concern from staff
+RBAC); a capability-driven dashboard API so a new role doesn't need new
+frontend code; and three fully-specced priority roles — Head of Product
+Development (Nitish, new), CTO, Founder & Managing Director — chosen to
+span an individual-contributor level, a department head, and the top of
+the hierarchy. Flagged explicitly: no real business metrics exist yet
+(no live sales/infra), so v1 dashboards are structural (org roster,
+roles, capabilities) with metric widgets marked `[TBD]` rather than
+invented numbers.
+
+LP-14 in `PHASE_1_SPEC.md` specs the fan survey (12 questions from the
+provided doc — noted one duplicate row in the source and collapsed it,
+flagged rather than silently dropped) → guest submits with email →
+`identity.Account` upserted, `SurveyResponse` stored (new `survey`
+schema) → account enters a **pending email verification** state, not
+immediately usable. Email verification is stubbed (ADR-004 port/adapter,
+same honesty pattern as the payment stub — no real provider chosen,
+verification link logged server-side rather than emailed) — real
+provider selection flagged `[TBD]`, same territory as the other
+unresolved partner decisions in spec §8. A new End User page
+(`/account`) shows the pending/verified state.
+
+**Neither is built yet — specs only, both awaiting Nitish's review before
+implementation starts**, per "spec before code."
+
 **Real QR rendering: signed off (2026-08-24, Sonnet session).** Nitish
 reviewed live at `localhost:5173/festival/9b1cab0e-8561-42d6-98e1-97d2b46ddbe7`
 (his own screenshot: confirmation screen for "Fan Web Test Festival"
@@ -552,7 +598,14 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Active: the rest of the core-ticketing backend.** Ticketing &
+1. **Two specs awaiting review before implementation starts:**
+   `TAG_InternalOps_v1.md` (staff RBAC/dashboard console — framework +
+   Head of Product Development/CTO/Founder & MD dashboards) and LP-14 in
+   `PHASE_1_SPEC.md` (fan survey → End User account, stubbed email
+   verification). Nitish asked for these "before that" (before resuming
+   the core-ticketing backend below) — check with him on priority order
+   once specs are reviewed.
+2. **The rest of the core-ticketing backend.** Ticketing &
    Inventory + Orders & Cart backend, the Fan Web checkout UI
    (`/festival/:id`), and its real QR rendering were all built and signed
    off this session — J1 (search → festival page → zone/ticket selection
@@ -563,16 +616,16 @@ current branch, and `origin/main` were identical at session start (`0 0`).
    Payments/PSP integration (currently a stub adapter — exit check 3's
    "real payment-sandbox authorisation" needs this), Ancillary Bookings,
    Consent & Privacy, Notifications (spec §2/§4).
-2. LP-3 "Use my location" nearby search still only ranks the six mock
+3. LP-3 "Use my location" nearby search still only ranks the six mock
    festivals — needs venue lat/lon collection (not built anywhere yet)
    before real festivals can be ranked geographically, not just found via
    text search.
-3. The three open items (object storage, PSP/travel partner, launch
+4. The three open items (object storage, PSP/travel partner, launch
    festival) still need resolving before the exit checks that depend on
    them (spec §6, checks 3–4) — not before further backend build starts.
-4. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
+5. Regenerate `TAG_Architecture_v1.html` from the `.md` next session that
    touches it — several sessions have now edited the `.md` only.
-5. Open, not blocking: repo-surface classification (founder names, financial
+6. Open, not blocking: repo-surface classification (founder names, financial
    figures in a public repo), and whether the `BMSx-synced` folder and
    `nitishiot/BMSx` remote get renamed too — both deliberately left alone by
    the rename pass.
@@ -985,3 +1038,14 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   Closes step 2/3 of `.claude/rules/build.md`'s protocol — step 1 (real
   end-to-end test) was already closed by the Playwright + jsQR decode
   verification logged above.
+- **2026-08-24 (Sonnet session)** — Before writing the Internal Ops /
+  survey specs, raised the standing sensitivity flag from `CLAUDE.md`
+  (public repo, real names) proactively rather than waiting for it to be
+  raised — the org chart supplied was itself marked CONFIDENTIAL, which
+  made this the concrete moment that open item warned about. Nitish
+  confirmed real names are fine to commit for this repo; the `[TBD:
+  repo-surface classification]` item in `CLAUDE.md` stays open in general
+  (this was a decision for this specific document, not a blanket
+  resolution of that item) — worth re-raising if a future document
+  crosses into "submission-bound or externally shared" territory per that
+  item's own wording.

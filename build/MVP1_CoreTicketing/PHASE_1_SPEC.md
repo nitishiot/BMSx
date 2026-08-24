@@ -62,6 +62,67 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
   demand prediction, customer data access, marketing services. This is a
   presentation-only addition — no new backend capability, no new PRD
   persona or requirement, so it doesn't need a PRD revision.
+- **LP-14 (added 2026-08-24, implementation-level, not a PRD scope
+  change) — fan survey → End User account.** A link on the landing page
+  ("Help us build TAG") opens a survey page (Fan Web, `/survey`) built
+  from the questions in the "Festival Fan Survey Proposal" doc provided
+  2026-08-24:
+  1. Domestic or international?
+  2. Accommodation type booked (hotel, Airbnb, etc.)?
+  3. Mode of transport to the festival's city (flew, train, drove)?
+  4. Mode of transport to the festival venue itself (rental car, public
+     transport, etc.)?
+  5. How did you hear about us (social media, friends, local businesses,
+     search engine)?
+  6. How many festivals do you attend per year?
+  7. How would you feel about TAG catering your entire experience?
+     (open text)
+  8. Prefer booking everything through one app, or separately?
+  9. Would a rewards system motivate you to stick to one app?
+  10. Prefer rewards as discounts, or backstage/artist meet opportunities?
+  11. Would you use a fan-exclusive social platform?
+  12. Was it easy to find recommendations for things to do outside the
+      festival?
+
+  *Source note: the provided doc listed the accommodation question
+  (item 2) twice under different rows — collapsed to one question here
+  rather than asked twice; flagged, not silently dropped.*
+
+  On submit (email required, no other account fields): upserts an
+  `identity.Account` by email (same pattern as
+  `producer-applications.ts`'s submit endpoint), stores the answers as a
+  new `SurveyResponse` (own `survey` schema, ADR-005 — plain UUID
+  `accountId`, no FK into `identity`), and puts the account into a
+  **pending email verification** state rather than immediately usable —
+  see below. Returns a session token so the client can show the account's
+  own status page immediately after submitting.
+
+  **Email verification (stubbed, ADR-004 port/adapter — same pattern as
+  the payment adapter and the object-storage TBD):** no real transactional
+  email provider is chosen or connected in Phase 1. A verification token
+  is generated and stored (`identity.EmailVerificationToken`: `id`,
+  `accountId`, `token`, `expiresAt`, `usedAt`), and the "send" step is a
+  stub that logs the verification link server-side rather than emailing
+  it — the same honesty pattern as `stubAdapter.ts` not pretending to be a
+  real PSP. `POST /api/identity/verify-email` (token in body) marks the
+  account verified. Real provider selection is
+  `[TBD: same territory as PHASE_1_SPEC.md §8's other unresolved partner
+  decisions — not picked in isolation]`.
+
+  **End User page** (Fan Web, `/account`): shown immediately after survey
+  submission and on any later visit while signed in as that account.
+  States: *pending verification* (clear message, plus — dev/demo only,
+  not a real flow — a way to trigger the stub verify endpoint so the flow
+  is exercisable without real email infra) → *verified* (basic profile:
+  email, survey responses recap; no bookings/orders view yet, since that
+  needs a fan-authenticated Orders & Cart history view, out of scope for
+  this addition).
+
+  **Exit check addition (§6):** a guest completes the survey with a real
+  email → account created in pending-verification state → End User page
+  shows the pending message, not a raw error → verifying (via the stub
+  flow) flips the End User page to verified state — demonstrated live,
+  not asserted.
 
 **Core ticketing (PRD §10 P0, journeys J1 and J2)**
 - Event & Catalogue: Festival, Event, Artist, Venue, Zone, SeatMap (read

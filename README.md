@@ -21,6 +21,7 @@ BMSx-synced/
 ├── TAG_PRD_v2.md           ← superseded by v3; kept in place, not archived yet
 ├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — 6 views + ADRs
 ├── TAG_Architecture_v1.html ← same content, rendered for reading (Mermaid via CDN)
+├── TAG_InternalOps_v1.md    ← internal staff RBAC/dashboard console spec (v1, draft) — separate system, not a PRD phase
 ├── .claude/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails
