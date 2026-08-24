@@ -1132,6 +1132,10 @@ const MOCK_FESTIVALS = [
 // stays usable as a static file on its own (LP-4).
 let CATALOGUE_FESTIVALS = MOCK_FESTIVALS.slice();
 const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin once deployed]
+// Fan Web (festival detail / checkout) lives in client/, a separate Vite
+// app from this static landing page — [TBD: prod Fan Web origin, likely
+// the same domain once deployed, a different port only in local dev].
+const FAN_WEB_BASE = 'http://localhost:5173';
 (function(){
   fetch(`${CATALOGUE_API_BASE}/festivals/public`)
     .then(r => r.ok ? r.json() : Promise.reject())
@@ -1146,6 +1150,7 @@ const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin
         date: f.date,
         lat: null,
         lon: null,
+        isReal: true,
       }));
       CATALOGUE_FESTIVALS = real.concat(MOCK_FESTIVALS);
     })
@@ -1155,11 +1160,15 @@ const CATALOGUE_API_BASE = 'http://localhost:4000/api'; // [TBD: prod API origin
 function resultCardHTML(f){
   const genreLabel = f.genre ? `${f.genre.replace(/\b\w/g, c => c.toUpperCase())} · ` : '';
   const locationLabel = f.country ? `${f.city}, ${f.country}` : f.city;
+  // Only a real, producer-created festival (backend id) has anything to
+  // check out against — the six illustrative mock festivals still link to
+  // the "#app" placeholder, same as before.
+  const viewHref = f.isReal ? `${FAN_WEB_BASE}/festival/${f.id}` : '#app';
   return `<div class="result-card">
     <h4>${f.name}</h4>
     <p>${genreLabel}${locationLabel}</p>
     <p>${new Date(f.date).toLocaleDateString('en-IE', { day:'numeric', month:'short', year:'numeric' })}</p>
-    <a href="#app" data-analytics="result_view_${f.id}">View festival</a>
+    <a href="${viewHref}" data-analytics="result_view_${f.id}">View festival</a>
   </div>`;
 }
 

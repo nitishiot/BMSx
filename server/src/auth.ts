@@ -62,6 +62,33 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   next();
 }
 
+// Orders & Cart is guest-usable (J1) — attaches req.account when a valid
+// bearer token is present, but never rejects an anonymous request. Distinct
+// from requireAuth, which always demands a token.
+export async function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+  const header = req.header('authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : null;
+  if (!token) {
+    next();
+    return;
+  }
+
+  const session = await prisma.session.findUnique({
+    where: { token },
+    include: { account: { include: { roleAssignments: { include: { role: true } } } } },
+  });
+
+  if (session && session.expiresAt >= new Date()) {
+    req.account = {
+      id: session.account.id,
+      email: session.account.email,
+      name: session.account.name,
+      roles: session.account.roleAssignments.filter((a) => !a.suspendedAt).map((a) => a.role.key),
+    };
+  }
+  next();
+}
+
 export function requireRole(role: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.account?.roles.includes(role)) {

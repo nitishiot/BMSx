@@ -257,3 +257,124 @@ export async function adminReinstateProducer(accountId: string, reason: string):
 export function resetAdminSession() {
   safeRemove(ADMIN_TOKEN_KEY);
 }
+
+// --- Fan Web (J1: guest-to-ticket) ---
+// No auth required for any of these — carts are guest-usable per spec §2.
+// Ticket/inventory/cart types mirror server/src/routes/{inventory,orders}.ts.
+
+export interface Allocation {
+  totalQuantity: number;
+  remaining: number;
+}
+
+export interface TicketType {
+  id: string;
+  zoneId: string;
+  name: string;
+  priceMinorUnits: number;
+  currency: string;
+  allocation: Allocation | null;
+}
+
+export interface CartItem {
+  id: string;
+  cartId: string;
+  ticketTypeId: string;
+  holdId: string;
+  quantity: number;
+  unitPriceMinorUnits: number;
+}
+
+export interface CartView {
+  id: string;
+  accountId: string | null;
+  status: 'open' | 'checked_out' | 'abandoned';
+  items: CartItem[];
+  subtotalMinorUnits: number;
+  feeMinorUnits: number;
+  totalMinorUnits: number;
+}
+
+export interface Ticket {
+  id: string;
+  ticketTypeId: string;
+  orderId: string;
+  orderLineId: string;
+  holderName: string | null;
+  qrCode: string;
+  issuedAt: string;
+}
+
+export interface Order {
+  id: string;
+  cartId: string;
+  guestEmail: string | null;
+  guestName: string | null;
+  subtotalMinorUnits: number;
+  feeMinorUnits: number;
+  totalMinorUnits: number;
+  currency: string;
+  status: 'pending' | 'paid' | 'failed' | 'refunded';
+}
+
+export async function getPublicFestival(id: string): Promise<Festival> {
+  const { festival } = await request<{ festival: Festival }>(`/festivals/${id}`);
+  return festival;
+}
+
+export async function getPublicEvents(festivalId: string): Promise<CatalogueEvent[]> {
+  const { events } = await request<{ events: CatalogueEvent[] }>(`/catalogue/festivals/${festivalId}/events`);
+  return events;
+}
+
+export async function getZoneTicketTypes(zoneId: string): Promise<TicketType[]> {
+  const { ticketTypes } = await request<{ ticketTypes: TicketType[] }>(`/inventory/zones/${zoneId}/ticket-types`);
+  return ticketTypes;
+}
+
+const CART_ID_KEY = 'tag_cart_id';
+
+export function getCartId(): string | null {
+  return safeGet(CART_ID_KEY);
+}
+
+export function clearCartId() {
+  safeRemove(CART_ID_KEY);
+}
+
+export async function ensureCart(): Promise<string> {
+  const existing = getCartId();
+  if (existing) return existing;
+  const { cart } = await request<{ cart: { id: string } }>('/orders/carts', { method: 'POST', body: '{}' });
+  safeSet(CART_ID_KEY, cart.id);
+  return cart.id;
+}
+
+export async function getCart(cartId: string): Promise<CartView> {
+  const { cart } = await request<{ cart: CartView }>(`/orders/carts/${cartId}`);
+  return cart;
+}
+
+export async function addCartItem(cartId: string, ticketTypeId: string, quantity: number): Promise<CartView> {
+  const { cart } = await request<{ cart: CartView }>(
+    `/orders/carts/${cartId}/items`,
+    { method: 'POST', body: JSON.stringify({ ticketTypeId, quantity }) },
+  );
+  return cart;
+}
+
+export async function removeCartItem(cartId: string, itemId: string): Promise<void> {
+  await fetch(`${API_BASE}/orders/carts/${cartId}/items/${itemId}`, { method: 'DELETE' });
+}
+
+export async function checkout(
+  cartId: string,
+  input: { guestEmail: string; guestName?: string },
+): Promise<{ order: Order; tickets: Ticket[] }> {
+  const result = await request<{ order: Order; tickets: Ticket[] }>(
+    `/orders/carts/${cartId}/checkout`,
+    { method: 'POST', body: JSON.stringify(input) },
+  );
+  clearCartId();
+  return result;
+}

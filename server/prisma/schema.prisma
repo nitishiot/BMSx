@@ -12,7 +12,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["identity", "catalogue"]
+  schemas  = ["identity", "catalogue", "inventory", "orders"]
 }
 
 model Account {
@@ -219,4 +219,187 @@ model Zone {
 
   @@index([eventId])
   @@schema("catalogue")
+}
+
+// ---------------------------------------------------------------------
+// Ticketing & Inventory (spec §2/§4 — extracted service in production;
+// Phase 1 keeps it as its own Postgres schema in the shared dev instance,
+// per ADR-005 one-owner-per-entity — no FK crosses into `catalogue` or
+// `orders`, TicketType.zoneId / Hold.cartId etc. are plain UUID columns
+// validated in application code). Hold-then-issue model, no overselling
+// (ADR-007): Allocation.remaining is only ever changed by an atomic
+// conditional UPDATE (`remaining >= quantity`), never read-then-write.
+// ---------------------------------------------------------------------
+
+model TicketType {
+  id                String   @id @default(uuid())
+  zoneId            String
+  name              String
+  priceMinorUnits   Int
+  currency          String   @default("EUR")
+  createdAt         DateTime @default(now())
+
+  allocation Allocation?
+  holds      Hold[]
+  tickets    Ticket[]
+
+  @@index([zoneId])
+  @@schema("inventory")
+}
+
+// One row per TicketType. `remaining` is the sellable count net of active
+// holds and issued tickets — decremented on hold, restored on
+// release/expiry, never touched on issue (issuing just converts a hold
+// that already decremented it).
+model Allocation {
+  id            String   @id @default(uuid())
+  ticketTypeId  String   @unique
+  totalQuantity Int
+  remaining     Int
+  updatedAt     DateTime @updatedAt
+
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+
+  @@schema("inventory")
+}
+
+enum HoldStatus {
+  active
+  converted
+  released
+  expired
+
+  @@schema("inventory")
+}
+
+// A temporary reservation against Allocation.remaining. Cart items map 1:1
+// to an active Hold; checkout converts holds to Tickets, abandonment
+// releases them back. `expiresAt` is enforced lazily (checked/reclaimed on
+// the next allocation-touching call) rather than a background job — see
+// PROGRESS.md for that scoping note.
+model Hold {
+  id           String     @id @default(uuid())
+  ticketTypeId String
+  cartId       String
+  quantity     Int
+  status       HoldStatus @default(active)
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+  tickets    Ticket[]
+
+  @@index([ticketTypeId])
+  @@index([cartId])
+  @@schema("inventory")
+}
+
+// Issued on successful checkout, one row per unit purchased. `qrCode` is a
+// unique opaque token standing in for a real scannable asset — object
+// storage/QR rendering product is [TBD: PHASE_1_SPEC.md §8].
+model Ticket {
+  id          String   @id @default(uuid())
+  ticketTypeId String
+  holdId      String
+  orderId     String
+  orderLineId String
+  holderName  String?
+  qrCode      String   @unique @default(uuid())
+  issuedAt    DateTime @default(now())
+
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+  hold       Hold       @relation(fields: [holdId], references: [id])
+
+  @@index([orderId])
+  @@schema("inventory")
+}
+
+// ---------------------------------------------------------------------
+// Orders & Cart (spec §2/§4 — monolith module, orchestrates in-process
+// calls to Ticketing & Inventory and the stub Payment adapter, ADR-006).
+// A Cart is guest-usable (`accountId` nullable) per J1. Fee itemisation
+// uses a placeholder rate — see `server/src/orders/pricing.ts`, no real
+// fee schedule exists in the PRD yet.
+// ---------------------------------------------------------------------
+
+enum CartStatus {
+  open
+  checked_out
+  abandoned
+
+  @@schema("orders")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  accountId String?
+  status    CartStatus @default(open)
+  createdAt DateTime   @default(now())
+
+  items CartItem[]
+  order Order?
+
+  @@index([accountId])
+  @@schema("orders")
+}
+
+model CartItem {
+  id                 String   @id @default(uuid())
+  cartId             String
+  ticketTypeId       String
+  holdId             String
+  quantity           Int
+  unitPriceMinorUnits Int
+  createdAt          DateTime @default(now())
+
+  cart Cart @relation(fields: [cartId], references: [id])
+
+  @@index([cartId])
+  @@schema("orders")
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+
+  @@schema("orders")
+}
+
+// Itemised per ADR-006/spec §2: subtotal + fee shown separately, matching
+// exit check 3 ("cart shows an itemised fee breakdown").
+model Order {
+  id                   String      @id @default(uuid())
+  cartId               String      @unique
+  accountId            String?
+  guestEmail           String?
+  guestName            String?
+  subtotalMinorUnits   Int
+  feeMinorUnits        Int
+  totalMinorUnits      Int
+  currency             String      @default("EUR")
+  status               OrderStatus @default(pending)
+  paymentIntentId      String?
+  createdAt            DateTime    @default(now())
+
+  cart  Cart        @relation(fields: [cartId], references: [id])
+  lines OrderLine[]
+
+  @@index([accountId])
+  @@schema("orders")
+}
+
+model OrderLine {
+  id                  String   @id @default(uuid())
+  orderId             String
+  ticketTypeId        String
+  quantity            Int
+  unitPriceMinorUnits Int
+  createdAt           DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@schema("orders")
 }

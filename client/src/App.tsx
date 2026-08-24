@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Apply } from './pages/Apply';
 import { EventSetup } from './pages/EventSetup';
 import { AdminConsole } from './pages/AdminConsole';
+import { FestivalPage } from './pages/FestivalPage';
 import { AuditLog } from './components/AuditLog';
 import { RoadmapTeaser } from './components/RoadmapTeaser';
 import { PRODUCER_FEATURE_MANIFEST } from './featureManifest';
@@ -72,6 +73,9 @@ function ProducerApp() {
 }
 
 export default function App() {
-  const isAdmin = window.location.pathname.startsWith('/admin');
+  const path = window.location.pathname;
+  const festivalMatch = path.match(/^\/festival\/([^/]+)/);
+  if (festivalMatch) return <FestivalPage festivalId={festivalMatch[1]} />;
+  const isAdmin = path.startsWith('/admin');
   return isAdmin ? <AdminConsole /> : <ProducerApp />;
 }

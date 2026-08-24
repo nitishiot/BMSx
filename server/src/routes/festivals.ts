@@ -74,3 +74,15 @@ festivalsRouter.get('/mine', requireAuth, requireRole('producer'), async (req, r
   });
   res.json({ festivals });
 });
+
+// Public single-festival read (J1: festival detail page). Registered last
+// deliberately — Express matches routes in registration order, and this
+// generic `:id` param would otherwise swallow `/public` and `/mine`.
+festivalsRouter.get('/:id', async (req, res) => {
+  const festival = await prisma.festival.findUnique({ where: { id: String(req.params.id) } });
+  if (!festival) {
+    res.status(404).json({ error: 'Festival not found' });
+    return;
+  }
+  res.json({ festival });
+});

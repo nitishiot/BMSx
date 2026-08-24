@@ -5,6 +5,129 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**Fan Web checkout UI + Ticketing & Inventory/Orders & Cart backend:
+signed off together (2026-08-24, Sonnet session).** Nitish reviewed both
+live at `localhost:5173` — screenshots of the real "Summer with Linkin"
+festival page (created in an earlier session; its event card correctly
+shows "No tickets on sale for this zone yet" since no ticket types exist
+for it) and the full Fan Web Test Festival flow (ticket selection → cart
+with itemised €45.00/€4.50/€49.50 → guest checkout as
+`chetan@abc.com` → confirmation screen with the issued ticket and its
+qrCode token) — and said "looks good. consider it sign-off." This covers
+both sub-slices from this session (the Orders & Cart/Ticketing &
+Inventory backend and the Fan Web UI built on top of it), not the whole
+Ticketing & Inventory + Orders & Cart item from spec §2/§4's original
+list — Virtual Queue and a real PSP are still separate, unbuilt pieces.
+
+**Slice sign-off, not Phase 1 sign-off** — same caveat as every prior
+slice; §9 still needs all of §6's exit checks, which still need Virtual
+Queue and a real Payments/PSP integration. No `phase-1` tag.
+
+**Fan Web checkout UI: built, awaiting sign-off (2026-08-24, Sonnet
+session, same session as the Ticketing & Inventory + Orders & Cart
+backend below).** Nitish asked to build the UI next. New page
+`client/src/pages/FestivalPage.tsx`, served at `/festival/:id` — a third
+pathname-routed surface in the existing Producer-portal Vite app (`App.tsx`
+now checks `/festival/`, `/admin`, else Producer portal), not a separate
+app, matching the minimal-routing pattern already in use. Implements J1's
+guest-to-ticket path: browse the festival's Events/Zones/TicketTypes
+(fetched via the existing public catalogue/inventory read endpoints) →
+"Add to cart" (calls the Orders & Cart API built earlier this session) →
+itemised cart panel (subtotal/fee/total) → guest checkout form (email
+required, name optional, no account) → stub-PSP payment → confirmation
+screen listing issued tickets with an opaque `qrCode` token per ticket,
+explicitly labelled as not a real scannable QR image (object storage/QR
+rendering is still `[TBD: PHASE_1_SPEC.md §8]`).
+
+Added one new backend endpoint, `GET /api/festivals/:id` (public,
+`server/src/routes/festivals.ts`) — the festival detail page needs a
+single-festival read the existing `/public` (list) and `/mine`
+(producer-scoped) routes didn't provide. Registered **last** in the router
+deliberately: Express matches routes in registration order, and a generic
+`:id` param registered earlier would have swallowed `/public`/`/mine`
+literal-path requests — caught this while writing the route, not after.
+
+`landing/index.html`'s `resultCardHTML` now sends a real (backend-sourced)
+festival's "View festival" link to `FAN_WEB_BASE/festival/{id}`
+(`FAN_WEB_BASE = 'http://localhost:5173'`, `[TBD: prod Fan Web origin —
+likely the same domain as landing once deployed]`); the six illustrative
+mock festivals keep the pre-existing `#app` placeholder, since there's no
+real inventory behind them to check out against. This is the fix for the
+gap Nitish flagged during the Event & Catalogue sign-off review earlier
+this session ("View festival doesn't go anywhere") — it now does, for any
+real festival with a session/zone/ticket type set up.
+
+Verified two ways, both against the real running `server/` + Postgres —
+not mocks: (1) an HTTP setup script creates a real producer → festival →
+venue → event → zone → ticket type (5-unit allocation); (2) a Playwright
+run drives the actual `localhost:5173/festival/:id` page in a real
+browser: ticket type and remaining-count render correctly → "Add to cart"
+→ cart panel shows correct itemised subtotal (€45.00) / fee (€4.50, 10%
+placeholder) / total (€49.50) → checkout form → stub-PSP payment →
+confirmation screen with 1 issued ticket and its `qrCode` token rendered →
+zero console errors. A second Playwright run against the actual static
+`landing/index.html` (served at `localhost:4173`) confirmed a real
+festival's card now links to the Fan Web page with the correct id, and
+(checked directly against `resultCardHTML` in-page, not via search text —
+the dev DB has accumulated enough real test festivals from prior sessions
+that the zero-match fallback can legitimately surface real festivals for
+almost any query now, which made asserting the negative case via search
+text the wrong check) that a mock-only festival still renders the `#app`
+placeholder. Typecheck and production build (`tsc -b && vite build`) both
+clean on `client/`. **Not yet shown to Nitish live.**
+
+**Core-ticketing backend, Ticketing & Inventory + Orders & Cart (backend
+only): built, awaiting sign-off (2026-08-24, Sonnet session).** Next
+sub-slice after the three signed off earlier the same session. Nitish
+chose "Orders & Cart" as the next item; scoped down to backend-only after
+flagging that Orders & Cart can't function without sellable inventory (not
+built) and a payment step (PSP still unresolved, spec §8) — he picked the
+backend-first option over also building a new fan-facing checkout UI in
+the same pass (no Fan Web surface exists at all yet).
+
+New Postgres schemas `inventory` (`TicketType`, `Allocation`, `Hold`,
+`Ticket`) and `orders` (`Cart`, `CartItem`, `Order`, `OrderLine`), no FK
+across either schema boundary per ADR-005 — same pattern as
+`identity`/`catalogue`. `server/src/inventory/holds.ts` implements the
+hold-then-issue, no-oversell model (ADR-007): reserving a hold is a single
+conditional `UPDATE Allocation SET remaining = remaining - qty WHERE
+remaining >= qty`, safe under concurrent callers via Postgres row locking
+without needing SERIALIZABLE isolation; expired holds are reclaimed
+lazily (checked before every new reservation) rather than via a background
+job — flagged as a scoping choice, not a gap that blocks this slice.
+`server/src/payments/stubAdapter.ts` is a labelled ADR-004 port/adapter
+stand-in (always authorises, except a magic decline-amount hook for
+testing) — real PSP selection is still open (spec §8). Fee itemisation
+(`server/src/orders/pricing.ts`) uses a placeholder 10% rate, explicitly
+flagged as not a real business number (no fee schedule exists in the PRD).
+
+New routes: `POST/GET /api/inventory/zones/:zoneId/ticket-types` (producer
+-owned, same ownership-chain pattern as catalogue.ts's zones — Zone ->
+Event -> Festival.producerAccountId), `GET /api/inventory/ticket-types/:id`
+(public); `POST /api/orders/carts` (guest-usable — `optionalAuth`, a new
+auth.ts middleware alongside `requireAuth`, attaches an account if a valid
+token is present but never rejects an anonymous request), `GET
+/api/orders/carts/:cartId` (itemised subtotal/fee/total), `POST`/`DELETE
+.../items`, `POST .../checkout`.
+
+Verified with a scripted HTTP walk against the real running `server/` +
+Postgres (not mocks): full producer setup (application → approval →
+festival → venue → event → zone → ticket type) → RBAC negative test
+(second producer 404s creating a ticket type on the first producer's
+zone) → guest cart created with no auth → item added, itemised pricing
+checked (subtotal/fee/total) → allocation correctly decremented →
+checkout via the stub adapter → 2 tickets issued with qrCodes → cart
+marked `checked_out` → re-checkout on the same cart correctly rejected
+(409) → simulated payment decline correctly surfaces as 402 → **10
+concurrent requests for 1 unit each against a 5-unit allocation: exactly 5
+succeeded, exactly 5 rejected, `remaining` ended at exactly 0, never
+negative** (ADR-007's no-oversell requirement, exercised with real
+concurrency, not asserted) → separate run: removing a cart item correctly
+releases its hold back to `Allocation.remaining`. Typecheck clean on
+`server/`. **Not yet shown to Nitish live** — per `.claude/rules/build.md`,
+status stays "built, awaiting sign-off." No client/UI change in this
+sub-slice.
+
 **Three sub-slices signed off together (2026-08-24, Sonnet session): Event
 & Catalogue, RBAC suspend/reinstate, and the landing-page catalogue
 wiring.** Nitish reviewed the landing search live at `localhost:4173`
@@ -397,11 +520,18 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Active: the rest of the core-ticketing backend** — Virtual Queue,
-   Ticketing & Inventory, Orders & Cart, Payments, Ancillary Bookings,
-   Consent & Privacy, Notifications (spec §2/§4). Orders & Cart in
-   particular unblocks a real festival detail page — "View festival" is
-   currently a placeholder link (§6.1/J1).
+1. **Active: the rest of the core-ticketing backend.** Ticketing &
+   Inventory + Orders & Cart backend, and the Fan Web checkout UI
+   (`/festival/:id`), both built this session (awaiting sign-off, see
+   Status) — J1 (search → festival page → zone/ticket selection → cart →
+   guest checkout → confirmation) now runs end to end against real
+   infrastructure, demoable live at `localhost:5173/festival/:id`. Still
+   needed: Virtual Queue (admission gating ahead of purchase — exit check
+   4 needs this), a real Payments/PSP integration (currently a stub
+   adapter — exit check 3's "real payment-sandbox authorisation" needs
+   this), real scannable QR rendering (currently an opaque text token —
+   gated on the object storage product decision, §8), Ancillary Bookings,
+   Consent & Privacy, Notifications (spec §2/§4).
 2. LP-3 "Use my location" nearby search still only ranks the six mock
    festivals — needs venue lat/lon collection (not built anywhere yet)
    before real festivals can be ranked geographically, not just found via
@@ -766,3 +896,44 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   a sign-off review. No `phase-1` tag — these are sub-slice sign-offs, per
   `.claude/rules/build.md`'s reservation of that tag for whole-phase
   sign-off.
+- **2026-08-24 (Sonnet session)** — Asked Nitish to pick the next
+  core-ticketing item; he chose Orders & Cart. Since Orders & Cart per
+  spec §2 orchestrates inventory + payment and neither existed, asked him
+  to confirm scope before building: backend-only (Ticketing & Inventory +
+  Orders & Cart APIs, stub payment adapter) vs. also building a new
+  fan-facing checkout UI in the same pass. He chose backend-only. Design
+  choice for no-oversell (ADR-007): a single conditional `UPDATE
+  Allocation SET remaining = remaining - qty WHERE remaining >= qty`
+  inside a transaction, not SELECT-then-check-then-UPDATE — the latter has
+  a race window under concurrent requests that Postgres row-level locking
+  closes for the conditional-UPDATE form even at default READ COMMITTED
+  isolation. Verified with a real 10-concurrent-request test against a
+  5-unit allocation before considering ADR-007 satisfied, not just
+  reasoned about. Hold expiry (10-minute figure, reusing J2's language) is
+  reclaimed lazily rather than via a background job — a deliberate scope
+  cut for this sub-slice, noted in `PHASE_1_SPEC.md`, not silently
+  dropped. Fee itemisation uses a placeholder 10% rate since no fee
+  schedule exists in the PRD — flagged as `[TBD]` rather than invented as
+  if real, per `CLAUDE.md`'s evidence-over-adjectives rule.
+- **2026-08-24 (Sonnet session)** — Built the Fan Web checkout UI as a
+  third pathname-routed surface (`/festival/:id`) inside the existing
+  Producer-portal Vite app, rather than a new standalone app — matches the
+  established minimal-routing pattern (`App.tsx` already branches on
+  `/admin`) and avoids standing up a second toolchain for what's still a
+  Phase-1-scale surface. Spec's "Fan Web (SSR/SSG)" framing is aspirational
+  for later; this is client-rendered, same trade-off already made and
+  documented for the static `landing/` page's own scope. Found and fixed a
+  real route-ordering bug while adding the new `GET /api/festivals/:id`
+  endpoint: a first draft registered it between `/public` and `/mine`
+  believing Express matches literal segments before params — it doesn't,
+  it matches registration order, so `/mine` would have been silently
+  swallowed by `:id`. Caught before running any test, by re-reading how
+  Express routing actually works, not discovered via a failing test.
+- **2026-08-24 (Sonnet session)** — Fan Web checkout UI and the Ticketing
+  & Inventory/Orders & Cart backend signed off together after Nitish
+  reviewed both live and said "looks good. consider it sign-off." Per
+  `.claude/rules/build.md`'s three-step protocol this closes step 2/3 for
+  both sub-slices from this session — real end-to-end tests (Playwright +
+  scripted HTTP, logged above) had already closed step 1. No `phase-1` tag
+  — sub-slice sign-off, same reservation as every prior slice this
+  project.

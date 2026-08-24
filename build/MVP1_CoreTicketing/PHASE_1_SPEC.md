@@ -73,8 +73,52 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
   issue model, no overselling (ADR-007).
 - Orders & Cart: Cart, Order, OrderLine, saga orchestration across
   inventory + payment (ADR-006).
+  - **Ticketing & Inventory + Orders & Cart, backend-only (added
+    2026-08-24, implementation-level, not a PRD scope change).** Built as
+    one sub-slice since Orders & Cart cannot function without sellable
+    inventory: `TicketType`/`Allocation`/`Hold`/`Ticket` (hold-then-issue,
+    ADR-007 no-oversell — a single conditional `UPDATE ... WHERE remaining
+    >= quantity` per reservation, verified safe under real concurrent
+    requests, never a read-then-write) in a new `inventory` Postgres
+    schema; `Cart`/`CartItem`/`Order`/`OrderLine` in a new `orders` schema
+    (ADR-005, no FK crosses either boundary). Checkout goes through a stub
+    payment adapter (`server/src/payments/stubAdapter.ts`, ADR-004
+    port/adapter — PSP selection is still `[TBD: §8 item 2]`); fee
+    itemisation uses a placeholder 10% rate
+    (`server/src/orders/pricing.ts`) since no fee schedule exists in the
+    PRD yet — flagged there, not presented as a real number. Guest carts
+    work end to end (no account required until checkout, per J1). **Not
+    yet built:** the fan-facing checkout UI (no Fan Web surface exists at
+    all yet — landing page's "View festival" is still a placeholder) and
+    Virtual Queue's admission gating ahead of purchase. Verified via a
+    scripted HTTP walk against the real running server + Postgres,
+    including a 10-concurrent-request oversell test (exactly 5 of 10
+    1-unit holds against a 5-unit allocation succeeded, `remaining` never
+    went negative) and a hold-release-on-item-removal check — not shown to
+    Nitish live yet, see `PROGRESS.md`.
+  - **Fan Web checkout UI (added 2026-08-24, implementation-level, not a
+    PRD scope change).** `client/src/pages/FestivalPage.tsx`, served at
+    `/festival/:id` in the same Vite app as the Producer portal/Admin
+    console (a third pathname-routed surface, not a separate app) — browse
+    a festival's sessions/zones/ticket types, add to cart, itemised cart
+    panel, guest checkout form, confirmation screen with per-ticket opaque
+    QR tokens (real scannable QR rendering is still `[TBD: §8 object
+    storage]`). No account required at any step (J1). `landing/index.html`'s
+    "View festival" link now points real (backend-sourced) festival cards
+    at this page (`FAN_WEB_BASE`, `[TBD: prod Fan Web origin]`); the six
+    illustrative mock festivals keep the `#app` placeholder, since there's
+    nothing real to check out against for them. Verified live with
+    Playwright driving the actual browser: festival page → add ticket to
+    cart → itemised subtotal/fee/total shown correctly → checkout form →
+    stub-PSP payment → confirmation screen with 1 issued ticket + QR token
+    — zero console errors; a second Playwright run confirmed the landing
+    page's real-festival link resolves to this page and the mock-festival
+    fallback link is unchanged. **Not yet built:** Virtual Queue admission
+    gating ahead of this flow, and a real PSP (still the stub adapter).
 - Payments & Fees: PaymentIntent, FeeLine, Refund — itemised fees at cart,
-  PCI scope isolated to this service (ADR-003).
+  PCI scope isolated to this service (ADR-003). **Stubbed for the
+  Ticketing & Inventory/Orders & Cart sub-slice above** — a real PSP
+  integration and dedicated Payments service are still unbuilt.
 - Ancillary Bookings: **thin slice only** — one accommodation and one
   transport partner integration, skippable per J1, no partner marketplace.
 - Consent & Privacy: ConsentRecord, GDPR consent capture gating any
