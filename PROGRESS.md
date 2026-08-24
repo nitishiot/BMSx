@@ -5,8 +5,15 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
-**Real QR rendering: built, awaiting sign-off (2026-08-24, Sonnet
-session).** Nitish picked this as the next item after signing off the
+**Real QR rendering: signed off (2026-08-24, Sonnet session).** Nitish
+reviewed live at `localhost:5173/festival/9b1cab0e-8561-42d6-98e1-97d2b46ddbe7`
+(his own screenshot: confirmation screen for "Fan Web Test Festival"
+showing a real rendered QR code above the ticket's token) and said "looks
+good." **Sub-slice sign-off**, same caveat as every other item this
+session — Phase 1 sign-off (§9) still needs Virtual Queue, a real PSP,
+and the other unbuilt modules.
+
+Nitish picked this as the next item after signing off the
 Fan Web checkout UI. Corrected a mischaracterisation from earlier in this
 session: the confirmation screen's tickets previously showed the opaque
 `qrCode` text token with a note saying real QR rendering was blocked on
@@ -546,13 +553,12 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 ## Next steps
 
 1. **Active: the rest of the core-ticketing backend.** Ticketing &
-   Inventory + Orders & Cart backend, and the Fan Web checkout UI
-   (`/festival/:id`), both built this session (awaiting sign-off, see
-   Status) — J1 (search → festival page → zone/ticket selection → cart →
-   guest checkout → confirmation) now runs end to end against real
-   infrastructure, demoable live at `localhost:5173/festival/:id`, and its
-   confirmation screen now shows a real scannable QR code (built this
-   session — awaiting sign-off, see Status). Still needed: Virtual Queue
+   Inventory + Orders & Cart backend, the Fan Web checkout UI
+   (`/festival/:id`), and its real QR rendering were all built and signed
+   off this session — J1 (search → festival page → zone/ticket selection
+   → cart → guest checkout → confirmation with a real scannable QR) now
+   runs end to end against real infrastructure, demoable live at
+   `localhost:5173/festival/:id`. Still needed: Virtual Queue
    (admission gating ahead of purchase — exit check 4 needs this), a real
    Payments/PSP integration (currently a stub adapter — exit check 3's
    "real payment-sandbox authorisation" needs this), Ancillary Bookings,
@@ -974,3 +980,8 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   actual PNG pixel data with `jsQR` and confirmed the decoded text matches
   the ticket's token exactly — proves the QR is genuinely scannable, not
   just image-shaped.
+- **2026-08-24 (Sonnet session)** — Real QR rendering signed off after
+  Nitish reviewed the confirmation screen live and said "looks good."
+  Closes step 2/3 of `.claude/rules/build.md`'s protocol — step 1 (real
+  end-to-end test) was already closed by the Playwright + jsQR decode
+  verification logged above.

@@ -127,7 +127,8 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
     needing no storage at all. Verified live with Playwright plus a real
     QR decode (`jsQR` against the rendered PNG's pixel data) confirming
     the decoded content exactly matches the ticket's `qrCode` token — not
-    just that an image tag was present.
+    just that an image tag was present. **Signed off** — Nitish reviewed
+    live and said "looks good."
 - Payments & Fees: PaymentIntent, FeeLine, Refund — itemised fees at cart,
   PCI scope isolated to this service (ADR-003). **Stubbed for the
   Ticketing & Inventory/Orders & Cart sub-slice above** — a real PSP
