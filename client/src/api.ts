@@ -8,6 +8,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:4000/api';
 
 const PRODUCER_TOKEN_KEY = 'tag_producer_token';
 const ADMIN_TOKEN_KEY = 'tag_admin_token';
+const FAN_TOKEN_KEY = 'tag_fan_token';
 
 function safeGet(key: string): string | null {
   try {
@@ -365,6 +366,68 @@ export async function addCartItem(cartId: string, ticketTypeId: string, quantity
 
 export async function removeCartItem(cartId: string, itemId: string): Promise<void> {
   await fetch(`${API_BASE}/orders/carts/${cartId}/items/${itemId}`, { method: 'DELETE' });
+}
+
+// --- LP-14: fan survey -> End User account ---
+// A third bearer token, distinct from the producer/admin ones, for the
+// same reason those are kept separate — this is a different account
+// signing in from a different browsing context (Fan Web), not the same
+// session as any producer/admin login on the same machine.
+
+export function getFanToken(): string | null {
+  return safeGet(FAN_TOKEN_KEY);
+}
+
+export function resetFanSession() {
+  safeRemove(FAN_TOKEN_KEY);
+}
+
+export interface FanAccount {
+  id: string;
+  email: string;
+  name: string;
+  emailVerifiedAt: string | null;
+}
+
+export interface SurveyResponseRecord {
+  id: string;
+  accountId: string;
+  answers: Record<string, string>;
+  createdAt: string;
+}
+
+export async function submitSurvey(
+  email: string,
+  answers: Record<string, string>,
+): Promise<{ account: FanAccount; verificationTokenForDemo: string | null }> {
+  const result = await request<{ token: string; account: FanAccount; verificationTokenForDemo: string | null }>(
+    '/survey/responses',
+    { method: 'POST', body: JSON.stringify({ email, answers }) },
+  );
+  safeSet(FAN_TOKEN_KEY, result.token);
+  return { account: result.account, verificationTokenForDemo: result.verificationTokenForDemo };
+}
+
+export async function getMyAccount(): Promise<{ account: FanAccount; surveyResponse: SurveyResponseRecord | null } | null> {
+  const token = getFanToken();
+  if (!token) return null;
+  return request('/account/me', {}, token);
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  await request('/account/verify-email', { method: 'POST', body: JSON.stringify({ token }) });
+}
+
+// Dev/demo-only convenience (no real inbox to resend to) — PHASE_1_SPEC.md
+// LP-14 flags this explicitly as not part of the real flow.
+export async function resendVerification(): Promise<string | null> {
+  const token = getFanToken();
+  const { verificationTokenForDemo } = await request<{ verificationTokenForDemo: string | null }>(
+    '/account/resend-verification',
+    { method: 'POST' },
+    token,
+  );
+  return verificationTokenForDemo;
 }
 
 export async function checkout(

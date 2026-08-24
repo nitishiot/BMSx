@@ -21,7 +21,6 @@ BMSx-synced/
 ├── TAG_PRD_v2.md           ← superseded by v3; kept in place, not archived yet
 ├── TAG_Architecture_v1.md   ← platform architecture (v1, draft) — 6 views + ADRs
 ├── TAG_Architecture_v1.html ← same content, rendered for reading (Mermaid via CDN)
-├── TAG_InternalOps_v1.md    ← internal staff RBAC/dashboard console spec (v1, draft) — separate system, not a PRD phase
 ├── .claude/
 │   └── rules/
 │       ├── harness.md      ← session mechanics: sync gate, git/repo guardrails
@@ -31,7 +30,8 @@ BMSx-synced/
 │   ├── PLAYBOOK.md                    ← domain-agnostic ways-of-working source
 │   └── SENTINEX_WaysOfWorking_v1.html ← the process CLAUDE.md is adapted from
 ├── build/                   ← phase specs, one subfolder per MVP, written before implementation
-│   └── MVP1_CoreTicketing/PHASE_1_SPEC.md  ← Phase 1 spec, awaiting sign-off
+│   ├── MVP1_CoreTicketing/PHASE_1_SPEC.md  ← Phase 1 spec, several sub-slices signed off
+│   └── MVP2_InternalOps/PHASE_2_SPEC.md    ← Internal Ops Console spec (separate system), awaiting sign-off
 ├── archive/                  ← superseded versions; never worked from again
 │   ├── BMSx_PRD_v1_business_source.md  ← superseded by TAG_PRD_v2.md
 │   └── legacy_boardinghouse_scaffold/  ← former client/, server/, docker-compose.yml (see below)

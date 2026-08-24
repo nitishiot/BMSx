@@ -124,6 +124,12 @@ meal pre-booking, chatbot, dynamic pricing) is explicitly deferred.
   flow) flips the End User page to verified state — demonstrated live,
   not asserted.
 
+  **Built (added 2026-08-24, same day as the spec above).** Verified with
+  Playwright (landing → survey → submit → pending → dev-verify →
+  verified, zero console errors) and a scripted HTTP walk (validation,
+  invalid/single-use token, resend-after-verified 409, `GET /me`
+  correctness). Not yet shown to Nitish live — see `PROGRESS.md`.
+
 **Core ticketing (PRD §10 P0, journeys J1 and J2)**
 - Event & Catalogue: Festival, Event, Artist, Venue, Zone, SeatMap (read
   path only — festival/event data for Phase 1 is admin/producer-entered,

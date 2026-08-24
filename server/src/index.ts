@@ -8,6 +8,8 @@ import { adminAuthRouter } from './routes/adminAuth';
 import { catalogueRouter } from './routes/catalogue';
 import { inventoryRouter } from './routes/inventory';
 import { ordersRouter } from './routes/orders';
+import { surveyRouter } from './routes/survey';
+import { accountRouter } from './routes/account';
 
 const app = express();
 app.use(cors());
@@ -22,6 +24,8 @@ app.use('/api/admin-auth', adminAuthRouter);
 app.use('/api/catalogue', catalogueRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/survey', surveyRouter);
+app.use('/api/account', accountRouter);
 
 const port = Number(process.env.PORT) || 4000;
 app.listen(port, () => {

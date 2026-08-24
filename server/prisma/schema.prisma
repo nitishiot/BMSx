@@ -12,18 +12,41 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["identity", "catalogue", "inventory", "orders"]
+  schemas  = ["identity", "catalogue", "inventory", "orders", "survey"]
 }
 
 model Account {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now())
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  // Null until POST /api/account/verify-email succeeds. LP-14: a survey
+  // submission creates the Account in this pending state, never
+  // immediately "verified" — PHASE_1_SPEC.md's End User page reads this.
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
 
-  roleAssignments RoleAssignment[]
-  sessions        Session[]
+  roleAssignments        RoleAssignment[]
+  sessions                Session[]
+  emailVerificationTokens EmailVerificationToken[]
 
+  @@schema("identity")
+}
+
+// LP-14 email verification — stubbed adapter (server/src/identity/
+// emailVerification.ts), no real provider chosen yet (PHASE_1_SPEC.md
+// §8-territory TBD). One row per verification attempt; `usedAt` makes a
+// token single-use without deleting the audit trail of attempts.
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  accountId String
+  token     String    @unique @default(uuid())
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
   @@schema("identity")
 }
 
@@ -402,4 +425,20 @@ model OrderLine {
 
   @@index([orderId])
   @@schema("orders")
+}
+
+// ---------------------------------------------------------------------
+// Survey (spec §2, LP-14) — own module (ADR-005), no FK into `identity`;
+// `accountId` is a plain UUID validated in application code, same pattern
+// as every other cross-module reference in this codebase.
+// ---------------------------------------------------------------------
+
+model SurveyResponse {
+  id        String   @id @default(uuid())
+  accountId String
+  answers   Json
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@schema("survey")
 }

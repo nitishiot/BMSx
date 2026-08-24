@@ -5,6 +5,40 @@ the sync gate in `.claude/rules/harness.md`), before re-deriving anything.
 
 ## Status
 
+**LP-14 fan survey + End User account flow: built, awaiting sign-off
+(2026-08-24, Sonnet session).** Implements the spec drafted earlier this
+session. New Postgres: `identity.EmailVerificationToken` +
+`Account.emailVerifiedAt` (identity schema, extends the existing model),
+`survey.SurveyResponse` (new `survey` schema, ADR-005 — no FK into
+`identity`). `server/src/identity/emailVerification.ts` is the stubbed
+ADR-004 adapter — creates a real single-use token, "sends" it by logging
+the link server-side (no real provider chosen, spec §8 territory).
+
+Routes: `POST /api/survey/responses` (email + 12 answers → upserts
+`Account`, creates `SurveyResponse`, issues a session, returns a
+demo-only verification token), `GET /api/account/me`,
+`POST /api/account/verify-email`, `POST /api/account/resend-verification`
+(demo-only convenience, 409s if already verified).
+
+Client: `SurveyPage.tsx` (`/survey`) renders the 12 questions from the
+provided doc (collapsed one duplicated accommodation question — flagged
+in the spec, not silently dropped) plus an email field; `AccountPage.tsx`
+(`/account`) is the End User page — no-account / pending-verification
+(with a labelled dev-only "verify now" shortcut, since there's no real
+inbox) / verified states, plus a survey-answers recap. Landing page gets
+an LP-14 CTA link ("Help us build TAG") pointing to Fan Web's `/survey`.
+
+Verified two ways against the real running `server/` + Postgres: (1) a
+Playwright run driving the actual browser through landing → survey →
+submit → End User page pending state → dev-verify → verified state →
+reload persists — zero console errors; (2) a scripted HTTP walk covering
+validation (empty answers, bad email both 400), an invalid/expired token
+(400), token single-use (reusing a spent token 400s), resend-after-
+verified (409), and `GET /me` correctly reflecting both the verified
+timestamp and the stored survey response. Typecheck and production build
+(`tsc -b && vite build`) both clean on `client/`; server typecheck clean.
+**Not yet shown to Nitish live.**
+
 **Two new specs drafted, not built (2026-08-24, Sonnet session): TAG
 Internal Ops Console v1, and LP-14 (fan survey → End User account) in
 `PHASE_1_SPEC.md`.** Nitish shared a "Festival Fan Survey Proposal" doc
@@ -21,8 +55,10 @@ dashboard each is large — he confirmed scoping a generic framework fully
 specced for 3 priority roles first, the rest deferred to the same
 pattern later.
 
-`TAG_InternalOps_v1.md` (new top-level doc, same convention as
-`TAG_Architecture_v1.md`) specs: an `OrgRole`/`Capability`/
+`build/MVP2_InternalOps/PHASE_2_SPEC.md` (initially drafted at repo root
+as `TAG_InternalOps_v1.md`, promoted into `build/` later the same session
+per Nitish's request, following `build/README.md`'s phase-spec naming —
+see decisions log) specs: an `OrgRole`/`Capability`/
 `OrgRoleCapability`/`StaffProfile` data model in a new `internalops`
 schema (reuses `identity.Account`/`Session` for login, doesn't reuse
 `identity.Role`/`RoleAssignment` — that's the product's fan/producer/
@@ -598,13 +634,10 @@ current branch, and `origin/main` were identical at session start (`0 0`).
 
 ## Next steps
 
-1. **Two specs awaiting review before implementation starts:**
-   `TAG_InternalOps_v1.md` (staff RBAC/dashboard console — framework +
-   Head of Product Development/CTO/Founder & MD dashboards) and LP-14 in
-   `PHASE_1_SPEC.md` (fan survey → End User account, stubbed email
-   verification). Nitish asked for these "before that" (before resuming
-   the core-ticketing backend below) — check with him on priority order
-   once specs are reviewed.
+1. **LP-14 (fan survey → End User account) built, awaiting sign-off** —
+   see Status. `build/MVP2_InternalOps/PHASE_2_SPEC.md` (staff RBAC/
+   dashboard console) is still spec-only, not started — Nitish's next
+   priority call once LP-14 is reviewed.
 2. **The rest of the core-ticketing backend.** Ticketing &
    Inventory + Orders & Cart backend, the Fan Web checkout UI
    (`/festival/:id`), and its real QR rendering were all built and signed
@@ -1049,3 +1082,26 @@ current branch, and `origin/main` were identical at session start (`0 0`).
   resolution of that item) — worth re-raising if a future document
   crosses into "submission-bound or externally shared" territory per that
   item's own wording.
+- **2026-08-24 (Sonnet session)** — Nitish asked to promote
+  `TAG_InternalOps_v1.md` into `build/`, following the phase-spec naming
+  convention. Moved to `build/MVP2_InternalOps/PHASE_2_SPEC.md` via
+  `git mv` (history preserved). Note added to the spec's own header: this
+  doesn't reverse the earlier scope decision that Internal Ops is a
+  separate system from the ticketing product (not a PRD phase) — it's
+  filed under `build/` for the spec-before-code/sign-off discipline that
+  folder exists to enforce, which applies to any implementation-bound
+  work in this repo, not only phases of the product PRD's own numbering.
+  Tag reserved for its eventual sign-off is `internal-ops-v1`, not
+  `phase-2`, to keep that distinction visible even after the file move.
+- **2026-08-24 (Sonnet session)** — Built LP-14 (fan survey → End User
+  account) per its spec, written earlier this session. Design choices
+  made while implementing, not pre-decided in the spec: `Account.name`
+  has no real value to draw on from a survey (only email is collected),
+  so it's set to a placeholder derived from the email's local part rather
+  than left null — changing `Account.name` to nullable would have been a
+  wider, riskier change touching the producer/admin flows that already
+  depend on it being present. Kept the demo-only verify shortcut
+  (`POST /account/resend-verification` + immediate `verify-email` call)
+  clearly labelled in both the UI copy and the code comments as not part
+  of the real flow, matching the spec's own instruction not to let a
+  stand-in pass as real functionality.

@@ -1,16 +1,22 @@
-# TAG Internal Ops Console — v1 (Spec, draft)
+# Phase 2 Spec — Internal Ops Console
 
 **Status:** spec drafted, not implemented, not signed off. Per
 `.claude/rules/build.md`: not "built" until an implementation exists, not
 "done" until the three-step sign-off protocol (real test, shown live,
 approved) is met.
-**Author:** drafted with Claude (Sonnet/Opus), 24 August 2026.
+**Author:** drafted with Claude (Sonnet/Opus), 24 August 2026. Promoted
+into `build/` (from a root-level `TAG_InternalOps_v1.md`) on 2026-08-24
+to follow the same phase-spec convention as `MVP1_CoreTicketing/`, per
+`build/README.md`.
 **Scope decision (2026-08-24):** this is a **separate system** from the
 festival-ticketing product `TAG_PRD_v3.md` describes — internal staff
 tooling (role-scoped dashboards over company operations), not a feature
 for Festival Goers or Festival Clients & Suppliers. It does not amend the
-PRD; it's its own spec, following the same `TAG_<Topic>_vN` convention as
-`TAG_Architecture_v1.md`.
+PRD. It's still specced under `build/` (not left as a root-level
+`TAG_<Topic>_vN.md`) because it's implementation-bound work that needs
+the same spec-before-code/sign-off discipline as any other phase — "MVP"
+here doesn't imply it's a phase *of the ticketing product*, only that
+it's the second build track this repo is specced against.
 
 ---
 
@@ -198,3 +204,7 @@ approval.
 
 - **Date:** _(blank until approved)_
 - **Approver:** _(blank until approved)_
+- **Tag:** `internal-ops-v1`, applied to the commit where sign-off is
+  granted — deliberately not `phase-2`, since this isn't a phase of the
+  ticketing product's own numbering (`phase-1` is reserved for
+  `MVP1_CoreTicketing`'s whole-slice sign-off).

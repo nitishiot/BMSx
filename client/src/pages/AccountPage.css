@@ -1,0 +1,52 @@
+.account-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+.account-page h1 { font-size: clamp(1.3rem, 3vw, 1.7rem); margin: .5rem 0 1rem; word-break: break-all; }
+.account-page .eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; margin: 0; }
+.account-page .apply-sub { color: var(--muted); font-size: .9375rem; margin-bottom: 1.5rem; }
+
+.link-btn {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--border, #2a2a33);
+  border-radius: 999px;
+  padding: .5rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: .875rem;
+}
+
+.verify-banner {
+  background: rgba(232, 175, 25, .12);
+  border: 1px solid #e8af19;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  font-size: .875rem;
+  margin-bottom: 2rem;
+}
+.verify-banner button { margin-top: .8rem; }
+
+.verified-banner {
+  background: rgba(31, 162, 90, .12);
+  border: 1px solid var(--good, #1fa25a);
+  color: var(--good, #1fa25a);
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.survey-recap h2 { font-size: 1.05rem; margin: 0 0 1rem; }
+.recap-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: .8125rem;
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--border, #2a2a33);
+}
+.recap-label { color: var(--muted); flex: 1; }
+.recap-value { font-weight: 600; text-align: right; }

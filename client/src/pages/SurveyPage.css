@@ -1,0 +1,36 @@
+.survey-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+.survey-page h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: .5rem 0 .5rem; }
+.survey-page .eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; margin: 0; }
+.survey-page .apply-sub { color: var(--muted); font-size: .9375rem; line-height: 1.6; margin-bottom: 2rem; }
+
+.survey-question { margin-bottom: 1.4rem; }
+.survey-question label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .5rem; }
+.survey-question select,
+.survey-question textarea,
+.survey-question input[type="email"] {
+  width: 100%;
+  padding: .7rem .9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border, #2a2a33);
+  background: var(--panel, rgba(255, 255, 255, .04));
+  color: inherit;
+  font-family: inherit;
+  font-size: .875rem;
+}
+.survey-radio-group { display: flex; flex-wrap: wrap; gap: .6rem; }
+.survey-radio-option {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8125rem;
+  font-weight: 400;
+  background: var(--panel, rgba(255, 255, 255, .04));
+  border: 1px solid var(--border, #2a2a33);
+  border-radius: 999px;
+  padding: .4rem .9rem;
+  cursor: pointer;
+}
